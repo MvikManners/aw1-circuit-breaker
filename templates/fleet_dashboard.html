@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .fleet-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+    }
+    .fleet-header {
+        border-bottom: 2px solid var(--integrity-gold);
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .fleet-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 25px;
+    }
+    .fleet-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-ui);
+        padding: 25px;
+        border-radius: 4px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .fleet-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(197, 160, 89, 0.15);
+        border-color: var(--integrity-gold);
+    }
+    .status-pill {
+        padding: 4px 10px;
+        border-radius: 2px;
+        font-size: 0.65rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+</style>
+
+<div class="fleet-container">
+    <div class="fleet-header">
+        <div>
+            <h2 style="color: var(--integrity-gold); margin: 0; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">
+                🚛 {{ fleet_name }}
+            </h2>
+            <p style="color: var(--text-muted); font-family: 'Courier Prime', monospace; font-size: 0.85rem; margin: 5px 0 0 0;">
+                MASTER FLEET COMMAND // {{ client_phone }}
+            </p>
+        </div>
+        <div style="background: var(--sanctified-blue); padding: 12px 25px; border-radius: 2px; font-weight: 900; font-family: 'Courier Prime', monospace; box-shadow: 0 0 15px rgba(0, 51, 102, 0.6);">
+            TOTAL ACTIVE ASSETS: {{ assets|length }}
+        </div>
+    </div>
+
+    <div class="fleet-grid">
+        {% for asset in assets %}
+        <div class="fleet-card" style="border-top: 4px solid {% if asset.status == 'APPROVED' %}var(--integrity-green){% elif 'FAILED' in asset.status or 'EMERGENCY' in asset.status or 'PAYMENT' in asset.status %}var(--critical-red){% else %}var(--sanctified-blue){% endif %};">
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <strong style="color: var(--text-main); font-family: 'Courier Prime', monospace; font-size: 1.3rem; font-weight: 900; letter-spacing: 1px;">
+                    {{ asset.vin_dna }}
+                </strong>
+                <span style="background: #111; color: var(--integrity-gold); padding: 4px 8px; border: 1px solid var(--border-ui); font-size: 0.65rem; font-weight: 900;">
+                    CLASS {{ asset.vehicle_class or 'B' }}
+                </span>
+            </div>
+
+            <div style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 25px; text-transform: uppercase; font-family: 'Inter', sans-serif; font-weight: bold;">
+                {{ asset.vehicle_year or '' }} {{ asset.vehicle_make or '' }} {{ asset.vehicle_model or 'REGISTERED VEHICLE' }}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 0.75rem; border-bottom: 1px dashed var(--border-ui); padding-bottom: 15px;">
+                <span style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Network Status:</span>
+                <span class="status-pill" style="background: {% if asset.status == 'APPROVED' %}rgba(40,167,69,0.1){% elif 'FAILED' in asset.status or 'PAYMENT' in asset.status %}rgba(255,68,68,0.1){% else %}rgba(0,51,102,0.2){% endif %}; color: {% if asset.status == 'APPROVED' %}var(--integrity-green){% elif 'FAILED' in asset.status or 'PAYMENT' in asset.status %}var(--critical-red){% else %}#66b3ff{% endif %}; border: 1px solid {% if asset.status == 'APPROVED' %}var(--integrity-green){% elif 'FAILED' in asset.status or 'PAYMENT' in asset.status %}var(--critical-red){% else %}#66b3ff{% endif %};">
+                    {{ asset.status }}
+                </span>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 0.75rem;">
+                <span style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Shield Reservoir:</span>
+                <span style="font-weight: 900; font-family: 'Courier Prime', monospace; color: var(--integrity-green); font-size: 1.1rem;">
+                    P{{ "{:,.2f}".format(asset.shield_reservoir or 0) }}
+                </span>
+            </div>
+
+            <a href="{{ url_for('hangar.client_vault', asset_id=asset.id) }}" style="display: block; text-align: center; background: transparent; border: 1px solid var(--integrity-gold); color: var(--integrity-gold); padding: 12px; text-decoration: none; font-weight: 900; font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; border-radius: 2px;" onmouseover="this.style.background='var(--integrity-gold)'; this.style.color='#000';" onmouseout="this.style.background='transparent'; this.style.color='var(--integrity-gold)';">
+                👁️ ENTER VAULT
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

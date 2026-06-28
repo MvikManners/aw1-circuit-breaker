@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGENT PORTAL // EVIDENCE INTAKE</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Courier+Prime:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body { background: #0a0a0b; color: #fff; font-family: 'Montserrat', sans-serif; padding: 20px; text-align: center; }
+        .scanner-frame { border: 2px solid #9c8052; padding: 30px; border-radius: 15px; background: #111; margin-top: 50px; }
+        h1 { font-size: 1.2rem; letter-spacing: 3px; color: #9c8052; }
+        input, button { width: 100%; padding: 15px; margin: 10px 0; border-radius: 5px; border: 1px solid #333; box-sizing: border-box; }
+        input[type="text"] { background: #000; color: #0f0; font-family: 'Courier Prime', monospace; border: 1px solid #9c8052; }
+        .upload-btn { background: #9c8052; color: #000; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; }
+        .status-msg { font-size: 0.7rem; color: #666; margin-top: 20px; }
+        
+        /* 🛡️ LOADER WELD: Visual feedback for the Agent */
+        #loader { display: none; color: #9c8052; font-family: 'Courier Prime', monospace; font-size: 0.8rem; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="scanner-frame">
+        <h1>📡 AGENT INTAKE</h1>
+        <p style="font-size: 0.8rem; color: #888;">UPLOAD FORENSIC MEDIA TO COVENANT</p>
+        
+        <form action="{{ url_for('agent_upload') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <input type="text" name="vin_dna" placeholder="ENTER ASSET DNA (VIN)" 
+                   value="{{ request.args.get('vin_dna', '') }}" required>
+            
+            <label style="display:block; margin: 20px 0 10px; font-size: 0.7rem; color: #9c8052;">SELECT SENSOR DATA (PHOTO)</label>
+            <input type="file" name="evidence_file" accept="image/*" capture="environment" required>
+            
+            <button type="submit" class="upload-btn" id="submitBtn">TRANSMIT TO VAULT</button>
+            <div id="loader">📡 BEAMING TO MASTER VAULT...</div>
+        </form>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <p style="color: #0f0; font-family: 'Courier Prime', monospace; font-size: 0.8rem; margin-top: 20px;">{{ message }}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <p class="status-msg">GOSPEL OS // ENCRYPTED FIELD TERMINAL</p>
+
+    <script>
+        // Prevent accidental double-transmissions
+        document.getElementById('uploadForm').onsubmit = function() {
+            document.getElementById('submitBtn').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+        };
+    </script>
+</body>
+</html>

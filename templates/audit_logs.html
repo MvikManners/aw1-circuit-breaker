@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    :root {
+        --sanctified-blue: #003366; --integrity-gold: #C5A059; --integrity-green: #28a745;
+        --critical-red: #ff0000; --bg-main: #0a0a0a; --panel-bg: #111111; --border-ui: #333333;
+        --text-main: #f9f9f9; --text-muted: #888888; --input-bg: #000000; --warning-yellow: #ffc107;
+    }
+    body { background-color: var(--bg-main); color: var(--text-main); font-family: 'Inter', sans-serif; }
+
+    .header-panel { background: var(--panel-bg); border-left: 5px solid var(--integrity-gold); padding: 20px; border: 1px solid var(--border-ui); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+
+    .log-panel { background: var(--panel-bg); border: 1px solid var(--border-ui); border-top: 3px solid var(--sanctified-blue); border-radius: 2px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow-x: auto; }
+
+    .log-table { width: 100%; border-collapse: collapse; font-family: 'Courier Prime', monospace; font-size: 0.75rem; }
+    .log-table th { background: #1a1a1a; color: var(--text-muted); padding: 12px 15px; text-align: left; border-bottom: 2px solid var(--border-ui); text-transform: uppercase; letter-spacing: 1px; font-family: 'Montserrat', sans-serif; font-size: 0.65rem; white-space: nowrap; }
+    .log-table td { white-space: nowrap; padding: 12px 15px; border-bottom: 1px solid var(--border-ui); }
+
+    .sonar-indicator { display: inline-block; width: 10px; height: 10px; background-color: var(--integrity-green); border-radius: 50%; margin-right: 10px; box-shadow: 0 0 10px var(--integrity-green); }
+    @keyframes pulse-sonar { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
+    .ping-active { animation: pulse-sonar 1.5s infinite; }
+
+    .status-badge { padding: 4px 8px; border-radius: 2px; font-size: 0.65rem; font-weight: bold; letter-spacing: 1px; }
+    .status-cleared { background-color: rgba(40, 167, 69, 0.1); color: var(--integrity-green); border: 1px solid var(--integrity-green); }
+    .status-pending { background-color: rgba(255, 193, 7, 0.1); color: var(--warning-yellow); border: 1px solid var(--warning-yellow); }
+    .status-failed { background-color: rgba(255, 0, 0, 0.1); color: var(--critical-red); border: 1px solid var(--critical-red); }
+</style>
+
+<div class="header-panel">
+    <div>
+        <span style="font-family: 'Courier Prime', monospace; font-size: 0.65rem; color: #888; letter-spacing: 3px;">GLOBAL SURVEILLANCE</span>
+        <h2 style="margin: 5px 0 0 0; font-family: 'Montserrat', sans-serif; font-size: 1.6rem; font-weight: 900; letter-spacing: 2px;">FORENSIC <span style="color: var(--integrity-gold);">AUDIT LOG</span></h2>
+    </div>
+    <div style="display: flex; gap: 15px; align-items: center;">
+
+        <a href="{{ url_for('hangar.export_audit_csv') }}" style="background: var(--integrity-gold); color: #000; border: none; padding: 10px 20px; text-decoration: none; font-size: 0.75rem; font-weight: 900; font-family: 'Montserrat'; border-radius: 2px; text-transform: uppercase; transition: 0.3s; cursor: pointer;">💾 EXPORT AUDIT</a>
+
+        <div style="background: var(--input-bg); border: 1px solid var(--border-ui); padding: 8px 15px; border-radius: 2px; font-family: 'Courier Prime'; font-size: 0.7rem; font-weight: bold; color: var(--integrity-green); display: flex; align-items: center;">
+            <span class="sonar-indicator ping-active" id="sonar-light"></span> LIVE SYNC ACTIVE
+        </div>
+        <a href="{{ url_for('hangar.view_ledger') }}" style="background: var(--sanctified-blue); color: white; border: none; padding: 10px 20px; text-decoration: none; font-size: 0.75rem; font-weight: 900; font-family: 'Montserrat'; border-radius: 2px; text-transform: uppercase; transition: 0.3s;">⬅ COMMAND WALL</a>
+    </div>
+</div>
+
+<div class="log-panel">
+    <table class="log-table">
+        <thead>
+            <tr>
+                <th>Timestamp (CAT)</th>
+                <th>Asset DNA</th>
+                <th>Intent</th>
+                <th>Auth By</th>
+                <th>Status</th>
+                <th style="text-align: right;">Value (Pula)</th>
+                <th style="text-align: right; border-right: 1px solid #333;">Running Bal</th>
+                <th style="text-align: right;">LVT Utility</th>
+                <th style="text-align: right;">Debt / Loan</th>
+                <th style="text-align: right;">Network Fee (5%)</th>
+                <th style="text-align: right;">Labour Funds</th>
+                <th>Parts & Dispatch</th>
+            </tr>
+        </thead>
+        <tbody id="live-log-body">
+            {% for log in transactions %}
+            <tr style="transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+
+                <td style="color: var(--text-muted);">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') if log.timestamp else 'UNKNOWN' }}</td>
+
+                <td style="color: var(--integrity-gold); font-weight: bold; letter-spacing: 1px;">{{ log.vin_dna }}</td>
+
+                <td style="color: var(--text-main); font-family: 'Inter', sans-serif;">{{ log.intent }}</td>
+
+                <td style="color: var(--text-muted); font-size: 0.7rem;">[{{ log.authorized_by | default('SYSTEM') }}]</td>
+
+                <td>
+                    {% if log.status == 'CLEARED' %}
+                        <span class="status-badge status-cleared">CLEARED</span>
+                    {% elif log.status == 'PENDING' %}
+                        <span class="status-badge status-pending">PENDING</span>
+                    {% elif log.status == 'FAILED' %}
+                        <span class="status-badge status-failed">FAILED</span>
+                    {% else %}
+                        <span class="status-badge status-cleared">{{ log.status | default('CLEARED') }}</span>
+                    {% endif %}
+                </td>
+
+                {% set val = log.amount | float %}
+                <td style="text-align: right; font-weight: 900; font-size: 0.9rem; color: {% if val > 0 %}var(--integrity-green){% elif val < 0 %}var(--critical-red){% else %}var(--text-muted){% endif %};">
+                    {% if val > 0 %}+P{{ "{:,.2f}".format(val) }}{% elif val < 0 %}-P{{ "{:,.2f}".format(val|abs) }}{% else %}P0.00{% endif %}
+                </td>
+
+                <td style="text-align: right; font-weight: 900; color: #fff; border-right: 1px solid #222; background-color: rgba(255,255,255,0.01);">
+                    {{ "{:,.2f}".format(log.running_balance or 0) }}
+                </td>
+
+                <td style="text-align: right; color: var(--integrity-gold);">{{ "{:,.2f}".format(log.lvt_utility or 0) }} LVT</td>
+
+                <td style="text-align: right; color: var(--critical-red);">{{ "{:,.2f}".format(log.debt_loan or 0) }}</td>
+
+                <td style="text-align: right; color: var(--text-muted);">{{ "{:,.2f}".format(log.network_fee or 0) }}</td>
+
+                <td style="text-align: right; color: var(--sanctified-blue); font-weight: bold;">{{ "{:,.2f}".format(log.labour_funds or 0) }}</td>
+
+                <td style="color: var(--text-main); font-size: 0.7rem;">{{ log.parts_ordered | default('NONE') }}</td>
+
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="12" style="text-align: center; padding: 40px; color: var(--text-muted); font-style: italic;">
+                    [ NO FINANCIAL RECORDS IN DATABASE ]
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div style="background: rgba(255,0,0,0.05); border: 2px dashed var(--critical-red); border-radius: 4px; padding: 30px; text-align: center; margin-top: 50px;">
+    <h3 style="color: var(--critical-red); font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 2px; margin-top: 0; text-transform: uppercase;">DANGER ZONE: SYSTEM OVERRIDE</h3>
+    <p style="color: var(--text-muted); font-family: 'Courier Prime', monospace; font-size: 0.85rem; margin-bottom: 30px;">
+        Executing these commands will instantly trigger database destruction sequences. <br>
+        Please select your target carefully.
+    </p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; text-align: left;">
+
+        <div style="background: rgba(255, 193, 7, 0.05); border: 1px solid var(--warning-yellow); padding: 20px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h4 style="color: var(--warning-yellow); font-family: 'Montserrat', sans-serif; margin: 0 0 10px 0; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px;">Surgical Override</h4>
+                <p style="color: #aaa; font-family: 'Inter', sans-serif; font-size: 0.8rem; margin-bottom: 20px; line-height: 1.5;">
+                    Wipes the Forensic Audit Logs and Transaction Histories.<br>
+                    <strong>Vehicles, Client Balances, and the Treasury will NOT be affected.</strong>
+                </p>
+            </div>
+            <form action="{{ url_for('hangar.purge_audit_log') }}" method="POST" onsubmit="return confirm('🚨 CLEAR AUDIT HISTORY? This cannot be undone.');" style="margin: 0;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="emergency_master_key" value="ARCHITECT-SECURE-999">
+                <button type="submit" style="width: 100%; background: transparent; color: var(--warning-yellow); border: 2px solid var(--warning-yellow); padding: 15px; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='var(--warning-yellow)'; this.style.color='#000';" onmouseout="this.style.background='transparent'; this.style.color='var(--warning-yellow)';">
+                    ⚠️ PURGE AUDIT LOGS ONLY
+                </button>
+            </form>
+        </div>
+
+        <div style="background: rgba(255, 0, 0, 0.05); border: 1px solid var(--critical-red); padding: 20px; border-radius: 4px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h4 style="color: var(--critical-red); font-family: 'Montserrat', sans-serif; margin: 0 0 10px 0; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px;">Total Annihilation</h4>
+                <p style="color: #aaa; font-family: 'Inter', sans-serif; font-size: 0.8rem; margin-bottom: 20px; line-height: 1.5;">
+                    All Ledgers, Mandates, Transactions, Audit Logs, and Treasury data will be <strong>permanently destroyed.</strong>
+                </p>
+            </div>
+            <form action="{{ url_for('hangar.purge_testing_data') }}" method="POST" onsubmit="return confirm('🚨 FINAL WARNING: ALL LAVETO DATA WILL BE OBLITERATED. PROCEED?');" style="margin: 0;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="emergency_master_key" value="ARCHITECT-SECURE-999">
+                <button type="submit" style="width: 100%; background: var(--critical-red); color: #fff; border: 2px solid var(--critical-red); padding: 15px; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(255,0,0,0.3);" onmouseover="this.style.background='#cc0000'; this.style.borderColor='#cc0000';" onmouseout="this.style.background='var(--critical-red)'; this.style.borderColor='var(--critical-red)';">
+                    ⚠️ PURGE ALL TEST DATA
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function pingSonar() {
+        const sonarLight = document.getElementById('sonar-light');
+        sonarLight.style.backgroundColor = 'var(--integrity-gold)';
+        sonarLight.style.boxShadow = '0 0 10px var(--integrity-gold)';
+        setTimeout(() => {
+            sonarLight.style.backgroundColor = 'var(--integrity-green)';
+            sonarLight.style.boxShadow = '0 0 10px var(--integrity-green)';
+        }, 500);
+    }
+    setInterval(pingSonar, 10000);
+</script>
+{% endblock %}

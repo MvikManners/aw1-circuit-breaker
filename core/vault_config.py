@@ -1,0 +1,2 @@
+DRIVE_FOLDER_ID = '1-suF2Pn8341eKYS-Q1TMwobcE2RO0TBi'
+GOOGLE_CREDENTIALS_PATH = '/home/LavetoLab/credentials.json'

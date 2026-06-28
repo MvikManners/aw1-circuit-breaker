@@ -1,0 +1,138 @@
+from flask import Blueprint, request, render_template, redirect, url_for, flash, session, jsonify
+from sqlalchemy import or_, func
+from sqlalchemy.orm import selectinload
+import datetime
+import os
+
+# 🟢 Engine & Models
+from core.extensions import db
+from core.models.vehicles import SovereignLedger
+from core.models.finance import GhostOrder, PriorityAlert, Prospect, CorporateTreasury, SystemStability
+from core.routes.auth import admin_only, architect_required
+
+# Create the blueprint
+hangar_bp = Blueprint('hangar', __name__)
+
+# --- 🛰️ COMPONENT REGISTRY ---
+# This feeds the "Component Health Grading" section in your template
+MECHANICAL_COMPONENTS = [
+    'Engine & Belts', 'Gearbox / Transmission', 'Driveshaft & CV Joints', 
+    'Front Suspension', 'Rear Suspension', 'Brake System', 
+    'Steering Rack & Ends', 'Cooling System', 'Exhaust System', 'Electrical / Battery'
+]
+
+# ==========================================
+# 🔬 THE INSPECTION AREA (THE GRADING ROOM)
+# ==========================================
+
+@hangar_bp.route('/workshop/check-in/<int:entry_id>', methods=['GET', 'POST'])
+def inspection_desk(entry_id):
+    """The full Forensic Grading Room (inspection_desk.html)"""
+    try:
+        # 1. Fetch the target asset
+        asset = SovereignLedger.query.get_or_404(entry_id)
+
+        # 2. Handle Final Submission (Step 5: Save & Approve)
+        if request.method == 'POST':
+            # Update Odometer, Bay, and Costs
+            asset.base_mileage = request.form.get('intake_mileage')
+            asset.bay_assignment = request.form.get('bay_assignment')
+            asset.target_repair_cost = request.form.get('target_repair_cost')
+            
+            # Logic for Blacklisting/Rejection
+            if request.form.get('action') == 'BLACKLIST':
+                asset.current_status = 'REJECTED'
+                flash(f"🚨 ASSET [{asset.vin_dna}] BLACKLISTED.", "error")
+            else:
+                asset.current_status = 'AUDIT PASSED'
+                flash(f"✅ INSPECTION SECURED FOR [{asset.vin_dna}].", "success")
+            
+            db.session.commit()
+            return redirect(url_for('hangar.agent_terminal'))
+
+        # 3. Map current grades for the radio buttons
+        grades = {g.component_name: g.grade for g in asset.ghost_orders} if asset.ghost_orders else {}
+
+        # 4. OPEN THE DOOR (Passing 'record' to match your HTML)
+        return render_template('inspection_desk.html', 
+                               record=asset, 
+                               components_list=MECHANICAL_COMPONENTS, 
+                               current_grades=grades)
+                               
+    except Exception as e:
+        flash(f"🚨 ACCESS ERROR: {str(e)}", "error")
+        return redirect(url_for('hangar.agent_terminal'))
+
+# ==========================================
+# 🛰️ SENTINEL-A PROTOCOL ENDPOINTS
+# ==========================================
+
+@hangar_bp.route('/save_baseline/<int:entry_id>', methods=['POST'])
+def save_baseline(entry_id):
+    """Saves the Odometer Calibration"""
+    try:
+        data = request.get_json()
+        asset = SovereignLedger.query.get_or_404(entry_id)
+        asset.base_mileage = data.get('base_mileage')
+        db.session.commit()
+        return jsonify({'status': 'success'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
+
+@hangar_bp.route('/sentinel_upload/<int:entry_id>', methods=['POST'])
+def sentinel_upload(entry_id):
+    """Handles required inspection photos (Step 1)"""
+    # Logic to save files to disk/cloud would go here
+    return jsonify({'status': 'success', 'message': 'Photo Archived'})
+
+@hangar_bp.route('/upload_multi_marketplace/<int:entry_id>', methods=['POST'])
+def upload_multi_marketplace(entry_id):
+    """Handles Triple-Hero Capture"""
+    flash("4K Visuals beamed to Command Wall.", "success")
+    return redirect(url_for('hangar.inspection_desk', entry_id=entry_id))
+
+# ==========================================
+# 🛰️ THE HANGAR TERMINAL & SYSTEM SECTORS
+# ==========================================
+
+@hangar_bp.route('/workshop')
+def agent_terminal():
+    assets = SovereignLedger.query.all()
+    prospects = Prospect.query.filter_by(status='PENDING').all()
+    active_warden = {'name': session.get('warden_name', 'Agent Vela'), 'wallet_balance': 0.00, 'referral_link': '#'}
+    return render_template('hangar.html', assets=assets, prospects=prospects, active_warden=active_warden)
+
+@hangar_bp.route('/')
+def index():
+    return render_template('index.html', total_motshelo=0.0, saas_total=0.0)
+
+@hangar_bp.route('/ledger')
+@admin_only
+def view_ledger():
+    page = request.args.get('page', 1, type=int)
+    paginated_results = SovereignLedger.query.paginate(page=page, per_page=20)
+    return render_template('ledger.html', results=paginated_results, projection={'valuation': 0})
+
+@hangar_bp.route('/manifesto')
+def manifesto():
+    return render_template('manifesto.html')
+
+@hangar_bp.route('/silk-road')
+@admin_only
+def silk_road():
+    return render_template('silk_road.html', assets=SovereignLedger.query.all())
+
+@hangar_bp.route('/corporate-treasury')
+@admin_only
+def corporate_treasury():
+    return render_template('corporate_treasury.html', total_debt=0, platform_tvl=0)
+
+@hangar_bp.route('/loan-terminal')
+@architect_required
+def loan_terminal():
+    return render_template('loan_terminal.html', all_records=SovereignLedger.query.all(), total_value=0)
+
+@hangar_bp.route('/approve-prospect/<int:prospect_id>', methods=['POST'])
+def approve_prospect(prospect_id):
+    flash("Prospect Authorized.", "success")
+    return redirect(url_for('hangar.agent_terminal'))

@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laveto // Sovereign Registry</title>
+
+    <meta property="og:title" content="Laveto Sovereign Registry | The Metal of Truth">
+    <meta property="og:description" content="Zero-Trust Used Vehicles. Cryptographically verified, photo-backed service histories executed by Laveto Wardens in Gaborone.">
+    <meta property="og:image" content="{{ url_for('static', filename='Laveto_logo-01.png', _external=True) }}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta property="og:type" content="website">
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Courier+Prime:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sanctified-blue: #003366;
+            --integrity-gold: #C5A059;
+            --integrity-green: #28a745;
+            --critical-red: #ff4444;
+            --bg-main: #050505;
+            --card-bg: #111111;
+            --text-main: #F9F9F9;
+            --text-muted: #888888;
+            --border-ui: #222222;
+        }
+
+        /* Enable native smooth view transitions across the document */
+        @view-transition {
+            navigation: auto;
+        }
+
+        /* Screen reader only utility class */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            padding-top: 110px;
+        }
+
+        /* --- 🛰️ STATIC NAVIGATION --- */
+        .public-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 5%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 2px solid var(--integrity-gold);
+            z-index: 10000;
+            box-sizing: border-box;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .brand-logo {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 0 8px rgba(197, 160, 89, 0.2));
+        }
+
+        .brand-text h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 1.4rem;
+            margin: 0;
+            color: var(--text-main);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+        .brand-text span {
+            color: var(--integrity-gold);
+        }
+        .brand-tag {
+            font-family: 'Courier Prime', monospace;
+            color: var(--text-muted);
+            font-size: 0.6rem;
+            letter-spacing: 2px;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        /* 📱 MOBILE AUDIT FIX: Standardized interactive tap targets */
+        .nav-return,
+        .btn-passport {
+            min-height: 46px; 
+            box-sizing: border-box;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-return {
+            color: var(--text-muted);
+            font-family: 'Montserrat';
+            font-weight: bold;
+            font-size: 0.75rem;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.3s;
+            border: 1px solid var(--border-ui);
+            padding: 10px 20px;
+            border-radius: 2px;
+        }
+        .nav-return:hover {
+            color: var(--integrity-gold);
+            border-color: var(--integrity-gold);
+            background: rgba(197, 160, 89, 0.05);
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.2);
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+            background: radial-gradient(circle at center, #111 0%, var(--bg-main) 100%);
+            border-bottom: 1px solid var(--border-ui);
+        }
+        .hero h1.hero-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 3rem;
+            color: var(--integrity-gold);
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+        }
+        .hero p {
+            font-family: 'Courier Prime', monospace;
+            color: var(--text-muted);
+            font-size: 1rem;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* --- 📡 SOVEREIGN RADAR (FILTER ENGINE) --- */
+        .radar-console {
+            background: var(--card-bg);
+            border: 1px solid var(--integrity-gold);
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 80px;
+            z-index: 9000;
+        }
+        .radar-search-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+            flex: 1;
+            min-width: 250px;
+        }
+        .radar-search {
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--border-ui);
+            color: var(--text-main);
+            padding: 15px 15px 15px 45px;
+            font-family: 'Courier Prime', monospace;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 2px;
+            box-sizing: border-box;
+            transition: 0.3s;
+            min-height: 46px;
+        }
+        .radar-search:focus {
+            border-color: var(--integrity-gold);
+            outline: none;
+            box-shadow: inset 0 0 15px rgba(197, 160, 89, 0.1);
+        }
+        .radar-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--integrity-gold);
+            font-size: 1.2rem;
+        }
+        .telemetry-chips {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            padding-bottom: 5px;
+        }
+        .telemetry-chips::-webkit-scrollbar {
+            display: none;
+        }
+        .chip {
+            background: transparent;
+            border: 1px solid var(--border-ui);
+            color: var(--text-muted);
+            padding: 10px 20px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.3s;
+            flex-shrink: 0;
+            min-height: 36px;
+        }
+        .chip.active {
+            background: var(--sanctified-blue);
+            color: #fff;
+            border-color: var(--sanctified-blue);
+            box-shadow: 0 0 15px rgba(0, 51, 102, 0.6);
+        }
+
+        /* --- GRID --- */
+        .registry-container {
+            max-width: 1400px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 40px;
+        }
+
+        /* --- ASSET CARDS --- */
+        .asset-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-ui);
+            border-radius: 2px;
+            overflow: hidden;
+            transition: 0.4s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .asset-card:hover {
+            border-color: var(--integrity-gold);
+            box-shadow: 0 15px 40px rgba(197, 160, 89, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .img-container {
+            width: 100%;
+            height: 250px;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+        .img-carousel {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            width: 100%;
+            height: 100%;
+            scrollbar-width: none;
+        }
+        .img-carousel::-webkit-scrollbar {
+            display: none;
+        }
+        .carousel-slide {
+            flex: 0 0 100%;
+            scroll-snap-align: start;
+            position: relative;
+        }
+        .asset-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+            opacity: 0.8;
+            cursor: zoom-in;
+        }
+        .asset-card:hover .asset-img {
+            opacity: 1;
+        }
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(40, 167, 69, 0.9);
+            color: #fff;
+            padding: 5px 12px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            border-radius: 2px;
+            text-transform: uppercase;
+            z-index: 10;
+        }
+        .swipe-indicator {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.75);
+            border: 1px solid var(--integrity-gold);
+            padding: 6px 15px;
+            border-radius: 20px;
+            text-align: center;
+            pointer-events: none;
+            font-size: 0.65rem;
+            color: var(--integrity-gold);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .card-content {
+            padding: 30px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .asset-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 1.4rem;
+            color: var(--text-main);
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .vin-code {
+            font-family: 'Courier Prime', monospace;
+            color: var(--integrity-gold);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* 🛡️ INTEGRITY SCORE */
+        .integrity-box {
+            background: #000;
+            border: 1px solid var(--border-ui);
+            padding: 15px;
+            border-radius: 2px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .integrity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-family: 'Montserrat';
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            font-weight: bold;
+        }
+        .integrity-track {
+            width: 100%;
+            height: 6px;
+            background: var(--border-ui);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .integrity-fill {
+            height: 100%;
+        }
+
+        /* 💰 RESALE PREMIUM */
+        .premium-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(197, 160, 89, 0.05);
+            border: 1px dashed var(--integrity-gold);
+            padding: 10px 15px;
+            margin-bottom: 25px;
+            border-radius: 2px;
+        }
+        .premium-label {
+            font-family: 'Courier Prime';
+            font-size: 0.65rem;
+            color: var(--integrity-gold);
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: left;
+        }
+        .premium-value {
+            font-family: 'Courier Prime';
+            font-weight: 900;
+            color: var(--integrity-gold);
+            font-size: 0.9rem;
+        }
+
+        .price-container {
+            margin-top: auto;
+            margin-bottom: 25px;
+        }
+        .price-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-family: 'Montserrat';
+            letter-spacing: 2px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .price-tag {
+            font-family: 'Courier Prime', monospace;
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--text-main);
+            margin: 0;
+            letter-spacing: -1px;
+        }
+
+        .btn-passport {
+            display: flex;
+            width: 100%;
+            box-sizing: border-box;
+            background: transparent;
+            color: var(--integrity-gold);
+            border: 2px solid var(--integrity-gold);
+            padding: 15px;
+            text-align: center;
+            text-decoration: none;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+        .btn-passport:hover {
+            background: var(--integrity-gold);
+            color: #000;
+            box-shadow: 0 0 20px rgba(197, 160, 89, 0.4);
+        }
+
+        .btn-touch {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 46px;
+        }
+
+        /* --- 🏛️ THE TRANSFER LEDGER STYLES --- */
+        .transfer-ledger-block {
+            background-color: #0a0a0a;
+            border: 1px solid #333333;
+            border-left: 4px solid var(--sanctified-blue);
+            padding: 20px;
+            margin: 24px 0;
+            text-align: left;
+        }
+        .ledger-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333333;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+        .ledger-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            color: #F9F9F9;
+            font-size: 1rem;
+            letter-spacing: 1.5px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .ledger-status {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.75rem;
+            color: #888888;
+            letter-spacing: 1px;
+        }
+        .transfer-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background-color: #333333;
+            border: 1px solid #333333;
+        }
+        .transfer-cell {
+            background-color: #1A1A1A;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+        }
+        .transfer-cell.full-width { grid-column: span 2; }
+        .cell-label {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.7rem;
+            color: #888888;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+        .cell-value {
+            font-family: 'Courier Prime', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #F9F9F9;
+            margin-bottom: 8px;
+        }
+        .highlight-gold { color: #C5A059; }
+        .highlight-blue { color: #003366; }
+        .cell-desc {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            color: #cccccc;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            body { padding-top: 140px; }
+            .hero h1.hero-title { font-size: 2rem; }
+            .grid { grid-template-columns: 1fr; }
+            .public-nav { flex-direction: column; gap: 15px; text-align: center; }
+            .transfer-grid { grid-template-columns: 1fr; }
+            .transfer-cell.full-width { grid-column: span 1; }
+        }
+
+        /* 🔍 ZOOM PREVIEW LIGHTBOX OVERLAY */
+        #zoomOverlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 2000000; justify-content: center; align-items: center; cursor: zoom-out;
+        }
+        #zoomOverlay img { max-width: 90%; max-height: 90%; border: 3px solid var(--integrity-gold); box-shadow: 0 0 50px rgba(0,0,0,1); }
+    </style>
+</head>
+<body>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div style="position: fixed; top: 120px; left: 50%; transform: translateX(-50%); z-index: 100000; width: 90%; max-width: 600px; text-align: center;" id="flashContainer">
+        {% for category, message in messages %}
+          <div style="background: {% if category == 'error' %}var(--critical-red){% else %}var(--integrity-green){% endif %}; color: #fff; padding: 15px 20px; font-family: 'Montserrat', sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; border-radius: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.2);">
+              {{ message }}
+          </div>
+        {% endfor %}
+        </div>
+        <script>
+            setTimeout(() => { 
+                const flash = document.getElementById('flashContainer');
+                if(flash) flash.style.display = 'none'; 
+            }, 6000);
+        </script>
+      {% endif %}
+    {% endwith %}
+
+    <div id="radar-announcer" role="status" aria-live="polite" class="sr-only">
+        Showing all verified assets.
+    </div>
+
+    <nav class="public-nav">
+        <div class="brand">
+            <img src="{{ url_for('static', filename='Laveto_logo-01.png') }}" alt="Laveto Logo" class="brand-logo">
+            <div class="brand-text">
+                <div style="font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.4rem; color: var(--text-main); letter-spacing: 3px; text-transform: uppercase; line-height: 1;">Laveto<span>OS</span></div>
+                <div class="brand-tag">PUBLIC REGISTRY // GABORONE</div>
+            </div>
+        </div>
+        <a href="{{ url_for('hangar.index') }}" class="nav-return">Return Home ⬅</a>
+    </nav>
+
+    <div class="hero">
+        <h1 class="hero-title">The Metal of Truth</h1>
+        <p>Zero-Trust Used Vehicles. Every asset listed below carries a cryptographically verified, photo-backed service history executed by Laveto Wardens.</p>
+    </div>
+
+    <div class="registry-container">
+        <div class="transfer-ledger-block" style="margin-top: 0; margin-bottom: 40px; border-radius: 4px;">
+            <div class="ledger-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span class="ledger-icon" style="font-size: 1.5rem;">⚖️</span>
+                    <h3 class="ledger-title">MASTER TERMS OF TRANSFER</h3>
+                </div>
+                <span class="ledger-status" style="text-align: right;">PROTOCOL 191</span>
+            </div>
+            <div class="transfer-grid">
+                <div class="transfer-cell">
+                    <div class="cell-label">PROVENANCE TOLL</div>
+                    <div class="cell-value highlight-blue">4.00%</div>
+                    <p class="cell-desc">Guarantor of Truth fee. Covers exit audit, Triple-Lock recertification, and Passport transfer.</p>
+                </div>
+                <div class="transfer-cell">
+                    <div class="cell-label">BUYER INDUCTION</div>
+                    <div class="cell-value highlight-gold">REQUIRED</div>
+                    <p class="cell-desc">Inherit the forensic history and Covenant. One-time fee to maintain unbroken provenance.</p>
+                </div>
+                <div class="transfer-cell full-width">
+                    <div class="cell-label">ECOSYSTEM STATUS</div>
+                    <div class="cell-value">SOVEREIGN 500 ADMISSION</div>
+                    <p class="cell-desc">New owners immediately gain access to the Yield Engine, 80% Sourcing Anchor, and the Shield Reservoir.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="radar-console">
+            <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap;">
+                <div class="radar-search-wrapper">
+                    <span class="radar-icon">⌕</span>
+                    <input type="text" id="radarInput" class="radar-search" placeholder="SCAN VIN, MAKE, OR MODEL..." onkeyup="executeRadarScan()">
+                </div>
+                
+                <select id="radarSort" class="radar-search" onchange="executeRadarScan()" style="flex: 0 0 auto; width: auto; min-width: 200px; padding-left: 15px; color: var(--integrity-gold); cursor: pointer;">
+                    <option value="default">SORT: SYSTEM DEFAULT</option>
+                    <option value="price_asc">PRICE: LOW TO HIGH</option>
+                    <option value="price_desc">PRICE: HIGH TO LOW</option>
+                </select>
+            </div>
+
+            <div class="telemetry-chips">
+                <button class="chip active" onclick="activateChip('all', this)">ALL ASSETS</button>
+                <button class="chip" onclick="activateChip('toyota', this)">TOYOTA</button>
+                <button class="chip" onclick="activateChip('honda', this)">HONDA</button>
+                <button class="chip" onclick="activateChip('suv', this)">SUV / 4X4</button>
+                <button class="chip" onclick="activateChip('premium', this)">INTEGRITY 90%+</button>
+            </div>
+        </div>
+
+        <div class="grid" id="registryGrid">
+            {% for car in all_records %}
+                {% set integrity_pct = (car.calculated_integrity * 100)|int if car.calculated_integrity else 85 %}
+                
+                <div class="asset-card" 
+                     style="view-transition-name: asset-card-{{ car.id | default(loop.index) }};"
+                     data-make="{{ car.vehicle_make|lower if car.vehicle_make else '' }}" 
+                     data-model="{{ car.vehicle_model|lower if car.vehicle_model else '' }}" 
+                     data-vin="{{ car.vin_dna|lower }}"
+                     data-integrity="{{ integrity_pct }}"
+                     data-class="{{ car.vehicle_class|lower if car.vehicle_class else 'suv' }}"
+                     data-price="{{ car.asking_price or 0 }}">
+                     
+                    <div class="img-container">
+                        <div class="status-badge">VERIFIED ASSET</div>
+
+                        <div class="img-carousel">
+                            {# 🟢 DEFENSIVE ACCESS: Use |attr() to avoid UndefinedError #}
+                            {% set raw_list = [
+                                car|attr('marketplace_image'),
+                                car|attr('marketplace_image_2'),
+                                car|attr('marketplace_image_3')
+                            ] %}
+
+                            {# Filter out None, 'None' strings, and empty strings #}
+                            {% set valid_imgs = raw_list | select | map('string') | reject('equalto', 'None') | reject('equalto', '') | list %}
+
+                            {% for raw_img in valid_imgs %}
+                                {% set img_url = '' %}
+                                {% if 'drive.google.com' in raw_img %}
+                                    {% set drive_id = '' %}
+                                    {% if '/d/' in raw_img %}
+                                        {% set drive_id = raw_img.split('/d/')[1].split('/')[0] %}
+                                    {% elif 'id=' in raw_img %}
+                                        {% set drive_id = raw_img.split('id=')[1].split('&')[0] %}
+                                    {% endif %}
+                                    {% set img_url = 'https://drive.google.com/thumbnail?id=' ~ drive_id ~ '&sz=w1000' %}
+                                {% elif raw_img.startswith('http') %}
+                                    {% set img_url = raw_img %}
+                                {% else %}
+                                    {% set img_url = url_for('static', filename=raw_img) %}
+                                {% endif %}
+
+                                <div class="carousel-slide">
+                                    <img src="{{ img_url }}" class="asset-img" alt="Sovereign Asset" title="Click to zoom" onclick="openZoom(this.src)">
+                                </div>
+                            {% endfor %}
+
+                            {% if valid_imgs|length == 0 %}
+                                <div style="flex: 0 0 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--integrity-gold); font-family: 'Courier Prime', monospace; font-size: 0.75rem; font-weight: bold; background: linear-gradient(180deg, #0a0a0a 0%, #020202 100%); gap: 12px; opacity: 0.65;">
+                                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    <span>[ NO PROVENANCE MEDIA ]</span>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {% if valid_imgs|length > 1 %}
+                            <div class="swipe-indicator">📸 SWIPE GALLERY ➡</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="card-content">
+                        <h3 class="asset-title">
+                            {% if car.vehicle_year and car.vehicle_make %}
+                                {{ car.vehicle_year }} {{ car.vehicle_make }} {{ car.vehicle_model or '' }}
+                            {% else %}
+                                SOVEREIGN ASSET
+                            {% endif %}
+                        </h3>
+                        <div class="vin-code">{{ car.vin_dna }}</div>
+
+                        <div class="integrity-box">
+                            <div class="integrity-header">
+                                <span>System Integrity</span>
+                                <span style="color: color-mix(in srgb, var(--integrity-green) {{ integrity_pct }}%, var(--critical-red));">{{ integrity_pct }}%</span>
+                            </div>
+                            <div class="integrity-track">
+                                <div class="integrity-fill" style="width: {{ integrity_pct }}%; background: linear-gradient(90deg, var(--sanctified-blue), color-mix(in srgb, var(--integrity-green) {{ integrity_pct }}%, var(--critical-red)));"></div>
+                            </div>
+                        </div>
+
+                        <div class="premium-box">
+                            <div class="premium-label">Laveto Provenance<br>Value Premium</div>
+                            <div class="premium-value">
+                                {% if car.provenance_premium and car.provenance_premium > 0 %}
+                                    +P{{ "{:,.2f}".format(car.provenance_premium) }}
+                                {% else %}
+                                    PENDING MATH
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="price-container">
+                            <div class="price-label">Asking Price</div>
+                            <div class="price-tag" style="{% if not car.asking_price or car.asking_price <= 0 %}color: var(--critical-red); font-size: 1.8rem;{% endif %}">
+                                {% if car.asking_price and car.asking_price > 0 %}
+                                    P{{ "{:,.2f}".format(car.asking_price) }}
+                                {% else %}
+                                    APPRAISAL PENDING
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <a href="{{ url_for('hangar.public_passport', vin_dna=car.vin_dna) }}" class="btn-passport">OPEN DOSSIER 🔬</a>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 50px;">
+                    <h3>[ THE MARKET IS CURRENTLY EMPTY ]</h3>
+                    <p style="font-family: 'Courier Prime'; color: #666; font-size: 0.9rem;">No verified assets are currently listed for sale.</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div style="margin-top: 80px; margin-bottom: 20px;">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h2 style="font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 2rem; color: var(--integrity-gold); text-transform: uppercase; letter-spacing: 3px; margin: 0;">Sovereign Supply</h2>
+                <p style="font-family: 'Courier Prime', monospace; color: var(--text-muted); font-size: 0.9rem; margin-top: 5px;">PUBLIC GALLERY // FIAT ACQUISITION ONLY</p>
+            </div>
+            
+            {% if public_merchandise and public_merchandise|length > 0 %}
+            <div class="grid" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+                {% for item in public_merchandise %}
+                <div class="asset-card" style="border-top: 4px solid var(--sanctified-blue);">
+                    <div class="card-content" style="padding: 25px;">
+                        <div style="font-family: 'Courier Prime', monospace; font-size: 0.7rem; color: var(--integrity-gold); margin-bottom: 10px; font-weight: bold; letter-spacing: 1px;">SKU: {{ item.sku_code }}</div>
+                        <h3 class="asset-title" style="font-size: 1.2rem; margin-bottom: 15px;">{{ item.item_name }}</h3>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 51, 102, 0.1); border: 1px dashed var(--sanctified-blue); padding: 15px; border-radius: 2px; margin-bottom: 25px;">
+                            <span style="font-family: 'Montserrat', sans-serif; font-weight: 900; color: #fff; font-size: 1.5rem;">P{{ "{:,.2f}".format(item.member_retail_price) }}</span>
+                            <span style="font-family: 'Courier Prime', monospace; font-size: 0.75rem; color: {% if item.stock_quantity > 0 %}var(--integrity-green){% else %}var(--critical-red){% endif %}; font-weight: bold;">
+                                {% if item.stock_quantity > 0 %}{{ item.stock_quantity }} IN STOCK{% else %}OUT OF STOCK{% endif %}
+                            </span>
+                        </div>
+
+                        {% if item.stock_quantity > 0 %}
+                        <form action="{{ url_for('hangar.process_public_merchandise_purchase', item_id=item.id) }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="payment_method" value="FIAT">
+                            <button type="submit" class="btn-touch" style="width: 100%; background: var(--integrity-gold); color: #000; border: none; padding: 15px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; border-radius: 2px; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(197, 160, 89, 0.3);" onmouseover="this.style.background='#a8823a'" onmouseout="this.style.background='var(--integrity-gold)'">
+                                PURCHASE VIA PULA
+                            </button>
+                        </form>
+                        {% else %}
+                        <button disabled style="width: 100%; background: #333; color: #666; border: 1px solid #444; padding: 15px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; border-radius: 2px; cursor: not-allowed;">
+                            UNAVAILABLE
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state" style="text-align: center; padding: 50px; border: 1px dashed var(--border-ui); background: var(--card-bg); border-radius: 4px;">
+                <h3 style="color: var(--text-muted); font-family: 'Courier Prime', monospace; letter-spacing: 2px; margin: 0 0 10px 0;">[ INVENTORY DEPLETED ]</h3>
+                <p style="font-family: 'Inter', sans-serif; color: #666; font-size: 0.9rem; margin: 0;">The public gallery is currently awaiting restock from Command.</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <div style="text-align: center; padding: 40px; border-top: 1px solid var(--border-ui); font-family: 'Courier Prime', monospace; font-size: 0.7rem; color: #555;">
+        © 2026 Laveto System Restoration. All rights reserved.<br>
+        <span style="color: var(--integrity-gold);">Powered by Gospel OS</span>
+    </div>
+
+    <div id="zoomOverlay" onclick="closeZoom()">
+        <img id="zoomedImg" src="" alt="Full Size Image">
+    </div>
+
+    <script>
+        function openZoom(src) {
+            if (!src || src.includes('None') || src.trim() === '') return;
+            const overlay = document.getElementById('zoomOverlay');
+            const img = document.getElementById('zoomedImg');
+            img.src = src;
+            overlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        function closeZoom() {
+            document.getElementById('zoomOverlay').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // --- 📡 SOVEREIGN RADAR ENGINE ---
+        let currentChipFilter = 'all';
+
+        function activateChip(filterValue, btnElement) {
+            // 1. Visually swap the active chip style
+            const allChips = document.querySelectorAll('.chip');
+            allChips.forEach(chip => {
+                chip.classList.remove('active');
+            });
+            btnElement.classList.add('active');
+
+            // 2. Set global state
+            currentChipFilter = filterValue;
+
+            // 3. Trigger the unified engine (Wrapped in View Transitions)
+            if (!document.startViewTransition) {
+                executeRadarScan();
+            } else {
+                document.startViewTransition(() => executeRadarScan());
+            }
+        }
+
+        // Add View Transition handling to the sort dropdown as well
+        document.getElementById('radarSort').addEventListener('change', function() {
+            if (!document.startViewTransition) {
+                executeRadarScan();
+            } else {
+                document.startViewTransition(() => executeRadarScan());
+            }
+        });
+
+        function executeRadarScan() {
+            const query = document.getElementById('radarInput').value.toLowerCase();
+            const sortMode = document.getElementById('radarSort').value;
+            const grid = document.getElementById('registryGrid');
+            const announcer = document.getElementById('radar-announcer');
+            
+            // Extract all cards into an array so we can sort them mathematically
+            let cards = Array.from(grid.querySelectorAll('.asset-card'));
+            let visibleCount = 0;
+
+            // --- STEP 1: FILTERING (Visibility) ---
+            cards.forEach(card => {
+                const make = card.getAttribute('data-make') || '';
+                const model = card.getAttribute('data-model') || '';
+                const vin = card.getAttribute('data-vin') || '';
+                const assetClass = card.getAttribute('data-class') || '';
+                const integrity = parseInt(card.getAttribute('data-integrity')) || 0;
+
+                const searchString = `${make} ${model} ${vin}`;
+                const matchesSearch = searchString.includes(query);
+
+                let matchesChip = false;
+                if (currentChipFilter === 'all') {
+                    matchesChip = true;
+                } else if (currentChipFilter === 'premium') {
+                    matchesChip = integrity >= 90;
+                } else if (currentChipFilter === 'suv') {
+                    // Fixed: Checked the asset-class attribute directly alongside string fallbacks
+                    matchesChip = assetClass.includes('suv') || 
+                                  assetClass.includes('4x4') ||
+                                  (make.includes('toyota') && model.includes('hilux')) || 
+                                  model.includes('fortuner') || 
+                                  model.includes('ranger') || 
+                                  model.includes('prado'); 
+                } else {
+                    matchesChip = make.includes(currentChipFilter);
+                }
+
+                if (matchesSearch && matchesChip) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // --- STEP 2: SORTING (DOM Manipulation) ---
+            if (sortMode !== 'default') {
+                cards.sort((a, b) => {
+                    const priceA = parseFloat(a.getAttribute('data-price')) || 0;
+                    const priceB = parseFloat(b.getAttribute('data-price')) || 0;
+                    
+                    if (sortMode === 'price_asc') {
+                        return priceA - priceB; // Low to High
+                    } else if (sortMode === 'price_desc') {
+                        return priceB - priceA; // High to Low
+                    }
+                });
+
+                // By looping through our newly sorted array and appending, we reorder the entire grid instantly
+                cards.forEach(card => grid.appendChild(card));
+            }
+
+            // --- STEP 3: ACCESSIBILITY ANNOUNCEMENT ---
+            if (announcer) {
+                announcer.textContent = `Showing ${visibleCount} verified assets based on current filters.`;
+            }
+        }
+        
+        // Ensure manual typing search also respects view transitions
+        document.getElementById('radarInput').addEventListener('keyup', function(e) {
+             // Only fire transition on specific keys to avoid transition spam
+             if (e.key === 'Enter' || this.value === '') {
+                 if (!document.startViewTransition) {
+                     executeRadarScan();
+                 } else {
+                     document.startViewTransition(() => executeRadarScan());
+                 }
+             } else {
+                 executeRadarScan(); // Standard fast execution for live typing
+             }
+        });
+    </script>
+</body>
+</html>
