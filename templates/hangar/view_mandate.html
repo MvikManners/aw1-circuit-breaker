@@ -1,0 +1,292 @@
+{% set asset = asset if asset is defined and asset else (mandate.ledger if mandate is defined and mandate else None) %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A.G. Mandate - {{ asset.vin_dna if asset else 'Error' }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Montserrat:wght@400;700;900&display=swap');
+        
+        /* A4 Paper Reset */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a0a;
+            font-family: 'Montserrat', sans-serif;
+            color: #111;
+        }
+
+        /* The physical "Paper" */
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 10mm auto;
+            border: 1px solid #D3D3D3;
+            border-radius: 5px;
+            background: white;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #C5A059;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 900;
+            color: #0033a0;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 5px;
+            color: #C5A059;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .doc-id {
+            font-family: 'Courier Prime', monospace;
+            font-size: 10px;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .content {
+            font-size: 13px;
+            line-height: 1.8;
+            text-align: justify;
+            position: relative;
+            z-index: 10;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            background: white;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border: 1px solid #ccc;
+            font-size: 13px;
+        }
+
+        .data-table td.label {
+            font-weight: 700;
+            background-color: #f9f9f9;
+            width: 35%;
+            color: #333;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        .data-table td.value {
+            font-family: 'Courier Prime', monospace;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .covenant-box {
+            margin-top: 30px;
+            padding: 20px;
+            border-left: 4px solid #0033a0;
+            background-color: #f4f7fb;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .signatures {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .sig-line {
+            width: 45%;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            text-align: left;
+            position: relative;
+        }
+
+        .sig-line p {
+            margin: 0;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .sig-line span {
+            font-family: 'Courier Prime', monospace;
+            font-size: 10px;
+            color: #666;
+        }
+        
+        .client-signature-img {
+            position: absolute;
+            bottom: 25px;
+            left: 0;
+            max-height: 60px;
+            width: auto;
+            /* Filter applied so white signatures drawn on black canvas show up on white paper */
+            filter: invert(1); 
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 120px;
+            color: rgba(197, 160, 89, 0.08);
+            font-weight: 900;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .print-btn {
+            display: block;
+            width: 210mm;
+            margin: 20px auto;
+            background: #0033a0;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            transition: 0.3s;
+        }
+        
+        .print-btn:hover {
+            background: #002266;
+            box-shadow: 0 0 15px rgba(0, 51, 160, 0.5);
+        }
+
+        .error-box {
+            width: 210mm;
+            margin: 50px auto;
+            background: #ffebeb;
+            border: 1px solid #ff4444;
+            color: #cc0000;
+            padding: 30px;
+            border-radius: 4px;
+            font-family: 'Montserrat', sans-serif;
+            text-align: center;
+        }
+
+        /* Hide elements when actually printing */
+        @media print {
+            body { background: white; }
+            .page { margin: 0; border: none; box-shadow: none; padding: 0; }
+            .print-btn { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    {% if message %}
+        <div class="error-box">
+            <h2 style="margin-top: 0; font-weight: 900; letter-spacing: 1px;">🚨 SYSTEM NOTIFICATION</h2>
+            <p style="font-family: 'Courier Prime', monospace;">{{ message }}</p>
+            <a href="/hangar/forge-payroll-mandate" style="display: inline-block; margin-top: 20px; background: #cc0000; color: white; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 2px;">RETURN TO DASHBOARD</a>
+        </div>
+
+    {% elif mandate and asset %}
+        <button onclick="window.print()" class="print-btn">🖨️ PRINT OFFICIAL MANDATE TO PDF</button>
+
+        <div class="page">
+            <div class="watermark">LAVETO VERIFIED</div>
+            
+            <div class="header">
+                <div class="logo-text">LAVETO SYSTEM RESTORATION</div>
+                <div class="title">Sovereign Payroll Deduction Mandate</div>
+                <div class="doc-id">DOC ID: {{ mandate.mandate_code }} // REF: {{ mandate.date_issued.strftime('%Y%m%d') if mandate.date_issued else 'N/A' }}</div>
+            </div>
+            
+            <div class="content">
+                <p><strong>TO: THE ACCOUNTANT GENERAL, GOVERNMENT OF BOTSWANA.</strong></p>
+                <p>I hereby authorize the periodic deduction of capital from my salary as specified below, for allocation into my secure Sovereign OS Asset Maintenance Vault managed by Laveto Pty Ltd.</p>
+                
+                <table class="data-table">
+                    <tr>
+                        <td class="label">Sovereign Member (Pilot)</td>
+                        <td class="value">{{ asset.member_name|upper }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Vehicle VIN (DNA)</td>
+                        <td class="value">{{ asset.vin_dna }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Employer</td>
+                        <td class="value">{{ mandate.employer_name|upper if mandate.employer_name else 'GOVERNMENT OF BOTSWANA' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Ministry / Department</td>
+                        <td class="value">{{ mandate.department|upper }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Omang Number</td>
+                        <td class="value">{{ mandate.omang_number }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Employee / Payroll ID</td>
+                        <td class="value">{{ mandate.employee_number }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Monthly Allocation</td>
+                        <td class="value" style="color: #0033a0; font-size: 18px;">P {{ "{:,.2f}".format(mandate.monthly_deduction) }}</td>
+                    </tr>
+                </table>
+                
+                <div class="covenant-box">
+                    <strong>LEGAL COVENANT:</strong> I acknowledge that 100% of my monthly deposit is allocated to my personal reservoir (60% Compounding Yield Pool / 40% Shield Reservoir). This mandate remains active and locked under the jurisdiction of the Sovereign OS Hangar 01 framework.
+                </div>
+                
+                <div class="signatures">
+                    <div class="sig-line">
+                        <br><br><br>
+                        <!-- Digital Signature Injection Point -->
+                        <p>MEMBER SIGNATURE</p>
+                        <span>Pilot: {{ asset.member_name|upper }}</span>
+                    </div>
+                    <div class="sig-line">
+                        <br><br><br>
+                        <p>COMMAND AUTHORIZATION</p>
+                        <span>Laveto System Restoration</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- 🟢 FAIL-SAFE: Prevents a completely black screen if the route drops a variable -->
+        <div class="error-box" style="border-color: #ffaa00; background: #fffcf0; color: #cc8800;">
+            <h2 style="margin-top: 0; font-weight: 900; letter-spacing: 1px;">⚠️ ASSET LINK BROKEN</h2>
+            <p style="font-family: 'Courier Prime', monospace;">The mandate was found, but the Sovereign Ledger connection could not be resolved. The document cannot render without Asset DNA.</p>
+            <a href="/hangar/forge-payroll-mandate" style="display: inline-block; margin-top: 20px; background: #ffaa00; color: #000; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 2px;">RETURN TO DASHBOARD</a>
+        </div>
+    {% endif %}
+
+</body>
+</html>

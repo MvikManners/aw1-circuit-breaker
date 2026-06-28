@@ -1,0 +1,274 @@
+<style>
+    /* 📱 BAY 01 TABLET OVERRIDES */
+    body {
+        background-color: #050505;
+        color: #f9f9f9;
+        font-family: 'Inter', sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .tablet-header {
+        background: #111;
+        border-bottom: 3px solid var(--integrity-gold);
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .tablet-title {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 900;
+        font-size: 1.8rem;
+        letter-spacing: 3px;
+        color: var(--text-main);
+        text-transform: uppercase;
+        margin: 0;
+    }
+
+    .tablet-subtitle {
+        font-family: 'Courier Prime', monospace;
+        color: var(--integrity-gold);
+        font-size: 0.8rem;
+        letter-spacing: 2px;
+    }
+
+    /* 🖐️ FAT-FINGER UI COMPONENTS */
+    .fat-card {
+        background: #111;
+        border: 1px solid #333;
+        border-radius: 4px;
+        padding: 30px;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    .fat-label {
+        display: block;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.9rem;
+        color: #888;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+    }
+
+    .fat-input {
+        width: 100%;
+        background: #000;
+        border: 2px solid #444;
+        color: var(--integrity-gold);
+        font-family: 'Courier Prime', monospace;
+        font-size: 1.5rem;
+        font-weight: bold;
+        padding: 20px;
+        border-radius: 4px;
+        box-sizing: border-box;
+        text-align: center;
+        text-transform: uppercase;
+        transition: 0.3s;
+    }
+
+    .fat-input:focus {
+        border-color: var(--integrity-gold);
+        outline: none;
+        box-shadow: 0 0 15px rgba(197, 160, 89, 0.2);
+    }
+
+    .btn-massive {
+        display: block;
+        width: 100%;
+        background: var(--sanctified-blue);
+        color: white;
+        border: none;
+        padding: 20px;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 900;
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: 0.3s;
+        margin-top: 15px;
+        text-align: center;
+        text-decoration: none;
+    }
+
+    .btn-massive:hover {
+        background: var(--integrity-gold);
+        color: black;
+    }
+
+    .mech-hint {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.75rem;
+        color: #666;
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    /* High-Tech Loading Overlay */
+    #loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 9999;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #28a745;
+        font-family: 'Courier Prime', monospace;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid transparent;
+        border-top: 3px solid #28a745;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+    }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+
+<div class="tablet-header">
+    <h1 class="tablet-title">BAY 01 <span style="color: var(--sanctified-blue);">// INTAKE</span></h1>
+    <div class="tablet-subtitle">FORENSIC TRIAGE TERMINAL</div>
+</div>
+<div id="progress-bar" style="width: 100%; height: 6px; background: #222; position: fixed; top: 0; left: 0; z-index: 10001;">
+    <div id="progress-fill" style="height: 100%; width: 0%; background: var(--integrity-gold); transition: 0.5s;"></div>
+</div>
+<div style="max-width: 800px; margin: 0 auto; padding: 0 20px 100px 20px;">
+    <form method="POST" action="/api/triage/seal" id="intakeForm">
+
+        <div class="fat-card" style="border-top: 5px solid var(--sanctified-blue);">
+            <label class="fat-label">1. Scan or Type Asset DNA (VIN)</label>
+            <input type="text" name="vin_dna" class="fat-input" placeholder="ENTER 17-DIGIT VIN" required minlength="17" maxlength="17" autocomplete="off">
+            <div class="mech-hint">Verify VIN against the dashboard chassis plate.</div>
+
+            <label class="fat-label" style="margin-top: 25px;">2. Mileage / Odometer (KM)</label>
+            <input type="number" name="mileage" class="fat-input" placeholder="E.G. 145000" required>
+
+            <button type="button" class="btn-massive" onclick="unlockTriage()" id="btnLockDna">LOCK DNA & PROCEED ⬇</button>
+        </div>
+
+        <div id="triageSection" style="display: none; opacity: 0; transition: opacity 0.5s;">
+            <h2 class="tablet-title" style="font-size: 1.2rem; margin-bottom: 15px; border-bottom: 1px dashed #333; padding-bottom: 10px;">📋 14-POINT INSPECTION MATRIX</h2>
+
+            <div class="fat-card triage-module" id="module_ctrl_arms" style="border-top: 3px solid #444;">
+                <label class="fat-label" style="color: white; font-size: 1.1rem;">1. Front Lower Control Arms & Bushes</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                    <input type="radio" name="grade_ctrl_arms" id="pass_ctrl_arms" value="PASS" style="display: none;" onchange="updateGradeUI('ctrl_arms', 'pass')">
+                    <label for="pass_ctrl_arms" id="lbl_pass_ctrl_arms" style="background: #111; border: 2px solid #333; color: #888; padding: 15px; text-align: center; font-weight: 900; border-radius: 4px; cursor: pointer;">✅ PASS</label>
+
+                    <input type="radio" name="grade_ctrl_arms" id="fail_ctrl_arms" value="FAIL" style="display: none;" onchange="updateGradeUI('ctrl_arms', 'fail')">
+                    <label for="fail_ctrl_arms" id="lbl_fail_ctrl_arms" style="background: #111; border: 2px solid #333; color: #888; padding: 15px; text-align: center; font-weight: 900; border-radius: 4px; cursor: pointer;">🚨 FAIL</label>
+                </div>
+                <input type="file" id="photo_ctrl_arms" accept="image/*" capture="environment" style="display: none;" onchange="silentlyUploadPhoto(this, 'ctrl_arms')">
+                <label for="photo_ctrl_arms" id="btn_photo_ctrl_arms" class="btn-massive" style="background: #222; color: var(--integrity-gold); border: 1px dashed var(--integrity-gold); font-size: 0.9rem;">📸 CAPTURE EVIDENCE</label>
+                <div id="status_ctrl_arms" style="text-align: center; font-family: 'Courier Prime'; font-size: 0.7rem; margin-top: 10px; color: #666;">AWAITING UPLINK</div>
+            </div>
+
+            <div class="fat-card triage-module" id="module_steering" style="border-top: 3px solid #444;">
+                <label class="fat-label" style="color: white; font-size: 1.1rem;">2. Steering Rack & Tie Rods</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                    <input type="radio" name="grade_steering" id="pass_steering" value="PASS" style="display: none;" onchange="updateGradeUI('steering', 'pass')">
+                    <label for="pass_steering" id="lbl_pass_steering" style="background: #111; border: 2px solid #333; color: #888; padding: 15px; text-align: center; font-weight: 900; border-radius: 4px; cursor: pointer;">✅ PASS</label>
+
+                    <input type="radio" name="grade_steering" id="fail_steering" value="FAIL" style="display: none;" onchange="updateGradeUI('steering', 'fail')">
+                    <label for="fail_steering" id="lbl_fail_steering" style="background: #111; border: 2px solid #333; color: #888; padding: 15px; text-align: center; font-weight: 900; border-radius: 4px; cursor: pointer;">🚨 FAIL</label>
+                </div>
+                <input type="file" id="photo_steering" accept="image/*" capture="environment" style="display: none;" onchange="silentlyUploadPhoto(this, 'steering')">
+                <label for="photo_steering" id="btn_photo_steering" class="btn-massive" style="background: #222; color: var(--integrity-gold); border: 1px dashed var(--integrity-gold); font-size: 0.9rem;">📸 CAPTURE EVIDENCE</label>
+                <div id="status_steering" style="text-align: center; font-family: 'Courier Prime'; font-size: 0.7rem; margin-top: 10px; color: #666;">AWAITING UPLINK</div>
+            </div>
+
+            <button type="submit" class="btn-massive" style="background: #28a745; color: #000; padding: 25px; font-size: 1.4rem; margin-top: 40px;">✅ SEAL LEDGER & TRANSMIT</button>
+        </div>
+    </form>
+</div>
+
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <h2 style="letter-spacing: 5px;">SCANNING DNA...</h2>
+    <p id="loading-status">COMMITTING TO LEDGER</p>
+</div>
+<script>
+    const auditState = {
+        components_passed: 0,
+        total_required: 2 // Update this to 14 when you expand your matrix
+    };
+
+    function unlockTriage() {
+        const vin = document.querySelector('input[name="vin_dna"]').value;
+        const mil = document.querySelector('input[name="mileage"]').value;
+
+        if (vin.length !== 17 || mil === "") {
+            alert("🚨 DNA SEQUENCE INCOMPLETE. Verify VIN (17 digits) and Odometer.");
+            return;
+        }
+
+        document.getElementById('btnLockDna').style.display = 'none';
+        document.getElementById('triageSection').style.display = 'block';
+        document.getElementById('triageSection').style.opacity = '1';
+
+        // Scroll to the first module
+        document.getElementById('module_ctrl_arms').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function updateGradeUI(id, grade) {
+        const lp = document.getElementById('lbl_pass_' + id);
+        const lf = document.getElementById('lbl_fail_' + id);
+        const mod = document.getElementById('module_' + id);
+        const status = document.getElementById('status_' + id);
+
+        // Visual feedback
+        if (grade === 'pass') {
+            lp.style.background = 'rgba(40, 167, 69, 0.2)'; lp.style.borderColor = '#28a745'; lp.style.color = '#28a745';
+            lf.style.background = '#111'; lf.style.borderColor = '#333'; lf.style.color = '#888';
+            mod.style.borderTopColor = '#28a745';
+            status.innerText = "✅ STATUS: NOMINAL";
+        } else {
+            lf.style.background = 'rgba(255, 0, 0, 0.2)'; lf.style.borderColor = '#dc3545'; lf.style.color = '#dc3545';
+            lp.style.background = '#111'; lp.style.borderColor = '#333'; lp.style.color = '#888';
+            mod.style.borderTopColor = '#dc3545';
+            status.innerText = "🚨 STATUS: CRITICAL FAILURE";
+        }
+
+        // Update Progress Bar
+        auditState.components_passed++;
+        const pct = (auditState.components_passed / auditState.total_required) * 100;
+        document.getElementById('progress-fill').style.width = pct + '%';
+    }
+
+    // Silent Uplink handler
+    async function silentlyUploadPhoto(input, id) {
+        if (!input.files[0]) return;
+        const btn = document.getElementById('btn_photo_' + id);
+        btn.innerText = "⚡ UPLINKING...";
+
+        const formData = new FormData();
+        formData.append('file', input.files[0]);
+        formData.append('vin_dna', document.querySelector('input[name="vin_dna"]').value);
+        formData.append('category', id);
+
+        try {
+            const res = await fetch('/sentinel_upload/' + '{{ r.id if r else 0 }}', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.status === 'success') {
+                btn.style.background = 'var(--integrity-green)';
+                btn.innerText = "✅ EVIDENCE SECURED";
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (e) {
+            btn.style.background = 'var(--critical-red)';
+            btn.innerText = "❌ UPLINK FAILED: RETRY";
+        }
+    }
+</script>

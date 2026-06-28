@@ -1,0 +1,115 @@
+{% extends "base_minimal.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --sanctified-blue: #003366;
+        --integrity-gold: #C5A059;
+        --critical-red: #ff4444;
+        --vault-dark: #111111;
+    }
+
+    /* 🛡️ SECURITY ISOLATION: HIDE NAV TOOLS IF THEY APPEAR */
+    .navbar, .main-nav, .top-bar { display: none !important; }
+
+    .login-vault {
+        background: var(--vault-dark);
+        border: 1px solid #333;
+        padding: 40px;
+        width: 100%;
+        max-width: 400px;
+        border-radius: 4px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        text-align: center;
+    }
+
+    .brand-logo { width: 140px; margin-bottom: 25px; }
+
+    h2 {
+        color: var(--integrity-gold);
+        font-family: 'Montserrat', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 5px;
+        font-size: 1.05rem;
+        margin-bottom: 30px;
+        font-weight: 900;
+    }
+
+    .input-group { margin-bottom: 20px; text-align: left; }
+
+    label {
+        display: block;
+        color: #555;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        font-weight: 900;
+        margin-bottom: 8px;
+        font-family: 'Courier Prime', monospace;
+    }
+
+    .input-field {
+        background: #000;
+        border: 1px solid var(--integrity-gold);
+        color: #fff;
+        width: 100%;
+        padding: 15px;
+        box-sizing: border-box;
+        font-family: 'Courier Prime', monospace;
+        font-size: 1rem;
+        text-transform: uppercase;
+    }
+
+    .input-field::placeholder { color: #888888; opacity: 1; }
+
+    .input-field:focus {
+        outline: none;
+        box-shadow: 0 0 12px rgba(197, 160, 89, 0.4);
+        border-color: var(--integrity-gold);
+    }
+
+    .btn-unlock {
+        background: var(--sanctified-blue);
+        color: #fff;
+        border: none;
+        width: 100%;
+        padding: 18px;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 900;
+        letter-spacing: 2px;
+        cursor: pointer;
+        margin-top: 10px;
+        transition: 0.3s;
+    }
+
+    .btn-unlock:hover { background: #004488; }
+</style>
+
+<div class="login-vault">
+    <img src="{{ url_for('static', filename='Laveto_logo-01.png') }}" class="brand-logo" alt="LAVETO">
+    <h2>COMMAND WALL ACCESS</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div style="background-color: var(--critical-red); color: white; padding: 12px; margin-bottom: 20px; border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 0.85rem; font-weight: bold; border: 1px solid #ffaaaa;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('auth.login') }}" autocomplete="off">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="input-group">
+            <label>IDENT_USER</label>
+            <input type="text" name="agent_id" class="input-field" placeholder="UPLINK ID" required autofocus>
+        </div>
+        <div class="input-group">
+            <label>ACCESS_CIPHER</label>
+            <input type="password" name="password" class="input-field" placeholder="PASSPHRASE" required>
+        </div>
+        <button type="submit" class="btn-unlock">ESTABLISH UPLINK</button>
+    </form>
+</div>
+{% endblock %}

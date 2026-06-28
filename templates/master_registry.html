@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LAVETO // Master Registry</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #C5A059; --bg: #0a0a0a; --panel: #111111; --text: #f4f4f4; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; padding: 40px; }
+        .header { border-bottom: 2px solid var(--gold); padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
+        h1 { color: var(--gold); text-transform: uppercase; margin: 0; font-size: 2rem; }
+        .back-btn { background: #333; color: white; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 4px; font-family: 'Courier Prime', monospace; border: 1px solid #444; }
+        .back-btn:hover { background: var(--gold); color: black; }
+        table { width: 100%; border-collapse: collapse; background: var(--panel); font-family: 'Courier Prime', monospace; }
+        th { background: #1a1a1a; color: var(--gold); padding: 15px; text-align: left; text-transform: uppercase; font-size: 0.85rem; border-bottom: 2px solid #333; }
+        td { padding: 15px; border-bottom: 1px solid #222; font-size: 0.95rem; }
+        tr:hover { background: #161616; }
+        .vault-link { color: var(--gold); text-decoration: none; font-weight: bold; border-bottom: 1px dashed var(--gold); transition: 0.3s; }
+        .vault-link:hover { border-bottom: 1px solid var(--gold); filter: brightness(1.2); }
+        .status-badge { background: rgba(197, 160, 89, 0.1); color: var(--gold); padding: 4px 8px; font-size: 0.8rem; border: 1px solid var(--gold); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div>
+            <h1>Master Asset Registry</h1>
+            <p style="font-family: 'Courier Prime', monospace; color: #888; margin-top: 5px;">PROTOCOL: GOSPEL_OS // FOUNDER INDEX</p>
+        </div>
+        <a href="{{ url_for('view_ledger') }}" class="back-btn">⬅ Return to Command Wall</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Founder Name (Vault)</th>
+                <th>Asset DNA (VIN)</th>
+                <th>Contact Info</th>
+                <th>Node Status</th>
+                <th>Date Forged</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asset in assets %}
+            <tr>
+                <td style="font-family: 'Montserrat', sans-serif; font-weight: bold;">
+    <a href="{{ url_for('hangar.client_vault', asset_id=asset.id) }}" class="vault-link">
+        🔒 {{ asset.member_name or 'PENDING' }}
+    </a>
+</td>
+
+                <td style="color: #66b3ff;">{{ asset.vin_dna }}</td>
+                <td style="font-size: 0.85rem; color: #aaa;">
+                    {{ asset.member_phone or 'No Phone' }}<br>
+                    <span style="font-size: 0.75rem; color: #666;">{{ asset.member_email or 'No Email' }}</span>
+                </td>
+                <td><span class="status-badge">{{ asset.status }}</span></td>
+                <td style="color: #888;">{{ asset.date_created.strftime('%Y-%m-%d') if asset.date_created else 'UNKNOWN' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>

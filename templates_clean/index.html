@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laveto System Restoration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sanctified-blue: #00447c;
+            --integrity-gold: #9c8052;
+            --text-dark: #333333;
+            --text-light: #777777;
+            --bg-white: #ffffff;
+            --bg-light-blue: #eef4f8;
+            --border-color: #dddddd;
+            --border-ui: #dddddd;
+            --integrity-green: #28a745;
+            --input-bg: #f9f9f9;
+        }
+
+        html, body {
+            margin: 0; padding: 0; font-family: 'Inter', sans-serif;
+            background-color: var(--bg-white); color: var(--text-dark);
+            scroll-behavior: smooth;
+        }
+
+        /* 🛡️ COMPENSATION: Push content down because Header is now Fixed */
+        body {
+            padding-top: 115px;
+        }
+
+        /* --- 🚀 BOOT SEQUENCE ANIMATIONS --- */
+        @keyframes pulse-glow {
+            0% { transform: scale(0.95); opacity: 0.8; filter: drop-shadow(0 0 0px rgba(197, 160, 89, 0)); }
+            50% { transform: scale(1.05); opacity: 1; filter: drop-shadow(0 0 20px rgba(197, 160, 89, 0.4)); }
+            100% { transform: scale(0.95); opacity: 0.8; filter: drop-shadow(0 0 0px rgba(197, 160, 89, 0)); }
+        }
+        @keyframes load-sweep {
+            0% { left: -100%; }
+            50% { left: 0; }
+            100% { left: 100%; }
+        }
+        @keyframes fade-blink {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* --- GLOBAL FLOATING ALERTS (THE FIX) --- */
+        .global-flash-container {
+            position: fixed;
+            top: 20px; /* Pushed up to hover over the nav */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999999;
+            width: 90%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .flash-message {
+            padding: 15px 20px;
+            border-radius: 4px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            text-align: center;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+            animation: slideDown 0.5s ease-out;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .flash-success { background-color: #00447c; color: #ffffff; border: 2px solid #9c8052; }
+        .flash-error { background-color: #ff4444; color: #ffffff; border: 2px solid #8B0000; }
+
+        /* --- 🛰️ STATIC HEADER ANCHOR --- */
+        .header-anchor {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        /* --- TOP UTILITY BAR --- */
+        .top-bar {
+            background-color: #44413d;
+            color: #ffffff;
+            font-size: 0.75rem;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 10px 5%;
+            gap: 20px;
+        }
+        .top-bar a { color: #ffffff; text-decoration: none; font-weight: 500; font-family: 'Montserrat', sans-serif; }
+        .top-bar a:hover { color: var(--integrity-gold); }
+
+        /* --- MAIN NAVIGATION --- */
+        .main-nav {
+            background-color: var(--bg-white);
+            padding: 20px 5% 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 1px solid var(--border-color);
+            position: relative; /* Essential for mobile dropdown */
+        }
+        .main-nav .logo img { max-height: 45px; }
+
+        /* 🛰️ SUPREME ACTIVE STATE ENGINE */
+        .nav-links { display: flex; gap: 30px; }
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-family: 'Montserrat', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding-bottom: 8px;
+            border-bottom: 3px solid transparent;
+        }
+        .nav-links a:hover {
+            color: var(--sanctified-blue);
+            border-bottom: 3px solid #eeeeee;
+        }
+        .nav-links a.active {
+            color: var(--integrity-gold) !important;
+            font-weight: 800 !important;
+            border-bottom: 3px solid var(--integrity-gold) !important;
+            letter-spacing: 2px;
+        }
+
+        /* --- HERO SECTION --- */
+        .hero-section {
+            background: radial-gradient(circle at center, #ffffff 0%, var(--bg-light-blue) 100%);
+            position: relative;
+            min-height: 60vh;
+            overflow: hidden;
+        }
+
+        .slider-track {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            align-items: center;
+        }
+
+        .slide-item {
+            min-width: 100%;
+            padding: 100px 5% 80px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .slider-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--sanctified-blue);
+            font-size: 2.5rem;
+            opacity: 0.3;
+            cursor: pointer;
+            z-index: 10;
+            transition: opacity 0.3s, transform 0.3s;
+            user-select: none;
+            padding: 20px;
+        }
+        .slider-arrow:hover { opacity: 1; transform: translateY(-50%) scale(1.1); }
+        .slider-arrow.left { left: 2%; }
+        .slider-arrow.right { right: 2%; }
+
+        .slider-dots {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #cccccc;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.4s, transform 0.4s;
+        }
+        .dot.active {
+            background: var(--sanctified-blue);
+            transform: scale(1.3);
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            max-width: 900px;
+            line-height: 1.1;
+            margin: 0 auto 40px;
+        }
+        .hero-title span { color: var(--integrity-gold); }
+
+        /* --- 2x2 BUTTON GRID --- */
+        .cta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            width: 100%;
+        }
+
+        .btn-video {
+            grid-column: 1 / -1;
+            background: #ff0000;
+            color: #ffffff;
+            border: none;
+            padding: 18px 20px;
+            text-transform: uppercase;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 4px;
+            box-shadow: 0 10px 20px rgba(255, 0, 0, 0.3);
+        }
+        .btn-video:hover {
+            background: #cc0000;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(255, 0, 0, 0.5);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-dark);
+            padding: 15px 20px;
+            text-transform: uppercase;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 4px;
+        }
+        .btn-outline:hover {
+            border-color: var(--sanctified-blue);
+            color: var(--sanctified-blue);
+        }
+
+        .btn-prospectus {
+            background: #071524;
+            border: 1px solid #071524;
+            color: #ffffff;
+            padding: 15px 20px;
+            text-transform: uppercase;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            border-radius: 4px;
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.4);
+        }
+        .btn-prospectus:hover {
+            background: #0a1f35;
+            box-shadow: 0 0 25px rgba(197, 160, 89, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .mission-statement {
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 5%;
+            font-size: 1.25rem;
+            color: var(--text-dark);
+            line-height: 1.6;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+        }
+
+        /* --- 🗺️ ROADMAP BLUEPRINT SECTION --- */
+        .roadmap-section {
+            background-color: #fafbfd;
+            padding: 80px 5%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+        }
+        .roadmap-container {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--bg-white);
+            padding: 50px;
+            border-top: 8px solid var(--integrity-gold);
+            border-radius: 8px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            box-sizing: border-box;
+        }
+        .roadmap-preamble {
+            background: var(--bg-light-blue);
+            padding: 25px;
+            border-left: 4px solid var(--sanctified-blue);
+            border-radius: 4px;
+            margin-bottom: 40px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .roadmap-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .roadmap-card {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            padding: 25px;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        .roadmap-card.phase-1 { border-top: 4px solid #ff4444; }
+        .roadmap-card.phase-2 { border-top: 4px solid var(--integrity-gold); }
+        .roadmap-card.phase-3 { border-top: 4px solid var(--integrity-green); }
+        .roadmap-card h4 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            margin: 10px 0;
+        }
+        .roadmap-card p {
+            font-size: 0.8rem;
+            color: var(--text-dark);
+            line-height: 1.5;
+            margin: 0;
+        }
+        .status-badge {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.65rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .maintenance-block {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 25px;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 30px;
+        }
+        @media (max-width: 768px) {
+            .roadmap-container { padding: 30px 20px; }
+            .maintenance-block { grid-template-columns: 1fr; }
+        }
+
+        .triage-section {
+            background-color: var(--bg-white);
+            padding: 80px 5%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .protocol-section {
+            background-color: var(--bg-light-blue);
+            padding: 80px 5%;
+            display: flex;
+            justify-content: center;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .intake-card {
+            background: var(--bg-white);
+            padding: 60px;
+            width: 100%;
+            max-width: 850px;
+            border-top: 8px solid var(--sanctified-blue);
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .protocol-card {
+            background: var(--bg-white);
+            padding: 60px;
+            width: 100%;
+            max-width: 1000px;
+            border-top: 8px solid var(--integrity-gold);
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .intake-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: var(--integrity-gold);
+            z-index: 10;
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-bottom: 30px;
+            border-bottom: 2px dashed var(--border-color);
+        }
+
+        .form-header h3 {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--sanctified-blue);
+            font-size: 2.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 0 0 10px 0;
+        }
+
+        .form-header p {
+            color: var(--text-light);
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .intake-zone {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 30px;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .zone-label {
+            position: absolute;
+            top: -12px;
+            left: 25px;
+            background: var(--bg-white);
+            padding: 0 15px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 900;
+            color: var(--integrity-gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border: 1px solid var(--integrity-gold);
+            border-radius: 3px;
+        }
+
+        .form-group { margin-bottom: 25px; }
+        .form-group label {
+            display: block; font-size: 0.85rem; color: var(--text-dark);
+            font-family: 'Montserrat', sans-serif; font-weight: 700; margin-bottom: 8px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 16px; background: var(--bg-white);
+            border: 2px solid var(--border-color); color: var(--text-dark);
+            font-family: 'Inter', sans-serif; font-size: 1rem; box-sizing: border-box;
+            transition: all 0.3s;
+            border-radius: 4px;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none; border-color: var(--sanctified-blue);
+            box-shadow: 0 0 0 4px rgba(0, 68, 124, 0.1);
+        }
+
+        /* Strict VIN Input Styling */
+        .dna-input {
+            font-family: 'Courier Prime', monospace !important;
+            font-size: 1.4rem !important;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-align: center;
+            font-weight: bold;
+            background: #fffdfa !important;
+            transition: 0.3s;
+        }
+
+        .dna-counter {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.8rem;
+            text-align: right;
+            margin-top: 8px;
+            color: var(--text-light);
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .dna-counter.valid { color: var(--integrity-green); }
+        .dna-counter.invalid { color: #ff4444; }
+
+        .btn-solid {
+            background-color: var(--integrity-gold);
+            color: var(--bg-white);
+            border: none;
+            padding: 22px;
+            width: 100%;
+            font-size: 1.1rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            box-shadow: 0 10px 20px rgba(156, 128, 82, 0.3);
+        }
+        .btn-solid:hover {
+            background-color: #856a42;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 25px rgba(156, 128, 82, 0.4);
+        }
+
+        /* --- 💎 MODAL ENGINE (CONTRAST UPGRADE) --- */
+        .modal-overlay {
+            display: none; position: fixed; z-index: 999999; left: 0; top: 0;
+            width: 100vw; height: 100vh; background: rgba(26, 26, 26, 0.95);
+            justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;
+        }
+
+        .modal-content {
+            width: 100%; max-width: 500px; background: var(--bg-white);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+            border-top: 6px solid var(--sanctified-blue);
+            max-height: 90vh; display: flex; flex-direction: column;
+            box-sizing: border-box; border-radius: 8px; overflow: hidden;
+        }
+
+        .modal-content-wide { max-width: 850px; }
+
+        /* 🎥 VIDEO MODAL STYLES */
+        .modal-content-video {
+            max-width: 1000px;
+            background: transparent;
+            box-shadow: none;
+            border: none;
+            position: relative;
+        }
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            background: #000;
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* 📊 PDF PROSPECTUS STYLES */
+        .modal-content-prospectus {
+            max-width: 1000px;
+            width: 95%;
+            height: 85vh;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.8);
+            position: relative;
+            overflow: hidden;
+            padding: 0;
+        }
+
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 30px 40px 20px; border-bottom: 1px solid var(--border-color);
+            background: var(--bg-white); flex-shrink: 0;
+        }
+
+        .modal-body-scroll {
+            padding: 30px 40px; overflow-y: auto; flex-grow: 1; background: var(--bg-white);
+        }
+
+        .modal-footer {
+            padding: 20px 40px 30px; border-top: 1px solid var(--border-color);
+            background: #fafafa; flex-shrink: 0; text-align: center;
+        }
+
+        .close-trigger {
+            color: var(--text-light); font-size: 22px; cursor: pointer;
+            font-weight: 400; line-height: 1; transition: color 0.3s; font-family: sans-serif;
+        }
+        .close-trigger:hover { color: #ff4444; }
+
+        .injected-faq-content button,
+        .injected-faq-content input[type="button"],
+        .injected-faq-content [onclick*="close"],
+        .injected-faq-content .close,
+        .injected-faq-content .close-trigger,
+        .injected-faq-content .close-btn {
+            display: none !important;
+        }
+
+        .injected-faq-content h1,
+        .injected-faq-content h2:first-of-type {
+            display: none !important;
+        }
+
+        /* 📱 MOBILE NAVIGATION ENGINE */
+        .mobile-menu-btn {
+            display: none; background: transparent; border: none;
+            font-size: 2.2rem; color: var(--sanctified-blue); cursor: pointer;
+            padding: 0; margin: 0; line-height: 1; transition: 0.3s;
+        }
+        .mobile-menu-btn:hover { color: var(--integrity-gold); }
+
+        @media (max-width: 768px) {
+            body { padding-top: 155px; }
+            .header-anchor { box-shadow: none; }
+            .hero-title { font-size: 2.2rem; }
+            .cta-grid { grid-template-columns: 1fr; }
+            .intake-card, .protocol-card { padding: 30px 20px; }
+            .modal-header, .modal-body-scroll, .modal-footer { padding-left: 20px; padding-right: 20px; }
+            .slider-arrow { display: none; }
+            .modal-content-prospectus { height: 90vh; }
+
+            /* Mobile Nav Overrides */
+            .main-nav { align-items: center; padding-bottom: 20px; }
+            .mobile-menu-btn { display: block; }
+            .nav-links {
+                display: none; position: absolute; top: 100%; left: 0; width: 100%;
+                background: var(--bg-white); flex-direction: column; gap: 0;
+                box-shadow: 0 15px 30px rgba(0,0,0,0.15); z-index: 9999;
+                border-top: 3px solid var(--integrity-gold);
+            }
+            .nav-links.active { display: flex !important; }
+            .nav-links a {
+                padding: 20px; text-align: center; border-bottom: 1px solid var(--border-color) !important;
+                font-weight: 700; color: var(--text-dark); width: 100%; box-sizing: border-box;
+            }
+            .nav-links a:hover { background: var(--bg-light-blue); color: var(--sanctified-blue); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="laveto-splash" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #0a0a0a; z-index: 99999999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.8s ease-out, visibility 0.8s ease-out;">
+
+        <img src="{{ url_for('static', filename='Laveto_logo-01.png') }}" alt="Laveto" style="max-width: 220px; animation: pulse-glow 2.5s infinite ease-in-out;">
+
+        <div style="width: 180px; height: 2px; background: #222; margin-top: 40px; border-radius: 2px; overflow: hidden; position: relative;">
+            <div style="width: 100%; height: 100%; background: var(--integrity-gold); position: absolute; left: -100%; animation: load-sweep 1.5s infinite ease-in-out;"></div>
+        </div>
+
+        <div style="margin-top: 20px; font-family: 'Courier Prime', monospace; color: var(--integrity-gold); font-size: 0.7rem; letter-spacing: 4px; text-transform: uppercase; animation: fade-blink 1.5s infinite;">
+            Establishing Secure Link...
+        </div>
+    </div>
+
+    <div class="global-flash-container" id="globalFlash">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+ <div class="header-anchor">
+    <div class="top-bar">
+        <a href="{{ url_for('auth.login') }}">Staff Login</a>
+        <a href="{{ url_for('auth.admin_login') }}">Admin Login</a>
+        <a href="#triage-section">Book an Inspection</a>
+    </div>
+
+        <nav class="main-nav">
+            <div class="logo">
+                <a href="{{ url_for('hangar.index') }}">
+                    <img src="{{ url_for('static', filename='Laveto_logo-01.png') }}" alt="Laveto System Restoration" style="max-height: 45px;">
+                </a>
+            </div>
+
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">☰</button>
+
+            <div class="nav-links" id="navLinks">
+                <a href="#triage-section" onclick="toggleMobileMenu()">Vehicle Intake</a>
+                {% if member_id %}
+                    <a href="{{ url_for('hangar.client_vault', asset_id=member_id) }}" class="btn-outline">ACCESS MEMBER DASHBOARD</a>
+                {% else %}
+                    <a href="javascript:void(0);" onclick="openModal('vaultModal'); toggleMobileMenu();">Member Login</a>
+                {% endif %}
+                <a href="{{ url_for('hangar.registry') }}">Public Registry</a>
+                <a href="#lvt-protocol" onclick="toggleMobileMenu();">Terms of Service</a>
+            </div>
+        </nav>
+</div>
+    <header class="hero-section" id="heroSlider">
+        <div class="slider-arrow left" onclick="prevSlide()">⟨</div>
+        <div class="slider-arrow right" onclick="nextSlide()">⟩</div>
+
+        <div class="slider-track" id="sliderTrack">
+
+            <div class="slide-item">
+                <h1 class="hero-title">Laveto System Restoration announces plans to <span>eliminate mechanical trauma</span> and restore vehicle value.</h1>
+                <div class="cta-grid">
+                    <button type="button" onclick="openVideoModal()" class="btn-video">▶ PLAY SYSTEM BRIEFING</button>
+
+                    <a href="#triage-section" class="btn-outline">BOOK AN INSPECTION</a>
+                    <button type="button" onclick="openModal('prospectusModal')" class="btn-prospectus">VIEW THE BETA 20 PROSPECTUS</button>
+                    {% if member_id %}
+                        <a href="{{ url_for('hangar.client_vault', asset_id=member_id) }}" class="btn-outline">ACCESS MEMBER DASHBOARD</a>
+                    {% else %}
+                        <button type="button" onclick="openModal('vaultModal')" class="btn-outline">ACCESS MEMBER DASHBOARD</button>
+                    {% endif %}
+                    <a href="{{ url_for('hangar.registry') }}" class="btn-outline">VIEW PUBLIC REGISTRY</a>
+                </div>
+            </div>
+
+            <div class="slide-item">
+                <h1 class="hero-title">Transforming depreciating liabilities into <span>reliable assets</span> through disciplined engineering.</h1>
+                <div class="cta-grid">
+                    <button type="button" onclick="openVideoModal()" class="btn-video">▶ PLAY SYSTEM BRIEFING</button>
+
+                    <a href="#triage-section" class="btn-outline">BOOK AN INSPECTION</a>
+                    <button type="button" onclick="openModal('prospectusModal')" class="btn-prospectus">VIEW THE BETA 20 PROSPECTUS</button>
+                    {% if member_id %}
+                        <a href="{{ url_for('hangar.client_vault', asset_id=member_id) }}" class="btn-outline">ACCESS MEMBER DASHBOARD</a>
+                    {% else %}
+                        <button type="button" onclick="openModal('vaultModal')" class="btn-outline">ACCESS MEMBER DASHBOARD</button>
+                    {% endif %}
+                    <a href="{{ url_for('hangar.registry') }}" class="btn-outline">VIEW PUBLIC REGISTRY</a>
+                </div>
+            </div>
+
+            <div class="slide-item">
+                <h1 class="hero-title">Secure your vehicle. Build savings equity. Enter the <span>Laveto System</span>.</h1>
+                <div class="cta-grid">
+                    <button type="button" onclick="openVideoModal()" class="btn-video">▶ PLAY SYSTEM BRIEFING</button>
+
+                    <a href="#triage-section" class="btn-outline">BOOK AN INSPECTION</a>
+                    <button type="button" onclick="openModal('prospectusModal')" class="btn-prospectus">VIEW THE BETA 20 PROSPECTUS</button>
+                    {% if member_id %}
+                        <a href="{{ url_for('hangar.client_vault', asset_id=member_id) }}" class="btn-outline">ACCESS MEMBER DASHBOARD</a>
+                    {% else %}
+                        <button type="button" onclick="openModal('vaultModal')" class="btn-outline">ACCESS MEMBER DASHBOARD</button>
+                    {% endif %}
+                    <a href="{{ url_for('hangar.registry') }}" class="btn-outline">VIEW PUBLIC REGISTRY</a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="slider-dots">
+            <div class="dot active" onclick="goToSlide(0)"></div>
+            <div class="dot" onclick="goToSlide(1)"></div>
+            <div class="dot" onclick="goToSlide(2)"></div>
+        </div>
+    </header>
+
+    <section class="mission-statement">
+        Thoughtful architectural engineering across automotive asset classes.
+        More than a repair center—Laveto System Restoration delivers world-class vehicle management,
+        transparent service history, and elite financial savings services under one distinguished banner.
+        <a href="{{ url_for('hangar.manifesto') }}" class="btn-solid" style="display:inline-block; width:auto; padding:15px 40px; text-decoration:none;">📜 Read the Full Manifesto</a>
+    </section>
+
+    <section class="roadmap-section" id="roadmap-blueprint">
+        <div class="roadmap-container">
+            <div class="form-header" style="margin-bottom: 30px;">
+                <h3 style="color: var(--integrity-gold);">The Sovereign Roadmap</h3>
+                <p style="font-family: 'Montserrat'; font-weight: 700; color: var(--sanctified-blue);">PHASED SANCTIFICATION ARCHITECTURE</p>
+            </div>
+
+            <div class="roadmap-preamble">
+                <strong style="font-family: 'Montserrat', sans-serif; font-weight: 900; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; color: var(--sanctified-blue); display: block; margin-bottom: 5px;">Preamble: The End of Patchwork Mechanics</strong>
+                In the chaotic "Survival OS" of Gaborone, drivers have been taught to treat their vehicles as depreciating liabilities, only fixing things when they catastrophically break. Under the Laveto Gospel OS, we completely reject "band-aid" mechanics and "patchwork" repairs. Instead, we treat your vehicle as a unified architectural masterpiece deserving of total restoration to factory integrity. To achieve this without overwhelming your personal finances, your vehicle’s journey is governed by a highly structured syllabus known as Phased Sanctification. We do not just fix your car; we rebuild its anatomy step-by-step to guarantee forensic peace.
+            </div>
+
+            <div class="roadmap-preamble" style="background: #fffdf9; border-left-color: var(--integrity-gold); margin-bottom: 35px; padding: 20px;">
+                <span class="status-badge" style="color: var(--integrity-gold);">Baseline Protocol Blueprint</span>
+                <h4 style="font-family: 'Montserrat'; font-weight: 900; margin: 5px 0; font-size: 0.85rem; text-transform: uppercase;">Step 0: The 120-Point Forensic Triage</h4>
+                <p style="font-size: 0.8rem; margin: 0; line-height: 1.5;">Before a single tool touches your vehicle, we must map its absolute truth. You will undergo a 120-point Forensic Diagnostic Audit to establish your vehicle's baseline. We forensically grade your components on a strict Wear Index (from 0.1 to 1.0) to identify the hidden "rot" and mechanical malware that unverified mechanics have left behind. This data allows us to plan your restoration precisely and sequence your upgrades without guesswork.</p>
+            </div>
+
+            <div class="roadmap-grid">
+                <div class="roadmap-card phase-1">
+                    <span class="status-badge" style="color: #ff4444;">Wallet Status: 🔴 RED</span>
+                    <h4>Phase 1: The Skeleton</h4>
+                    <p><strong>Goal: Safety & Stabilization.</strong> Focuses exclusively on your vehicle's foundational skeleton: the "Big 10" suspension and steering architecture. We replace failing shock absorbers, torn control arm bushings, and degraded ball joints to eliminate dangerous vibrations. <em>Mark of Truth:</em> Every Tier-1 component undergoes Destructive Engraving—our Field Agents physically etch your 17-digit VIN into the metal, making parts swapping mathematically impossible.</p>
+                </div>
+                <div class="roadmap-card phase-2">
+                    <span class="status-badge" style="color: var(--integrity-gold);">Wallet Status: 🟡 AMBER</span>
+                    <h4>Phase 2: The Muscle</h4>
+                    <p><strong>Goal: Guarantee Stability.</strong> A strong skeleton cannot survive with a leaking heart. Focuses on the engine, drivetrain, cooling, and fuel systems. We pre-emptively replace water pumps, belts, and engine mounts before they break. <em>The G-West Shield:</em> By applying our 80% wholesale anchor pricing to your cooling system, we upgrade your thermal management to prevent the catastrophic "G-West Overheat" that destroys engines in Botswana.</p>
+                </div>
+                <div class="roadmap-card phase-3">
+                    <span class="status-badge" style="color: var(--integrity-green);">Wallet Status: 🟢 GREEN</span>
+                    <h4>Phase 3: The Skin</h4>
+                    <p><strong>Goal: Asset Appreciation.</strong> Transform your vehicle from a machine into a lucrative financial asset. Covers final aesthetic restorations, interior refinement, and tuning to return the car to its original "showroom soul". <em>The Wealth Dividend:</em> Combined with the immutable record in your Digital Safety Passport, Phase 3 ensures your vehicle commands a guaranteed 15% resale premium over unverified cars.</p>
+                </div>
+            </div>
+
+            <div class="maintenance-block">
+                <div>
+                    <h4 style="font-family: 'Montserrat'; font-weight: 900; font-size: 0.85rem; text-transform: uppercase; margin-top: 0; color: var(--sanctified-blue);">🔄 Routine Maintenance: The Fluid Gospel</h4>
+                    <p style="font-size: 0.8rem; line-height: 1.6; color: var(--text-dark); margin-bottom: 10px;">To protect your investment, everyday maintenance is strictly governed by the Maintenance Covenant:</p>
+                    <ul style="margin: 0; padding-left: 15px; font-size: 0.75rem; line-height: 1.6; color: var(--text-light);">
+                        <li style="margin-bottom: 5px;"><strong>The Synthetic Bloodline:</strong> Engine oil and filters are replaced exactly every 7,500km, utilizing exclusively synthetic grade oil and OEM filters.</li>
+                        <li style="margin-bottom: 5px;"><strong>The Cooling Audit:</strong> Annual pressure test of your radiator, flushing out corrosive tap water and replacing it with specialized coolant to prevent internal oxidation.</li>
+                        <li style="margin-bottom: 0;"><strong>The 6-Month Re-Torque:</strong> Mandatory bi-annual check to re-torque the "Big 10" suspension bolts to OEM spec as parts settle.</li>
+                    </ul>
+                </div>
+                <div style="background: #fafafa; padding: 20px; border-right: 4px solid var(--integrity-gold); border-radius: 4px; display: flex; flex-direction: column; justify-content: center;">
+                    <h5 style="margin: 0 0 5px 0; font-family: 'Montserrat'; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; color: var(--text-dark);">⚖️ The Architect's Verdict</h5>
+                    <p style="margin: 0; font-size: 0.75rem; font-style: italic; line-height: 1.5; color: var(--text-light);">"In the art studio, if you do not clean your palette at the end of the day, the old, dried paint will irrevocably contaminate tomorrow’s fresh colors. The Phased Sanctification roadmap and the Fluid Gospel serve as our daily cleaning. We build the bone, we secure the heart, we polish the skin, and we maintain the fluids. By submitting to this disciplined process, you ensure that your vehicle's lifespan is effectively doubled, and your mechanical anxiety is silenced forever."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="triage-section" class="triage-section">
+        <div class="intake-card">
+            <div class="form-header">
+                <h3>Sovereign Intake Gateway</h3>
+                <p>Digital provisioning of your asset into the Hangar 01 framework.</p>
+            </div>
+
+            <form action="{{ url_for('hangar.triage_intake') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="monthly_pulse" value="700.00">
+                <input type="hidden" name="funding_method" value="EFT">
+
+                <div class="intake-zone">
+                    <div class="zone-label">Phase I: Pilot Dossier</div>
+                    <div class="form-group">
+                        <label>Full Name / Title</label>
+                        <input type="text" name="member_name" id="member_name" placeholder="Full Name" required>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" name="member_phone" id="member_phone" placeholder="Phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" name="member_email" id="member_email" placeholder="Email" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="intake-zone">
+                    <div class="zone-label">Phase II: Asset DNA</div>
+                    <div class="form-group">
+                        <label>Vehicle Identification Number (VIN)</label>
+                        <input type="text" name="vin_dna" id="vinInput" class="dna-input" placeholder="ENTER 17-CHARACTER SEQUENCE" onkeyup="validateVIN(this)" maxlength="17" required>
+                        <div id="vin-counter" class="dna-counter invalid">0/17 DNA SEQUENCE</div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.8rem; text-transform: uppercase;">Year</label>
+                            <input type="number" name="vehicle_year" placeholder="YYYY" required>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.8rem; text-transform: uppercase;">Make</label>
+                            <input type="text" name="vehicle_make" id="vehicle_make_input" placeholder="e.g. Toyota" required>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.8rem; text-transform: uppercase;">Model</label>
+                            <input type="text" name="vehicle_model" id="vehicle_model_input" placeholder="e.g. Hilux" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 20px;">
+                        <select name="vehicle_class" id="classSelect" class="input-field" onchange="lockClassSelection(this)" required>
+                            <option value="">-- Select Specific Vehicle Model --</option>
+                            <optgroup label="Class A: Compacts & Hatchbacks">
+                                <option value="A">Honda Fit</option>
+                                <option value="A">VW Polo</option>
+                                <option value="A">VW Golf</option>
+                                <option value="A">Toyota Vitz</option>
+                                <option value="A">Toyota Aqua</option>
+                                <option value="A">Mazda Demio</option>
+                                <option value="A">Nissan Note</option>
+                                <option value="A">Suzuki Swift</option>
+                            </optgroup>
+                            <optgroup label="Class B: Sedans & Crossovers">
+                                <option value="B">Toyota Corolla</option>
+                                <option value="B">Toyota Camry</option>
+                                <option value="B">Toyota RAV4</option>
+                                <option value="B">Honda CR-V</option>
+                                <option value="B">Honda Vezel</option>
+                                <option value="B">Nissan X-Trail</option>
+                                <option value="B">Mazda CX-5</option>
+                                <option value="B">BMW 3-Series</option>
+                                <option value="B">Mercedes C-Class</option>
+                            </optgroup>
+                            <optgroup label="Class C: Heavy 4x4s & Large SUVs">
+                                <option value="C">Toyota Hilux</option>
+                                <option value="C">Toyota Fortuner</option>
+                                <option value="C">Toyota Prado</option>
+                                <option value="C">Toyota Land Cruiser</option>
+                                <option value="C">Ford Ranger</option>
+                                <option value="C">Isuzu D-Max</option>
+                                <option value="C">Nissan Navara</option>
+                                <option value="C">VW Amarok</option>
+                                <option value="C">Range Rover</option>
+                            </optgroup>
+                        </select>
+                        <a href="https://t.me/YourBotUsername?start=custom_intake" style="color: var(--integrity-gold); display: block; margin-top: 10px;">
+                            Contact Command for custom intake via Telegram.
+                        </a>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Initial Fault Report (Primary Symptom - Optional)</label>
+                        <select name="trauma" class="input-field" style="cursor: pointer;">
+                            <option value="">-- Select the primary issue you are experiencing --</option>
+                            <optgroup label="Suspension & Steering">
+                                <option value="Knocking/Clunking over bumps">Knocking or clunking noises over bumps</option>
+                                <option value="Steering wheel vibration/shaking">Steering wheel vibration or shaking</option>
+                                <option value="Vehicle pulls to one side">Vehicle pulls to one side while driving</option>
+                                <option value="Excessive bouncing">Excessive bouncing after bumps</option>
+                            </optgroup>
+                            <optgroup label="Braking System">
+                                <option value="Squealing or grinding noise">Squealing, scraping, or grinding noises</option>
+                                <option value="Vibration when braking">Vibration or pulsation when braking</option>
+                                <option value="Spongy/Soft brake pedal">Spongy or soft brake pedal feel</option>
+                            </optgroup>
+                            <optgroup label="Engine Core & Transmission">
+                                <option value="Rough idling or misfiring">Rough idling, shaking, or engine misfiring</option>
+                                <option value="Harsh shifting or slipping gears">Harsh shifting or slipping gears</option>
+                                <option value="Unusual engine noises">Unusual ticking, tapping, or whining noises</option>
+                            </optgroup>
+                            <optgroup label="Fluids & Electronics">
+                                <option value="Visible fluid leaks">Visible fluid leaks under vehicle</option>
+                                <option value="Dashboard warning lights">Dashboard warning lights illuminated</option>
+                            </optgroup>
+                            <optgroup label="General">
+                                <option value="Routine Maintenance">Routine Annual Service & Maintenance</option>
+                                <option value="Multiple/Other Anomalies">Multiple or Unlisted Issues</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 20px; margin-bottom: 25px; background: rgba(197, 160, 89, 0.1); padding: 15px; border-radius: 4px; border: 1px solid var(--integrity-gold);">
+                        <input type="checkbox" name="is_b2b" id="is_b2b" style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;">
+                        <label for="is_b2b" style="color: var(--integrity-gold); font-weight: 800; margin-bottom: 0; cursor: pointer; padding-top: 3px;">🚛 THIS IS A BUSINESS / FLEET VEHICLE</label>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 40px; font-size: 0.9rem; color: var(--text-dark); background: var(--bg-light-blue); padding: 20px; border-left: 4px solid var(--integrity-gold); border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+                    <label style="display: flex; gap: 15px; align-items: flex-start; cursor: pointer; line-height: 1.6;">
+                        <input type="checkbox" required style="margin-top: 5px; width: 18px; height: 18px; accent-color: var(--integrity-gold); flex-shrink: 0;">
+                        <span><strong>MANDATORY AGREEMENT:</strong> I have read the <a href="{{ url_for('static', filename='docs/Terms_Conditions_Sovereign_Chatter.pdf') }}" target="_blank; color: var(--integrity-gold); text-decoration: underline; font-weight: bold;">Official Terms & Conditions</a>. I acknowledge that 100% of my monthly deposit is allocated to my personal reservoir (60% Yield Engine / 40% Shield Reservoir). Cash transactions are strictly prohibited.</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn-solid">AUTHORIZE PROVISIONING</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="lvt-protocol" class="protocol-section">
+        <div class="protocol-card">
+            <div class="form-header">
+                <h3>Terms of Service & Protocols</h3>
+                <p>Public Index & Crawler Accessible Specification</p>
+            </div>
+
+            <article style="line-height: 1.8; color: var(--text-dark);">
+                <header style="margin-bottom: 30px; border-bottom: 2px solid var(--border-color); padding-bottom: 20px;">
+                    <h3 style="color: var(--sanctified-blue); font-size: 1.5rem; margin: 0 0 5px 0;">MASTER SPECIFICATION: LAVETO TOKEN (LVT)</h3>
+                    <p style="margin: 0; font-family: 'Courier Prime', monospace; color: var(--text-light); font-size: 0.9rem;">System Version: Gospel OS // Sovereign Fleet Command</p>
+                </header>
+
+                <h4 style="color: var(--sanctified-blue); font-size: 1.2rem; margin-top: 30px;">I. Core Purpose: Digital Maintenance Wealth</h4>
+                <p>The LVT token is a proprietary "Digital Maintenance Wealth" asset designed to tokenize professional mechanical and financial discipline.</p>
+                <ul style="padding-left: 20px; margin-bottom: 30px;">
+                    <li style="margin-bottom: 10px;"><strong>Asset Appreciation:</strong> Burn 100 LVT to trigger a permanent +2% increase in vehicle Resale Premium.</li>
+                    <li style="margin-bottom: 10px;"><strong>Operational Savings:</strong> Burn 20 LVT to bypass mechanical audit fees, preserving fiat capital in the Shield Reservoir.</li>
+                    <li style="margin-bottom: 10px;"><strong>Fiat Liquidation:</strong> Tokens may be sold on the P2P Sovereign Exchange for Botswana Pula.</li>
+                    <li style="margin-bottom: 10px;"><strong>Behavioral Enforcement:</strong> LVT acts as a mathematical leash; unauthorized activity slashes non-transferable collateral to zero.</li>
+                </ul>
+
+                <h4 style="color: var(--sanctified-blue); font-size: 1.2rem; margin-top: 30px;">II. Corporate Insulation & Revenue Model</h4>
+                <ul style="padding-left: 20px; margin-bottom: 30px;">
+                    <li style="margin-bottom: 10px;">Laveto Pty Ltd is never the "buyer of last resort," shielding corporate revenue from volatility.</li>
+                    <li style="margin-bottom: 10px;">All LVT liquidity is sourced from member-to-member trading; Pula is deducted from buyer liquidity, not corporate treasury.</li>
+                    <li style="margin-bottom: 10px;">"Dynamic Algorithmic Slippage" automatically spikes transaction tolls (up to 50%) during volatility, capturing exit fees as corporate profit.</li>
+                </ul>
+
+                <h4 style="color: var(--sanctified-blue); font-size: 1.2rem; margin-top: 30px;">III. Advanced Cryptoeconomic Deterrence</h4>
+                <ol style="padding-left: 20px; margin-bottom: 30px;">
+                    <li style="margin-bottom: 10px;"><strong>Dynamic Algorithmic Slippage:</strong> AI Sentinel monitors volatility; if the 30-day average moves >3% in 7 days, tolls scale (20%–50%) to obliterate profit margins.</li>
+                    <li style="margin-bottom: 10px;"><strong>High-Water Mark Peg:</strong> Minting is tethered to "Net Fiat Growth"; recycled capital results in zero new minting.</li>
+                    <li style="margin-bottom: 10px;"><strong>Inverted Truth Bond:</strong> Tiered vesting (Standard: 80% locked; Advanced: 50% locked; Diamond: 20% locked) prevents early-stage "Sharks" from dumping tokens.</li>
+                    <li style="margin-bottom: 10px;"><strong>Oracle Book Value Anchors:</strong> Premiums are capped at 30% of independent Oracle Book Value to prevent artificial inflation.</li>
+                </ol>
+
+                <div style="margin-top: 40px; text-align: center; border-top: 1px dashed var(--border-color); padding-top: 30px;">
+                    <a href="{{ url_for('static', filename='docs/Terms_Conditions_Sovereign_Chatter.pdf') }}?v=2026_Live" target="_blank" class="btn-solid" style="display: inline-block; width: auto; padding: 15px 40px; text-decoration: none;">📥 DOWNLOAD OFFICIAL PDF SPECIFICATION</a>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <footer style="text-align: center; padding: 40px; background: #fafafa; border-top: 1px solid var(--border-color); color: var(--text-light); font-size: 0.85rem;">
+        &copy; 2026 Laveto System Restoration. All vehicles strictly monitored under our service agreement.
+    </footer>
+
+    <div id="vaultModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px; padding: 0;">
+            <div class="modal-header" style="justify-content: center; position: relative;">
+                <h2 style="font-family: 'Playfair Display', serif; color: var(--sanctified-blue); margin: 0; font-size: 2rem;">Member Login</h2>
+                <span class="close-trigger" onclick="closeModal('vaultModal')" style="position: absolute; right: 40px;">✕</span>
+            </div>
+
+            <div class="modal-body-scroll" style="padding: 40px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+
+                <h3 style="color: var(--integrity-gold); font-family: 'Montserrat'; text-transform: uppercase; font-size: 1rem; margin-top:0;">Secure Vault Access</h3>
+                <p style="color: var(--text-light); font-size: 0.85rem; margin-bottom: 30px;">Enter your Vehicle DNA and Sovereign Key to access your ledger.</p>
+
+               <form action="{{ url_for('hangar.member_login') }}" method="POST" style="width: 100%;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="form-group" style="margin-bottom: 20px; text-align: left;">
+        <label style="color: var(--text-dark);">Vehicle VIN (DNA)</label>
+        <input type="text" name="vin_dna" class="dna-input" placeholder="ENTER 17-CHAR VIN" required style="width: 100%; padding: 14px; border: 1px solid var(--border-color); border-radius: 4px; box-sizing: border-box; font-size: 1.1rem !important;">
+    </div>
+
+    <div class="form-group" style="margin-bottom: 30px; text-align: left;">
+        <label style="color: var(--text-dark);">Sovereign Key</label>
+        <input type="password" name="sovereign_key" placeholder="ENTER SECURE KEY" required style="width: 100%; padding: 14px; border: 1px solid var(--border-color); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 1.2rem; text-align: center; letter-spacing: 4px; box-sizing: border-box;">
+    </div>
+
+    <button type="submit" class="btn-solid" style="padding: 18px; font-size: 1rem; margin-bottom: 30px;">AUTHORIZE ENTRY</button>
+</form>
+
+                <div style="width: 100%; border-top: 1px dashed var(--border-color); padding-top: 25px;">
+                    <h3 style="color: var(--sanctified-blue); font-family: 'Montserrat'; text-transform: uppercase; font-size: 0.85rem; margin-top:0; letter-spacing: 1px;">Account Support</h3>
+
+                    <div style="display: flex; flex-direction: column; gap: 15px; margin-top: 15px;">
+                        <button type="button" onclick="closeModal('vaultModal'); openModal('flareModal');" class="btn-outline" style="width: 100%; border-color: #ff4444; color: #ff4444; padding: 14px;">
+                            🚨 LOST SOVEREIGN KEY
+                        </button>
+
+                        <a href="mailto:support@laveto.net" class="btn-outline" style="width: 100%; padding: 14px;">
+                            ✉️ CONTACT COMMAND
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal-footer" style="padding: 20px; border-top: 1px solid var(--border-color); background: #fafafa;">
+                <p style="margin: 0 0 15px 0; font-size: 0.8rem; color: var(--sanctified-blue); font-weight: 600;">
+                    CORPORATE FLEETS: Please use your designated Warden Portal.
+                </p>
+                <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <button id="pwaInstallBtn" style="display: none; background: var(--integrity-gold); color: #fff; border: none; padding: 10px 20px; font-family: 'Montserrat', sans-serif; font-size: 0.75rem; font-weight: 900; letter-spacing: 1px; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(156, 128, 82, 0.4);">
+                        ⬇️ INSTALL APP
+                    </button>
+
+                    <div id="pwaInstallInstruction" style="display: inline-block; background: transparent; color: var(--text-light); border: 1px solid var(--border-color); padding: 10px 20px; font-family: 'Montserrat', sans-serif; font-size: 0.75rem; font-weight: 600; border-radius: 4px; text-transform: uppercase;">
+                        Add to Home Screen via Browser (⋮)
+                    </div>
+
+                    <button id="nativeShareBtn" style="background: var(--sanctified-blue); color: #fff; border: none; padding: 10px 20px; font-family: 'Montserrat', sans-serif; font-size: 0.75rem; font-weight: 900; letter-spacing: 1px; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 5px 15px rgba(0, 51, 102, 0.4);">
+                        🔗 SHARE APP
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="prospectusModal" class="modal-overlay" onclick="closeModal('prospectusModal')">
+        <div class="modal-content" onclick="event.stopPropagation()" style="text-align: center; padding: 40px 30px; position: relative;">
+            <span class="close-trigger" onclick="closeModal('prospectusModal')" style="position: absolute; top: 15px; right: 25px;">✕</span>
+            <h2 style="font-family: 'Montserrat', sans-serif; color: var(--sanctified-blue); margin-top: 0; margin-bottom: 10px; font-weight: 800;">DOCUMENT ACCESS</h2>
+            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 30px;">The prospectus is hosted on our secure drive.</p>
+            <a href="https://drive.google.com/file/d/1T_0vPqedCKlRXGmTgy3Eelf5KD66Quce/view" target="_blank" class="btn-solid" style="text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.95rem; letter-spacing: 1.5px; padding: 20px 10px; box-sizing: border-box;">
+                <span style="font-size: 1.2rem; line-height: 1;">📂</span>
+                <span>OPEN PROSPECTUS IN SECURE TAB</span>
+            </a>
+        </div>
+    </div>
+
+    <div id="videoModal" class="modal-overlay" onclick="closeVideoModal()">
+        <div class="modal-content modal-content-video" style="width: 90%;" onclick="event.stopPropagation()">
+            <span class="close-trigger" onclick="closeVideoModal()" style="position: absolute; top: -40px; right: 0; color: white; font-size: 30px; font-family: sans-serif; cursor: pointer;">✕</span>
+            <div class="video-container">
+                <iframe id="youtubePlayer" src="" title="Laveto System Restoration" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <div id="faqModal" class="modal-overlay">
+    <div class="modal-content modal-content-wide">
+        <div class="modal-header">
+            <h2 style="font-family: 'Playfair Display', serif; color: var(--sanctified-blue); margin: 0; font-size: 2.2rem;">Terms of Service</h2>
+            <span class="close-trigger" onclick="closeModal('faqModal')">✕</span>
+        </div>
+
+        <div class="modal-body-scroll injected-faq-content" style="color: var(--text-dark); line-height: 1.8; text-align: left;">
+            <h3>MASTER SPECIFICATION: LAVETO TOKEN (LVT)</h3>
+            <p><strong>System Version:</strong> Gospel OS // Sovereign Fleet Command</p>
+
+            <h4>I. Core Purpose: Digital Maintenance Wealth</h4>
+            <p>The LVT token is a proprietary "Digital Maintenance Wealth" asset designed to tokenize professional mechanical and financial discipline.</p>
+            <ul>
+                <li><strong>Asset Appreciation:</strong> Burn 100 LVT to trigger a permanent +2% increase in vehicle Resale Premium.</li>
+                <li><strong>Operational Savings:</strong> Burn 20 LVT to bypass mechanical audit fees, preserving fiat capital in the Shield Reservoir.</li>
+                <li><strong>Fiat Liquidation:</strong> Tokens may be sold on the P2P Sovereign Exchange for Botswana Pula.</li>
+                <li><strong>Behavioral Enforcement:</strong> LVT acts as a mathematical leash; unauthorized activity slashes non-transferable collateral to zero.</li>
+            </ul>
+
+            <h4>II. Corporate Insulation & Revenue Model</h4>
+            <ul>
+                <li>Laveto Pty Ltd is never the "buyer of last resort," shielding corporate revenue from volatility.</li>
+                <li>All LVT liquidity is sourced from member-to-member trading; Pula is deducted from buyer liquidity, not corporate treasury.</li>
+                <li>"Dynamic Algorithmic Slippage" automatically spikes transaction tolls (up to 50%) during volatility, capturing exit fees as corporate profit.</li>
+            </ul>
+
+            <h4>III. Advanced Cryptoeconomic Deterrence</h4>
+            <ol>
+                <li><strong>Dynamic Algorithmic Slippage:</strong> AI Sentinel monitors volatility; if the 30-day average moves >3% in 7 days, tolls scale (20%–50%) to obliterate profit margins.</li>
+                <li><strong>High-Water Mark Peg:</strong> Minting is tethered to "Net Fiat Growth"; recycled capital results in zero new minting.</li>
+                <li><strong>Inverted Truth Bond:</strong> Tiered vesting (Standard: 80% locked; Advanced: 50% locked; Diamond: 20% locked) prevents early-stage "Sharks" from dumping tokens.</li>
+                <li><strong>Oracle Book Value Anchors:</strong> Premiums are capped at 30% of independent Oracle Book Value to prevent artificial inflation.</li>
+            </ol>
+        </div>
+
+    <div class="modal-footer" style="display: flex; gap: 15px; justify-content: center;">
+   <a href="{{ url_for('static', filename='docs/Terms_Conditions_Sovereign_Chatter.pdf') }}?v=2026_Live"
+   target="_blank"
+   class="btn-outline"
+   style="border-color: var(--sanctified-blue); color: var(--sanctified-blue); margin: 0; width: 100%;">
+   📥 DOWNLOAD OFFICIAL PDF
+</a>
+
+    <button onclick="closeModal('faqModal')"
+            class="btn-solid"
+            style="background-color: var(--sanctified-blue); margin: 0;">
+            CLOSE
+    </button>
+</div>
+    </div>
+</div>
+
+    <div id="flareModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px; border-top: 6px solid #ff4444;">
+            <div class="modal-header" style="background: #fffafb; border-bottom: 1px solid #ffcccc;">
+                <h2 style="font-family: 'Playfair Display', serif; color: #ff4444; margin: 0; font-size: 1.5rem; font-weight: 900; letter-spacing: 1px;">📡 Priority Flare</h2>
+                <span class="close-trigger" onclick="closeModal('flareModal')">✕</span>
+            </div>
+
+            <div class="modal-body-scroll" style="padding: 35px; background: #fafafa;">
+                <p style="font-size: 0.9em; color: #555; margin-bottom: 25px; line-height: 1.6;">
+                    <strong>SIGNAL TRANSMISSION PORTAL.</strong><br>
+                    Submit your request for custom intake or key recovery.
+                </p>
+
+                <form action="{{ url_for('hangar.launch_flare') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+                    <label style="display: block; font-weight: bold; font-size: 0.85em; margin-bottom: 8px; color: #222;">SIGNAL CATEGORY</label>
+                    <select name="signal_category" required style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="CUSTOM_INTAKE">🛠️ Custom Asset Intake Request</option>
+                        <option value="LOST_KEY">🔑 Lost Sovereign Key Recovery</option>
+                    </select>
+
+                    <label style="display: block; font-weight: bold; font-size: 0.85em; margin-bottom: 8px; color: #222;">VEHICLE VIN-DNA</label>
+                    <input type="text" name="vin_dna" required placeholder="Enter 17-character sequence" style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 1.1em; text-transform: uppercase;">
+
+                    <label style="display: block; font-weight: bold; font-size: 0.85em; margin-bottom: 8px; color: #222;">REGISTERED PHONE NUMBER</label>
+                    <input type="text" name="contact_info" required placeholder="e.g. +267..." style="width: 100%; padding: 12px; margin-bottom: 30px; border: 1px solid #ccc; border-radius: 4px; font-size: 1.1em;">
+
+                    <button type="submit" style="width: 100%; background: #ff4444; color: white; padding: 15px; font-weight: 900; letter-spacing: 2px; border: none; border-radius: 4px; cursor: pointer;">
+                        TRANSMIT SIGNAL TO ARCHITECT
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 🛡️ VIN DNA SCRIPT (UPGRADED FORENSIC SHIELD) ---
+        function validateVIN(input) {
+            input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 17);
+            const counter = document.getElementById('vin-counter');
+            const classSelect = document.querySelector('select[name="vehicle_class"]');
+
+            // High-Value Identifiers
+            const exoticPrefixes = ['WBS', 'ZFF', 'WP0', 'SBM'];
+            const isExotic = exoticPrefixes.some(prefix => input.value.startsWith(prefix));
+
+            if(input.value.length === 17) {
+                if (isExotic) {
+                    // 🏆 EXOTIC PROTOCOL
+                    counter.innerText = "17/17 🏆 EXOTIC DNA DETECTED";
+                    counter.className = "dna-counter";
+                    counter.style.color = "var(--integrity-gold)";
+                    input.style.borderColor = "var(--integrity-gold)";
+                    input.style.backgroundColor = "#fff9ee";
+                    input.style.boxShadow = "0 0 0 4px rgba(197, 160, 89, 0.3)";
+
+                    // Auto-lock the dropdown to Class A
+                    if (classSelect) {
+                        classSelect.value = "A";
+                        classSelect.style.borderColor = "var(--integrity-gold)";
+                        classSelect.style.backgroundColor = "#fff9ee";
+                        classSelect.style.fontWeight = "bold";
+                        classSelect.style.color = "var(--integrity-gold)";
+                    }
+                } else {
+                    // ✅ STANDARD PROTOCOL
+                    counter.innerText = "17/17 VALID DNA SEQUENCE";
+                    counter.className = "dna-counter valid";
+                    counter.style.color = "var(--integrity-green)";
+                    input.style.borderColor = "var(--integrity-green)";
+                    input.style.backgroundColor = "#fffdfa";
+                    input.style.boxShadow = "0 0 0 4px rgba(40, 167, 69, 0.1)";
+
+                    if (classSelect) {
+                        classSelect.style.backgroundColor = "";
+                        classSelect.style.fontWeight = "";
+                        classSelect.style.color = "";
+                    }
+                }
+            } else {
+                // ⚠️ INCOMPLETE PROTOCOL
+                counter.innerText = input.value.length + "/17 DNA SEQUENCE";
+                counter.className = "dna-counter invalid";
+                counter.style.color = "#ff4444";
+                input.style.borderColor = "var(--integrity-gold)";
+                input.style.backgroundColor = "#fffdfa";
+                input.style.boxShadow = "0 0 0 4px rgba(156, 128, 82, 0.1)";
+
+                if (classSelect) {
+                    classSelect.style.backgroundColor = "";
+                    classSelect.style.fontWeight = "";
+                    classSelect.style.color = "";
+                }
+            }
+        }
+
+        // --- COHORT TOGGLE SCRIPT ---
+        function handleCohortToggle() {
+            const typeSelect = document.getElementById('membershipTypeToggle').value;
+            const corpFields = document.getElementById('corporateFields');
+            const cohortInput = document.getElementById('corporateCohortInput');
+
+            if (typeSelect === 'CORPORATE') {
+                corpFields.style.display = 'block';
+                cohortInput.required = true;
+            } else {
+                corpFields.style.display = 'none';
+                cohortInput.required = false;
+                cohortInput.value = '';
+            }
+        }
+
+        setTimeout(() => {
+            const flashContainer = document.getElementById('globalFlash');
+            if (flashContainer) {
+                flashContainer.style.transition = 'opacity 0.5s ease';
+                flashContainer.style.opacity = '0';
+                setTimeout(() => flashContainer.remove(), 500);
+            }
+        }, 15000);
+
+        document.getElementById('globalFlash')?.addEventListener('click', function() {
+            this.style.display = 'none';
+        });
+
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function openVideoModal() {
+            document.getElementById('videoModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            document.getElementById('youtubePlayer').src = "https://www.youtube.com/embed/0hfXKa8jbA0?autoplay=1&rel=0";
+        }
+
+        function closeVideoModal() {
+            document.getElementById('videoModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            document.getElementById('youtubePlayer').src = "";
+        }
+
+        let currentSlide = 0;
+        const totalSlides = 3;
+        let slideInterval;
+
+        function updateSlider() {
+            const track = document.getElementById('sliderTrack');
+            const dots = document.querySelectorAll('.dot');
+            track.style.transform = `translateX(-${currentSlide * 100}%)`;
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateSlider();
+            resetInterval();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateSlider();
+            resetInterval();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateSlider();
+            resetInterval();
+        }
+
+        function startInterval() {
+            slideInterval = setInterval(nextSlide, 8000);
+        }
+
+        function resetInterval() {
+            clearInterval(slideInterval);
+            startInterval();
+        }
+
+        document.addEventListener('DOMContentLoaded', startInterval);
+
+        function toggleMobileMenu() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const currentPath = window.location.pathname;
+            const currentHash = window.location.hash;
+
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                const linkHref = link.getAttribute('href');
+                if (linkHref === currentPath || linkHref === currentPath + currentHash || linkHref === currentHash) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                const openModals = document.querySelectorAll('.modal-overlay');
+                openModals.forEach(modal => {
+                    if (window.getComputedStyle(modal).display !== 'none') {
+                        if(modal.id === 'videoModal') {
+                            closeVideoModal();
+                        } else {
+                            modal.style.display = 'none';
+                            document.body.style.overflow = 'auto';
+                        }
+                    }
+                });
+            }
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const mobileMenu = document.getElementById('navLinks');
+                if (mobileMenu && mobileMenu.classList.contains('active')) {
+                    toggleMobileMenu();
+                }
+            });
+        });
+
+        window.addEventListener('load', () => {
+            const splash = document.getElementById('laveto-splash');
+            if (splash) {
+                setTimeout(() => {
+                    splash.style.opacity = '0';
+                    splash.style.visibility = 'hidden';
+                    setTimeout(() => splash.remove(), 800);
+                }, 1200);
+            }
+        });
+
+        let deferredPrompt;
+        const installBtn = document.getElementById('pwaInstallBtn');
+        const installInstruction = document.getElementById('pwaInstallInstruction');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installInstruction.style.display = 'none';
+            installBtn.style.display = 'inline-block';
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
+                installInstruction.innerHTML = '✅ APP INSTALLED SUCCESSFULLY';
+                installInstruction.style.display = 'inline-block';
+                installInstruction.style.color = 'var(--integrity-green)';
+                installInstruction.style.borderColor = 'var(--integrity-green)';
+            }
+        });
+
+        window.addEventListener('appinstalled', (evt) => {
+            installBtn.style.display = 'none';
+            installInstruction.innerHTML = '✅ APP INSTALLED SUCCESSFULLY';
+            installInstruction.style.display = 'inline-block';
+        });
+
+        const shareBtn = document.getElementById('nativeShareBtn');
+
+        if (navigator.share) {
+            shareBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.share({
+                        title: 'Laveto System Restoration',
+                        text: 'I use Laveto to maintain my vehicle and build savings equity. Check out the platform:',
+                        url: window.location.origin
+                    });
+                } catch (err) {
+                    console.log('Share error', err);
+                }
+            });
+        } else {
+            shareBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(window.location.origin).then(() => {
+                    const originalText = shareBtn.innerHTML;
+                    shareBtn.innerHTML = '✅ LINK COPIED';
+                    shareBtn.style.background = 'var(--integrity-green)';
+                    setTimeout(() => {
+                        shareBtn.innerHTML = originalText;
+                        shareBtn.style.background = 'var(--sanctified-blue)';
+                    }, 3000);
+                });
+            });
+        }
+
+        // 🚀 BULLETPROOF MODAL AUTO-OPENER
+        window.addEventListener('load', () => {
+            if (window.location.href.includes('#member-login')) {
+                setTimeout(() => {
+                    if (typeof openModal === 'function') {
+                        openModal('vaultModal');
+                    }
+                    history.replaceState(null, null, window.location.pathname);
+                }, 2000);
+            }
+        });
+
+        function lockClassSelection(selectElement) {
+            if (selectElement.value !== "") {
+                selectElement.style.pointerEvents = "none";
+                selectElement.style.opacity = "0.7";
+                selectElement.style.backgroundColor = "#eef4f8";
+                console.log("Class locked for this intake session.");
+            }
+        }
+
+        // --- 🚗 MAKE & MODEL SYNCHRONIZATION ENGINE ---
+        document.addEventListener("DOMContentLoaded", function() {
+            const dropdown = document.getElementById('classSelect');
+            const makeBox = document.getElementById('vehicle_make_input');
+            const modelBox = document.getElementById('vehicle_model_input');
+
+            if (dropdown && modelBox && makeBox) {
+                dropdown.addEventListener('change', function() {
+                    if (this.value !== "") {
+                        const selectedText = this.options[this.selectedIndex].text;
+                        const parts = selectedText.split(' ');
+                        if (parts.length > 1) {
+                            makeBox.value = parts[0];
+                            modelBox.value = parts.slice(1).join(' ');
+                        } else {
+                            modelBox.value = selectedText;
+                        }
+                        console.log("Vehicle DNA Synchronized:", makeBox.value, modelBox.value);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

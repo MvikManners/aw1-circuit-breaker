@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "gospel-os-fortress",
+  "private_key_id": "f2da5b86e68ca76f49128506200cff9b2929d705",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDnW4xYZG+dXB+L\nT/Q2/G0a6LNYdlRJQtOoV+hT5Gmr+ZSK7AXGlywrtVq4SeyGPKrWnAJXJl0C7q7t\nYu34VVBigVWYu8uACca4aJxPs4AF6EZSpIj53M2nWun4vRWmVhD2iK8WSVKSv3gm\nFSeh4dejQ84g0U8cZdSW5i5MOsG9vmlF5DwPdYSvWe16ydkWbnVsZMGaIIONzJXW\nRr9QKfDtVOgB0Pl3XqFRM5Y2RgUQB/D8jjZpB/AV/+Q5xt+RX77oBa74qzKP1Vqt\n7x1G8VgydXP6crjFTTlCnaja0ubgRsX9jFf8Qem7QNiGeaNDSS+vac8SmNhF5hd4\nJRKO6lz1AgMBAAECggEADFxmT7SyB/DLmKhhbmynMahcKK5Ny4o//78OoSjTgoY3\nqwJ4PoeGKyGp4q3Ebtmf8Q5ty5U3o/f3raQ6/aklPdYWKi5ibYlYLjMcot9+yBIE\na9bxoJPtAvOHC6yikvwHNPzRifnJ6SBEvZgkwW/tEwKE6Vj1hplkNdm/gIAlKMuB\nFiBTfspU0WHUa7o8EV2ZnQmgQ6AVMrwrIdQkPkbRdYvWkS8awGRm4qQfB0glbWOj\nunw20udaMAQPv+buZe39rzG1jVLaFZWHBZOhqJBcvpy/vbHXilveuUHjia0O7rLY\nRBmb2gvXuqyufS8LPImKRZFhWNf9K5GZJtBDzZDDwwKBgQD5Ke426G+utrWdyjGA\nvbOX3ZAzmh9jppQj9QKbwGfxaR97q1xX2IbejVMvCMb2OB1OWfE9m+CdMLo4TdyK\nlyzsHYaqYCJqhSZU08oVt6cxub4Vnmj3gJ81rJZOMet0lud3TwNYZsFqeACMWZFI\nrfKFJr7ktdfBo/kSehroBNBuRwKBgQDttI0YoM1+1+CIdOy7E43d6dYteXQtsrMZ\nYO94czQI69KRcLCpHVnhB7k9SrpoxJw27syw7JQkxZi+T88czSIlSKhq6btO5o70\nqc6FeuPYPnvBwj3we8/34P8SKjs5bHIQI48uCPemFWqwtq8TqMQXbPJ/dPdWDXQK\nVf+9QAjM4wKBgQDUM7DMlKLhMnx02QnV8jotAabZO8616N3LzdQd3/zmbjhA9A1e\nR2t9yPDqYthIRDw5SYKajNH8Lc67Oxyz79JzeSYCnoNRIvslTYaTfmjngaBw+wu8\nlo+Bf+42xG8aSZbyVpmrxT++tFsLLRD9zB965Se402Hgag0rflDB/6+f6wKBgQDS\n31hIX+bNPv+ernOQZoF1O0tYniU1oREHU5o9dZ3UyDfN9HWUIUipu+tV92Q1Ky4W\nAXSvA8FMecrOEgj/WO+QuctGxUD4dsqdO8LNYT6diJjLQ+Ek5QGSuhQt7i8J+y2Z\nKaKMSUJBIUC7seTRAOesjGb4MTB2M4sc3Dv6jMMB1wKBgQCUpvXk/LRjXQMxhMGp\nsearCwW61dFrb7Q55ECIoVRqwRry/dFqC97ENKr8chWp33kfr9tEywUybebNUpDj\nPAT0cfSKcxH+MpLo1MJ2EJUR53m/CENDx+IDqbawyE3OPPRSLcnptT4E+eh4V3sY\nbmcbwN1pjQOnSfeKMM9PsksPaA==\n-----END PRIVATE KEY-----",
+  "client_email": "ledger-backup-bot@gospel-os-fortress.iam.gserviceaccount.com",
+  "client_id": "106144569639521228510",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/ledger-backup-bot%40gospel-os-fortress.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
