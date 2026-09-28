@@ -1,7 +1,7 @@
 # AW-1 Breaker
 
-[!License: MIT)[https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[QPython: 3.9+](https://img.shields.io/badge/Python-3.9+-brightgreen.svg)]e)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python: 3.9+](https://img.shields.io/badge/Python-3.9+-brightgreen.svg)]()
 [![Telemetry SLA](https://img.shields.io/badge/Fast--Path%20SLA-%3C005ms-success)]()
 
 **Deterministic, sub-millisecond execution circuit breaker for autonomous AI agent tool-calls.**
