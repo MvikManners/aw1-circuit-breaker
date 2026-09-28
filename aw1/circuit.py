@@ -9,6 +9,8 @@ class ExecutionBreaker:
     """
     Out-of-band execution circuit breaker governing autonomous agent tool calls.
     """
+    DANGEROUS_PRIMITIVES = {"[CODE_EVAL_POLYGLOT]", "[HIGH_VALUE_ONE_WAY_DOOR]"}
+
     def __init__(self, baseline_velocity: float = 50000.0):
         self.unpacker = ASTSymbolicUnpacker()
         self.memory = StatefulCausalMemory(baseline_velocity_limit=baseline_velocity)
@@ -19,6 +21,22 @@ class ExecutionBreaker:
         # Layer 0: Decompile AST Primitives
         primitives, raw_unpacked = self.unpacker.decompile(payload)
         
+        # Check for AST-level injection or high-value trajectory breach
+        blocked_primitives = [p for p in primitives if p in self.DANGEROUS_PRIMITIVES]
+        if blocked_primitives:
+            latency_ms = (time.perf_counter() - start_time) * 1000.0
+            dossier_data = f"{actor_id}:{tool_name}:{payload}:BLOCKED:{time.time()}"
+            sha256_hash = hashlib.sha256(dossier_data.encode()).hexdigest()
+            return {
+                "decision": "🛑 HALT_AND_CONTAIN",
+                "status": "BLOCKED",
+                "containment_reason": f"CRITICAL_AST_PRIMITIVE_DETECTED ({', '.join(blocked_primitives)})",
+                "ast_primitives": primitives,
+                "latency_ms": round(latency_ms, 4),
+                "sha256_dossier": sha256_hash,
+                "token": None
+            }
+
         # Layer 1: Stateful Velocity Check
         allowed, ratio, reason = self.memory.record_and_evaluate(actor_id, amount)
         
