@@ -9,7 +9,13 @@ class ExecutionBreaker:
     """
     Out-of-band execution circuit breaker governing autonomous agent tool calls.
     """
-    DANGEROUS_PRIMITIVES = {"[CODE_EVAL_POLYGLOT]", "[HIGH_VALUE_ONE_WAY_DOOR]"}
+    DANGEROUS_PRIMITIVES = {
+        "[CODE_EVAL_POLYGLOT]",
+        "[HIGH_VALUE_ONE_WAY_DOOR]",
+        "[NETWORK_EGRESS]",
+        "[SYSTEM_SHELL_EXEC]",
+        "[KERNEL_WRITE]"
+    }
 
     def __init__(self, baseline_velocity: float = 50000.0):
         self.unpacker = ASTSymbolicUnpacker()
@@ -21,7 +27,7 @@ class ExecutionBreaker:
         # Layer 0: Decompile AST Primitives
         primitives, raw_unpacked = self.unpacker.decompile(payload)
         
-        # Check for AST-level injection or high-value trajectory breach
+        # Check for AST-level injection or dangerous execution primitives
         blocked_primitives = [p for p in primitives if p in self.DANGEROUS_PRIMITIVES]
         if blocked_primitives:
             latency_ms = (time.perf_counter() - start_time) * 1000.0
@@ -29,8 +35,8 @@ class ExecutionBreaker:
             sha256_hash = hashlib.sha256(dossier_data.encode()).hexdigest()
             return {
                 "decision": "🛑 HALT_AND_CONTAIN",
-                "status": "BLOCKED",
-                "containment_reason": f"CRITICAL_AST_PRIMITIVE_DETECTED ({', '.join(blocked_primitives)})",
+                "status": "HALT_AND_CONTAIN",
+                "containment_reason": f"CRITICAL_AST_PRIMITIVE_DETECTED ({", ".join(blocked_primitives)})",
                 "ast_primitives": primitives,
                 "latency_ms": round(latency_ms, 4),
                 "sha256_dossier": sha256_hash,
@@ -39,7 +45,6 @@ class ExecutionBreaker:
 
         # Layer 1: Stateful Velocity Check
         allowed, ratio, reason = self.memory.record_and_evaluate(actor_id, amount)
-        
         latency_ms = (time.perf_counter() - start_time) * 1000.0
         
         # Decision Assurance Dossier Hash
@@ -49,7 +54,7 @@ class ExecutionBreaker:
         if not allowed:
             return {
                 "decision": "🛑 HALT_AND_CONTAIN",
-                "status": "BLOCKED",
+                "status": "HALT_AND_CONTAIN",
                 "containment_reason": reason,
                 "ast_primitives": primitives,
                 "latency_ms": round(latency_ms, 4),
@@ -57,6 +62,7 @@ class ExecutionBreaker:
                 "token": None
             }
 
+        # Gate 7: Permitted Execution Token Generation
         token = f"AW1-EXEC-TOKEN-{secrets.token_hex(8)}"
         return {
             "decision": "APPROVED_PROCEED",
