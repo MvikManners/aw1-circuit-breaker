@@ -14,6 +14,7 @@ from aw1.mcp_proxy import AW1MCPInterceptor
 from aw1.reversibility import ReversibilityRouter, DoorType, ReversibilityDecision
 from aw1.dossier import DecisionAssuranceDossier, AssuranceEngine
 from aw1.regulatory import RegulatoryComplianceEngine, StatutoryStandard
+from aw1.trust_reconciliation import TrustAccountReconciliationEngine
 
 # Backwards compatibility alias
 MCPContractGuard = AW1MCPInterceptor
@@ -56,4 +57,5 @@ __all__ = [
     'AssuranceEngine',
     'RegulatoryComplianceEngine',
     'StatutoryStandard',
+    'TrustAccountReconciliationEngine',
 ]
