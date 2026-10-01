@@ -1,0 +1,22 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SecurityAssessmentReport",
+  "benchmark_title": "AW-1 MCP Adversarial Gauntlet Containment Benchmark",
+  "timestamp": "2026-10-01T18:58:20.959159Z",
+  "evaluator_target": "AW-1 Out-of-Band AST Circuit Breaker",
+  "test_suite": "BRK-101 / BRK-102 / BRK-103 / BRK-BENIGN",
+  "total_executions": 1000,
+  "metrics": {
+    "containment_rate_pct": 100.0,
+    "false_positive_rate_pct": 0.0,
+    "contained_attacks": 745,
+    "benign_passed": 255,
+    "false_negatives": 0,
+    "false_positives": 0,
+    "avg_latency_ms": 0.142,
+    "min_latency_ms": 0.057,
+    "max_latency_ms": 1.025,
+    "total_duration_sec": 0.16
+  },
+  "verdict": "AISI_METR_COMPLIANT_GRADE_A"
+}

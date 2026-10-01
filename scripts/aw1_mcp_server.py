@@ -66,7 +66,7 @@ def evaluate_tool_call(tool_name: str, arguments: dict) -> dict:
             detected_primitives.extend(primitives)
 
     # 2. Gate 7 Hard Containment Trigger
-    halt_triggers = ["[DYNAMIC_EVAL]", "[EXEC_SHELL]", "[NETWORK_EGRESS]", "[STEGANOGRAPHIC_ENCODING]"]
+    halt_triggers = ["[DYNAMIC_EVAL]", "[EXEC_SHELL]", "[NETWORK_EGRESS]", "[STEGANOGRAPHIC_ENCODING]", "[DESTRUCTIVE_WRITE]"]
     is_halted = any(p in detected_primitives for p in halt_triggers)
 
     latency_ms = (datetime.utcnow() - start_time).total_seconds() * 1000.0
