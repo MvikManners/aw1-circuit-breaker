@@ -8,24 +8,19 @@ from typing import Any, Callable
 import asyncio
 
 from aw1.circuit import ExecutionBreaker
-from aw1.unpacker import ASTSymbolicUnpacker, ConstantFolder
-from aw1.memory import StatefulCausalMemory, InMemoryMemoryBackend, RedisMemoryBackend
-from aw1.mcp_guard import MCPContractGuard
+from aw1.unpacker import ASTSymbolicUnpacker
+from aw1.memory import StatefulCausalMemory
+from aw1.mcp_proxy import AW1MCPInterceptor
 from aw1.reversibility import ReversibilityRouter, DoorType, ReversibilityDecision
 from aw1.dossier import DecisionAssuranceDossier, AssuranceEngine
 from aw1.regulatory import RegulatoryComplianceEngine, StatutoryStandard
 
 # Backwards compatibility alias
-AW1MCPInterceptor = MCPContractGuard
+MCPContractGuard = AW1MCPInterceptor
 
-__version__ = "0.2.0"
+__version__ = '0.2.0'
 
-
-def wrap_agent_tool(breaker: ExecutionBreaker, actor: str = "agent_worker"):
-    """
-    Zero-dependency wrapper for LangChain @tool, CrewAI tools, or custom callables.
-    Evaluates AST execution paths deterministically prior to invoking the underlying tool.
-    """
+def wrap_agent_tool(breaker: ExecutionBreaker, actor: str = 'agent_worker'):
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -47,22 +42,18 @@ def wrap_agent_tool(breaker: ExecutionBreaker, actor: str = "agent_worker"):
 
     return decorator
 
-
 __all__ = [
-    "ExecutionBreaker",
-    "ASTSymbolicUnpacker",
-    "ConstantFolder",
-    "StatefulCausalMemory",
-    "InMemoryMemoryBackend",
-    "RedisMemoryBackend",
-    "MCPContractGuard",
-    "AW1MCPInterceptor",
-    "wrap_agent_tool",
-    "ReversibilityRouter",
-    "DoorType",
-    "ReversibilityDecision",
-    "DecisionAssuranceDossier",
-    "AssuranceEngine",
-    "RegulatoryComplianceEngine",
-    "StatutoryStandard",
+    'ExecutionBreaker',
+    'ASTSymbolicUnpacker',
+    'StatefulCausalMemory',
+    'AW1MCPInterceptor',
+    'MCPContractGuard',
+    'wrap_agent_tool',
+    'ReversibilityRouter',
+    'DoorType',
+    'ReversibilityDecision',
+    'DecisionAssuranceDossier',
+    'AssuranceEngine',
+    'RegulatoryComplianceEngine',
+    'StatutoryStandard',
 ]

@@ -83,3 +83,25 @@ class AssuranceEngine:
             },
             parent_hash=parent_hash
         )
+
+    @staticmethod
+    def generate_clear_dossier(
+        actor_id: str,
+        action: str,
+        parent_hash: str = "GENESIS_ROOT_0000000000000000"
+    ) -> DecisionAssuranceDossier:
+        return DecisionAssuranceDossier(
+            actor_id=actor_id,
+            action_signature=action,
+            door_type="TWO_WAY_DOOR",
+            posture="PROCEED",
+            wisdom_quotient=0.9850,
+            blindspots=[],
+            causal_order_impacts={
+                "1st_order": "Transaction passed syntactic and statutory compliance bounds.",
+                "2nd_order": "Allocation ledger updated under verified sovereign governance.",
+                "3rd_order": "CEE and fiscal thresholds cryptographically attested for statutory reporting."
+            },
+            parent_hash=parent_hash
+        )
+
