@@ -36,7 +36,7 @@ class ExecutionBreaker:
             return {
                 "decision": "🛑 HALT_AND_CONTAIN",
                 "status": "HALT_AND_CONTAIN",
-                "containment_reason": f"CRITICAL_AST_PRIMITIVE_DETECTED ({", ".join(blocked_primitives)})",
+                "containment_reason": f"CRITICAL_AST_PRIMITIVE_DETECTED ({', '.join(blocked_primitives)})",
                 "ast_primitives": primitives,
                 "latency_ms": round(latency_ms, 4),
                 "sha256_dossier": sha256_hash,
