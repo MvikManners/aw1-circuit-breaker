@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="padding: 50px; text-align: center; color: white;">
+    <h1>SYSTEM STABILIZED</h1>
+    <p>The dashboard is currently in safe mode to prevent server timeout.</p>
+    <a href="{{ url_for('hangar.registry') }}">Back to Registry</a>
+</div>
+{% endblock %}

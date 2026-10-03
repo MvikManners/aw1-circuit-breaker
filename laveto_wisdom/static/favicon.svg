@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <linearGradient id="favGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="50%" stop-color="#D97706" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
+    <linearGradient id="favShield" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+    <linearGradient id="favCyan" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Shield Tile -->
+  <polygon points="50,4 92,26 92,74 50,96 8,74 8,26" 
+           fill="url(#favShield)" 
+           stroke="url(#favGold)" 
+           stroke-width="3.5" 
+           stroke-linejoin="round" />
+
+  <!-- Outer Logic Trace Nodes -->
+  <circle cx="50" cy="4" r="3" fill="#F59E0B" />
+  <circle cx="92" cy="50" r="3" fill="#10B981" />
+  <circle cx="8" cy="50" r="3" fill="#10B981" />
+  <circle cx="50" cy="96" r="3" fill="#D97706" />
+
+  <!-- Inner Omega (Ω) Decision Assurance Circuit -->
+  <path d="M 33 68 L 41 68 C 41 68 36 56 36 47 C 36 38 42 33 50 33 C 58 33 64 38 64 47 C 64 56 59 68 59 68 L 67 68" 
+        fill="none" 
+        stroke="url(#favGold)" 
+        stroke-width="5.5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round" />
+
+  <!-- Central Verification Node -->
+  <circle cx="50" cy="48" r="4" fill="url(#favCyan)" />
+  <line x1="50" y1="52" x2="50" y2="62" stroke="#06B6D4" stroke-width="2.5" stroke-linecap="round" />
+</svg>

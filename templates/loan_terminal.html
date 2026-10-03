@@ -1,0 +1,681 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --critical-red: #ff4d4d;
+        --integrity-gold: #C5A059;
+        --integrity-green: #28a745;
+        --sanctified-blue: #003366;
+        --whatsapp-green: #25D366;
+
+        /* 🌙 DARK MODE (DEFAULT) */
+        --bg-base: #000000;
+        --bg-surface: #111111;
+        --bg-elevated: #1a1a1a;
+        --bg-panel: #0a0f14;
+        --border-subtle: #333333;
+        --border-strong: #444444;
+        --text-primary: #ffffff;
+        --text-secondary: #aaaaaa;
+        --text-tertiary: #666666;
+    }
+
+    /* ☀️ LIGHT MODE OVERRIDES */
+    [data-theme="light"] {
+        --bg-base: #f4f6f8;
+        --bg-surface: #ffffff;
+        --bg-elevated: #e9ecef;
+        --bg-panel: #ffffff;
+        --border-subtle: #cccccc;
+        --border-strong: #aaaaaa;
+        --text-primary: #111111;
+        --text-secondary: #555555;
+        --text-tertiary: #888888;
+    }
+
+    /* Smooth transition for theme switching */
+    body {
+        background-color: var(--bg-base);
+        color: var(--text-primary);
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .terminal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid var(--critical-red);
+        padding-bottom: 15px;
+        margin-bottom: 30px;
+    }
+    .terminal-title { font-size: 2rem; color: var(--critical-red); margin: 0; font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 2px; }
+
+    /* 🛠️ CONTROL INTERFACE */
+    .view-controls {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .view-select {
+        padding: 10px 20px;
+        background: transparent;
+        border: 1px solid var(--border-subtle);
+        border-radius: 4px;
+        color: var(--integrity-gold);
+        font-family: 'Montserrat', sans-serif;
+        font-weight: bold;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: 0.3s;
+        outline: none;
+    }
+    .view-select:hover { border-color: var(--integrity-gold); background: var(--bg-surface); }
+
+    .btn-export {
+        background: var(--integrity-gold);
+        color: #000;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .btn-export:hover { background: #b38b47; transform: translateY(-2px); }
+
+    .btn-theme {
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid var(--border-subtle);
+        padding: 10px 15px;
+        border-radius: 4px;
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 900;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .btn-theme:hover { border-color: var(--text-primary); background: var(--bg-surface); }
+
+    /* 📜 SOVEREIGN LAW SIDEBAR */
+    .law-sidebar { background: var(--bg-surface); border-left: 3px solid var(--integrity-gold); padding: 20px; margin-bottom: 30px; border-radius: 0 8px 8px 0; }
+    .law-entry { margin-bottom: 15px; }
+    .law-title { font-family: 'Courier Prime', monospace; color: var(--integrity-gold); font-weight: bold; font-size: 0.9rem; text-transform: uppercase; }
+    .law-desc { color: var(--text-secondary); font-size: 0.8rem; line-height: 1.4; }
+
+    .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; }
+    .stat-card { background: var(--bg-elevated); padding: 25px; border-radius: 8px; text-align: center; border: 1px solid var(--border-subtle); }
+    .stat-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 2px; font-family: 'Courier Prime', monospace; margin-bottom: 10px; }
+    .stat-number { font-size: 2.5rem; font-weight: 900; color: var(--text-primary); }
+
+    /* 🏛️ HIGH-DENSITY TERMINAL NODES */
+    .engine-card { margin-bottom: 40px; background: var(--bg-panel); border: 1px solid #9c8052; padding: 20px; border-radius: 8px; }
+
+    .debt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+
+    .debt-card { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-top: 4px solid var(--critical-red); padding: 15px; border-radius: 6px; position: relative; transition: transform 0.2s ease; }
+    .debt-card:hover { border-color: var(--critical-red); transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+    .debt-vin { font-family: 'Courier Prime', monospace; font-size: 1.1rem; font-weight: bold; color: var(--integrity-gold); margin-bottom: 2px; }
+
+    .tier-badge { position: absolute; top: 10px; right: 10px; font-size: 0.6rem; padding: 3px 6px; border-radius: 3px; background: var(--bg-elevated); font-family: 'Courier Prime', monospace; font-weight: bold; }
+
+    .action-forms { display: flex; flex-direction: column; gap: 8px; }
+    .loan-form-container { display: flex; flex-direction: column; gap: 5px; padding: 10px; background: var(--bg-base); border-radius: 4px; border: 1px solid var(--border-subtle); }
+    .loan-form { display: flex; gap: 8px; }
+
+    .intent-select { width: 100%; padding: 6px; background: var(--bg-base); border: 1px solid var(--integrity-gold); color: var(--integrity-gold); border-radius: 3px; font-family: 'Courier Prime', monospace; font-size: 0.7rem; margin-bottom: 3px; }
+    .loan-input { flex: 2; padding: 8px; background: var(--bg-base); border: 1px solid var(--border-strong); color: var(--text-primary); border-radius: 3px; font-family: 'Courier Prime', monospace; font-size: 0.85rem; text-align: center; }
+
+    .btn-mint { flex: 1; background: transparent; border: 1px solid var(--critical-red); color: var(--critical-red); font-weight: bold; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; border-radius: 3px; cursor: pointer; transition: 0.2s; }
+    .btn-mint:hover { background: var(--critical-red); color: white; }
+
+    .btn-repay { flex: 1; background: transparent; border: 1px solid var(--integrity-green); color: var(--integrity-green); font-weight: bold; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; border-radius: 3px; cursor: pointer; transition: 0.2s; }
+    .btn-repay:hover { background: var(--integrity-green); color: white; }
+
+    .btn-whatsapp {
+        background: var(--whatsapp-green);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: 0.3s;
+    }
+    .btn-whatsapp:hover { background: #1ebe57; transform: scale(1.05); }
+
+    .pending-hud {
+        background: rgba(197, 160, 89, 0.05);
+        border: 1px dashed #C5A059;
+        padding: 15px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        animation: pulse-glow 2s infinite;
+    }
+    @keyframes pulse-glow {
+        0% { box-shadow: 0 0 5px rgba(197, 160, 89, 0.1); }
+        50% { box-shadow: 0 0 15px rgba(197, 160, 89, 0.3); }
+        100% { box-shadow: 0 0 5px rgba(197, 160, 89, 0.1); }
+    }
+
+    .hidden-node { display: none !important; }
+
+    @media print {
+        .view-controls, .law-sidebar, .action-forms, .btn-export, #assetSync, .btn-whatsapp { display: none !important; }
+        body { background: white !important; color: black !important; }
+        .engine-card { border: none !important; }
+    }
+</style>
+
+<div class="terminal-header">
+    <h1 class="terminal-title">🏦 SOVEREIGN LOAN TERMINAL</h1>
+    <div class="view-controls">
+        <button class="btn-theme" onclick="toggleTerminalTheme()">🌓 THEME</button>
+        <button class="btn-export" onclick="exportLedgerData()">📑 EXPORT AUDIT</button>
+
+        <a href="{{ url_for('hangar.view_ledger') }}" style="font-family: 'Montserrat', sans-serif; font-size: 0.7rem; font-weight: bold; color: var(--integrity-gold); text-decoration: none; text-transform: uppercase; border: 1px solid var(--integrity-gold); padding: 10px 15px; border-radius: 2px; transition: 0.3s;">⬅ Return to Wall</a>
+
+        <select class="view-select" id="terminalViewFilter" onchange="toggleTerminalView()">
+            <option value="all">🌐 SHOW ALL ASSETS</option>
+            <option value="active">🔴 SHOW ACTIVE DEBT ONLY</option>
+            <option value="minimized">➖ MINIMIZE VIEW</option>
+            <option value="hide">👁️ HIDE ALL NODES</option>
+        </select>
+    </div>
+</div>
+
+<div class="law-sidebar">
+    <div class="law-entry">
+        <div class="law-title">Law 1: The Vault Rule (Doc 188)</div>
+        <div class="law-desc">Capital minted as <strong>RESTORATION</strong> is earmarked for Tier-1 automotive parts. This builds asset equity.</div>
+    </div>
+    <div class="law-entry">
+        <div class="law-title">Law 2: The Maturity Gate (Doc 250)</div>
+        <div class="law-desc"><strong>EXTERNAL</strong> capital is locked unless the node has reached 24-month Diamond Status.</div>
+    </div>
+</div>
+
+{% set active_debt_total = namespace(value=0) %}
+{% for r in all_records %}
+    {% if r.active_loan_principal %}
+        {% set active_debt_total.value = active_debt_total.value + r.active_loan_principal %}
+    {% endif %}
+{% endfor %}
+
+<div class="stats-row">
+    <div class="stat-card" style="border-bottom: 4px solid var(--sanctified-blue);">
+        <div class="stat-label">Total Platform TVL (Vaults)</div>
+        <div class="stat-number">P{{ "{:,.2f}".format(total_value or 0) }}</div>
+    </div>
+    <div class="stat-card" style="border-bottom: 4px solid var(--critical-red);">
+        <div class="stat-label">Active Outstanding Debt</div>
+        <div class="stat-number" style="color: var(--critical-red);">P{{ "{:,.2f}".format(active_debt_total.value) }}</div>
+    </div>
+</div>
+
+<div class="engine-card">
+    <h3 style="color: #9c8052; font-family: 'Montserrat'; font-size: 0.8rem; letter-spacing: 3px; text-align: center; margin-bottom: 20px; text-transform: uppercase;">🏛️ AMORTIZATION COMMAND</h3>
+
+    <div style="margin-bottom: 20px;">
+        <label style="font-size: 0.6rem; color: #9c8052;">SELECT EXISTING ASSET (SYNC PRICE)</label>
+        <select id="assetSync" onchange="syncAssetPrice()" style="width: 100%; background: var(--bg-base); color: #9c8052; border: 1px solid var(--border-subtle); padding: 10px; font-family: 'Courier Prime';">
+            <option value="0">-- MANUAL ENTRY --</option>
+            {% for r in all_records %}
+                <option value="{{ r.asking_price or r.target_repair_cost or 0 }}">{{ r.vin_dna }} | P{{ "{:,.0f}".format(r.asking_price or r.target_repair_cost or 0) }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+        <div>
+            <label style="font-size: 0.6rem; color: var(--text-tertiary);">PRINCIPAL (PULA)</label>
+            <input type="number" id="p_calc" oninput="autoAdjustTerm()" placeholder="0.00" style="width: 100%; padding: 12px; background: var(--bg-base); color: var(--integrity-green); border: 1px solid var(--border-subtle); font-family: 'Courier Prime'; box-sizing: border-box;">
+        </div>
+        <div>
+            <label style="font-size: 0.6rem; color: var(--text-tertiary);">INTEREST (%)</label>
+            <input type="number" id="r_calc" value="15" style="width: 100%; padding: 12px; background: var(--bg-base); color: var(--text-primary); border: 1px solid var(--border-subtle); box-sizing: border-box;">
+        </div>
+    </div>
+
+    <label style="font-size: 0.6rem; color: var(--text-tertiary);">TERM (MONTHS)</label>
+    <input type="number" id="n_calc" value="24" style="width: 100%; padding: 12px; background: var(--bg-base); color: var(--text-primary); border: 1px solid var(--border-subtle); margin-bottom: 20px; box-sizing: border-box;">
+
+    <button onclick="calculateStandalone()" style="width: 100%; background: #9c8052; color: #000; padding: 15px; font-weight: 900; cursor: pointer; border: none; letter-spacing: 2px; text-transform: uppercase;">EXECUTE CONTRACT MATH</button>
+
+    <div id="standaloneResult" style="display: none; margin-top: 25px; text-align: center; background: rgba(197, 160, 89, 0.05); padding: 20px; border: 1px solid var(--border-subtle);">
+        <label style="color: #9c8052; font-size: 0.6rem;">ESTIMATED MONTHLY INSTALLMENT</label>
+        <h1 id="standaloneOut" style="font-size: 2.2rem; margin: 10px 0; font-family: 'Montserrat'; color: var(--text-primary);">P0.00</h1>
+
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+            <button onclick="printTerminalQuote()" style="background: transparent; border: 1px solid var(--border-strong); color: var(--text-secondary); padding: 8px 15px; font-size: 0.6rem; cursor: pointer;">📥 PRINT QUOTE</button>
+            <button onclick="shareViaWhatsApp()" class="btn-whatsapp">
+                <span style="font-size: 1.1rem;">💬</span> SHARE WHATSAPP
+            </button>
+        </div>
+    </div>
+</div>
+
+<div style="margin-bottom: 40px;">
+    <h3 style="color: var(--integrity-gold); font-family: 'Montserrat'; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;">
+        🚨 Pending Requisitions
+    </h3>
+
+    {% set pending_found = namespace(value=false) %}
+    {% for r in all_records %}
+        {% if r.pending_loan_amount and r.pending_loan_amount | default(0) > 0 %}
+            {% set pending_found.value = true %}
+            <div style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); border-left: 5px solid var(--critical-red); padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+                <div>
+                    <div style="font-family: 'Courier Prime'; font-size: 0.85rem; color: var(--text-secondary);">ASSET DNA / PILOT</div>
+                    <div style="font-family: 'Montserrat'; font-size: 1.2rem; font-weight: 900; color: var(--text-primary);">{{ r.vin_dna }}</div>
+                    <div style="font-family: 'Courier Prime'; font-size: 0.9rem; color: var(--integrity-gold); margin-top: 5px;">INTENT: {{ r.pending_loan_intent }}</div>
+                </div>
+
+                <div style="text-align: right;">
+                    <div style="font-family: 'Courier Prime'; font-size: 0.85rem; color: var(--text-secondary);">REQUESTED CAPITAL</div>
+                    <div style="font-family: 'Courier Prime'; font-size: 1.8rem; font-weight: 900; color: var(--critical-red);">P{{ "{:,.2f}".format(r.pending_loan_amount) }}</div>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <form action="#" method="POST" onsubmit="alert('Loan Minting Engine offline pending Architect review.'); return false;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="loan_amount" value="{{ r.pending_loan_amount }}">
+                        <input type="hidden" name="loan_type" value="{{ r.pending_loan_intent }}">
+                        <button type="submit" style="background: var(--integrity-green); color: #000; border: none; padding: 12px 24px; font-family: 'Montserrat'; font-weight: 900; cursor: pointer; text-transform: uppercase; border-radius: 2px;">APPROVE</button>
+                    </form>
+
+                    <form action="{{ url_for('hangar.override_asset') }}" method="POST" onsubmit="return confirm('REJECT LOAN? This will generate a formal denial PDF and email the client.');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="entry_id" value="{{ r.id }}">
+                        <input type="hidden" name="status" value="LOAN REJECTED">
+                        <button type="submit" style="background: transparent; color: var(--critical-red); border: 1px solid var(--critical-red); padding: 12px 24px; font-family: 'Montserrat'; font-weight: 900; cursor: pointer; text-transform: uppercase; border-radius: 2px;">DENY</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    {% if not pending_found.value %}
+        <div style="padding: 40px; text-align: center; color: var(--text-secondary); font-family: 'Courier Prime'; border: 1px dashed var(--border-subtle); background: var(--bg-elevated);">
+            [ NO PENDING LOAN REQUISITIONS ]
+        </div>
+    {% endif %}
+</div>
+
+<div class="debt-grid" id="debtGrid">
+    {% for r in all_records %}
+        <div class="debt-card asset-node"
+             data-name="{{ r.member_name | default('UNKNOWN', true) }}"
+             data-vin="{{ r.vin_dna }}"
+             data-shield="{{ r.shield_reservoir or 0 }}"
+             data-savings="{{ r.savings_balance or 0 }}"
+             data-debt="{{ r.active_loan_principal or 0 }}"
+             data-yield="{{ (r.yield_principal or 0) + (r.yield_interest or 0) }}"
+             data-status="{{ r.status | default('UNKNOWN', true) }}"
+             data-tier="{{ r.wallet_tier.name if r.wallet_tier else 'STANDARD' }}"
+             style="border-top-color: {% if r.pending_loan_amount and r.pending_loan_amount | default(0) > 0 %}#C5A059{% elif r.active_loan_principal and r.active_loan_principal | default(0) > 0 %}var(--critical-red){% else %}var(--border-subtle){% endif %};">
+
+            <div class="tier-badge" style="color: {{ r.wallet_tier.color if r.wallet_tier else '#fff' }}; border-color: {{ r.wallet_tier.color if r.wallet_tier else '#fff' }};">
+                {{ r.wallet_tier.name if r.wallet_tier else 'STANDARD' }}
+            </div>
+
+            <a href="#" target="_blank" style="text-decoration: none; display: block; margin-bottom: 10px; border-bottom: 1px dashed var(--border-subtle); padding-bottom: 8px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.filter='brightness(1.5)'" onmouseout="this.style.filter='brightness(1)'">
+                <h3 class="debt-vin">
+                    {{ r.vin_dna }} <span style="font-size: 0.7rem; opacity: 0.5;">🔗 OPEN</span>
+                </h3>
+            </a>
+
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px; margin-bottom: 12px;">
+                <div>
+                    <div style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px;">Current Liability</div>
+                    <div style="font-size: 1.4rem; font-weight: 900; color: var(--critical-red); line-height: 1;">P{{ "{:,.2f}".format(r.active_loan_principal or 0) }}</div>
+                </div>
+
+                {% if r.active_loan_principal and r.active_loan_principal | default(0) > 0 %}
+                <div style="text-align: right;">
+                    <div style="font-size: 0.6rem; color: var(--integrity-gold); text-transform: uppercase; margin-bottom: 3px;">Monthly Toll</div>
+                    <div style="font-size: 1rem; font-weight: bold; color: var(--text-primary); line-height: 1; font-family: 'Courier Prime', monospace;">P{{ "{:,.2f}".format(r.amortized_monthly_payment) }}</div>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if r.pending_loan_amount and r.pending_loan_amount | default(0) > 0 %}
+            <div class="pending-hud" style="padding: 10px; margin-bottom: 10px;">
+                <div style="color: #C5A059; font-size: 0.6rem; font-weight: 900; text-transform: uppercase; margin-bottom: 5px;">⚠️ INCOMING: {{ r.pending_loan_intent }}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: var(--text-primary); font-size: 1.3rem; font-family: 'Courier Prime'; font-weight: bold;">P{{ "{:,.2f}".format(r.pending_loan_amount) }}</span>
+                    <form action="{{ url_for('hangar.override_asset') }}" method="POST" onsubmit="return confirm('🛑 DENY REQUEST: Are you sure you want to purge this pending loan request?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="entry_id" value="{{ r.id }}">
+                        <input type="hidden" name="status" value="LOAN REJECTED">
+                        <button type="submit" style="background: transparent; border: 1px solid var(--critical-red); color: var(--critical-red); padding: 5px 10px; font-family: 'Montserrat', sans-serif; font-size: 0.65rem; font-weight: 900; cursor: pointer; border-radius: 3px;">❌ REJECT</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="action-forms">
+                <div class="loan-form-container">
+                    <form action="#" method="POST" onsubmit="alert('Loan Minting Engine offline pending Architect review.'); return false;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <select name="loan_type" class="intent-select" required>
+                            <option value="RESTORATION"{% if r.pending_loan_intent == 'RESTORATION' %} selected{% endif %}>🔧 RESTORATION</option>
+                            <option value="EXTERNAL"{% if r.pending_loan_intent == 'EXTERNAL' %} selected{% endif %}>🏦 EXTERNAL</option>
+                        </select>
+                        <div class="loan-form">
+                            <input type="number" step="0.01" name="loan_amount" class="loan-input" placeholder="Amount" value="{% if r.pending_loan_amount and r.pending_loan_amount | default(0) > 0 %}{{ r.pending_loan_amount }}{% endif %}" required>
+                            <button type="submit" class="btn-mint">MINT</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="loan-form-container" style="border-color: var(--integrity-green);">
+                    <form action="#" method="POST" onsubmit="alert('Loan Repayment Engine offline pending Architect review.'); return false;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <div class="loan-form">
+                            <input type="number" step="0.01" name="repay_amount" class="loan-input" placeholder="Repayment" required style="border-color: var(--integrity-green);">
+                            <button type="submit" class="btn-repay">CLEAR</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    // 🌓 THEME ENGINE
+    function toggleTerminalTheme() {
+        // We set the attribute on the HTML root element for highest specificity
+        const root = document.documentElement;
+        const currentTheme = root.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+        root.setAttribute('data-theme', newTheme);
+        localStorage.setItem('terminal-theme', newTheme);
+    }
+
+    // Load theme state immediately
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('terminal-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    });
+
+    // 🛠️ AMORTIZATION ENGINE LOGIC
+    function syncAssetPrice() {
+        const selector = document.getElementById('assetSync');
+        if (selector.value > 0) {
+            document.getElementById('p_calc').value = selector.value;
+            autoAdjustTerm(); // Automatically adjust term based on synced price
+        }
+    }
+
+    // 🛡️ GOSPEL PROTECTION PROTOCOL (Synchronized with Client Vault)
+    function autoAdjustTerm() {
+        const amountInput = document.getElementById('p_calc');
+        const termInput = document.getElementById('n_calc');
+        const rateInput = document.getElementById('r_calc');
+        const price = parseFloat(amountInput.value) || 0;
+
+        if (price > 0) {
+            rateInput.value = 10; // Enforce 10% baseline to match the Vault
+
+            // Smart Tiering synchronized with the Client Dossier math
+            if (price <= 3000) {
+                termInput.value = 6;    // Minor capital (e.g. basic parts)
+            } else if (price <= 10000) {
+                termInput.value = 12;   // Medium capital (e.g. major service/suspension)
+            } else if (price <= 25000) {
+                termInput.value = 24;   // Heavy capital (e.g. P15k restoration)
+            } else {
+                termInput.value = 36;   // Extreme liquidity draws
+            }
+        } else {
+            termInput.value = "24"; // Default fallback
+            rateInput.value = "10";
+        }
+    }
+
+    function calculateStandalone() {
+        const p = parseFloat(document.getElementById('p_calc').value);
+        const inputRate = parseFloat(document.getElementById('r_calc').value);
+        const r = (inputRate / 100) / 12;
+        const n = parseFloat(document.getElementById('n_calc').value);
+
+        if (!isNaN(p) && p > 0 && n > 0) {
+            let monthly = 0;
+            if (r === 0) {
+                monthly = p / n; // 0% interest failsafe
+            } else {
+                const x = Math.pow(1 + r, n);
+                monthly = (p * x * r) / (x - 1);
+            }
+            document.getElementById('standaloneOut').innerText = "P" + monthly.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('standaloneResult').style.display = 'block';
+        } else {
+            alert("Enter valid financial parameters (Principal and Term must be > 0).");
+        }
+    }
+function shareViaWhatsApp() {
+        const principalRaw = parseFloat(document.getElementById('p_calc').value) || 0;
+        const principal = principalRaw.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const rate = document.getElementById('r_calc').value;
+        const term = document.getElementById('n_calc').value;
+        const monthly = document.getElementById('standaloneOut').innerText; // Already has 'P'
+
+        const date = new Date().toLocaleDateString('en-GB');
+
+        // EXACT layout using literal backtick line breaks
+        const rawMessage = `*LAVETO SYSTEM RESTORATION*
+_Smart Contract Quotation_ 📜
+
+*Date:* ${date}
+*Principal:* P${principal}
+*Interest Rate:* ${rate}%
+*Contract Term:* ${term} Months
+----------------------------
+*Estimated Monthly:*
+*${monthly}*
+----------------------------
+_Generated by the Sovereign Valuation Engine._
+_Subject to Laveto Command underwriting._`;
+
+        // Safely encode all newlines, spaces, and emojis for WhatsApp
+        const encodedMessage = encodeURIComponent(rawMessage);
+
+        window.open(`https://api.whatsapp.com/send?text=${encodedMessage}`, '_blank');
+    }
+    function printTerminalQuote() {
+        // 1. Gather all the telemetry from the calculator
+        const pRaw = parseFloat(document.getElementById('p_calc').value) || 0;
+        const pFormatted = pRaw.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const m = document.getElementById('standaloneOut').innerText;
+        const rate = document.getElementById('r_calc').value;
+        const term = document.getElementById('n_calc').value;
+
+        // Clean the VIN so it drops the " | P0" from the dropdown text
+        const assetSelector = document.getElementById('assetSync');
+        const assetRaw = assetSelector.options[assetSelector.selectedIndex].text;
+        const assetClean = assetRaw.split(' | ')[0];
+
+        const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        const hash = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+        // 🟢 THE WELD: Grab the absolute URL for the Laveto Logo
+        const logoUrl = "{{ url_for('static', filename='Laveto_logo-01.png', _external=True) }}";
+
+        const printWindow = window.open('', '_blank');
+
+        // 2. Inject the Institutional CSS and HTML
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Laveto Sovereign Quote</title>
+                <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+                <style>
+                    body { font-family: 'Montserrat', sans-serif; color: #111; padding: 40px; margin: 0; background: #fff; }
+                    .document-wrapper { border: 2px solid #003366; padding: 40px; position: relative; }
+                    .header { display: flex; justify-content: space-between; border-bottom: 3px solid #C5A059; padding-bottom: 20px; margin-bottom: 40px; align-items: flex-end; }
+                    .header-left img { max-height: 45px; margin-bottom: 15px; } /* Logo Styling */
+                    .header-left h1 { margin: 0; font-size: 26px; color: #003366; letter-spacing: 2px; text-transform: uppercase; font-weight: 900; }
+                    .header-left p { margin: 5px 0 0 0; font-family: 'Courier Prime', monospace; font-size: 11px; color: #888; letter-spacing: 1px; font-weight: bold; }
+                    .header-right { text-align: right; }
+                    .header-right h2 { margin: 0; font-size: 20px; color: #C5A059; letter-spacing: 2px; text-transform: uppercase; font-weight: 900; }
+                    .header-right p { margin: 5px 0 0 0; font-family: 'Courier Prime', monospace; font-size: 12px; font-weight: bold; }
+
+                    .matrix { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px; border: 1px solid #eee; padding: 20px; background: #fdfdfd; }
+                    .matrix-item { display: flex; flex-direction: column; }
+                    .matrix-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-weight: bold; }
+                    .matrix-value { font-family: 'Courier Prime', monospace; font-size: 18px; font-weight: bold; color: #003366; }
+
+                    .total-box { border: 2px solid #003366; padding: 30px; text-align: center; background: rgba(0, 51, 102, 0.03); margin-bottom: 50px; }
+                    .total-label { font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 3px; font-weight: bold; margin-bottom: 10px; }
+                    .total-value { font-family: 'Courier Prime', monospace; font-size: 38px; font-weight: 900; color: #003366; margin: 0; }
+
+                    .footer { display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #ccc; padding-top: 20px; margin-top: 40px; }
+                    .signature-line { border-bottom: 1px solid #000; width: 200px; height: 30px; margin-bottom: 5px; }
+                    .signature-text { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #555; font-weight: bold; }
+                    .hash { font-family: 'Courier Prime', monospace; font-size: 10px; color: #aaa; text-align: right; }
+
+                    @media print {
+                        body { padding: 0; }
+                        .document-wrapper { border-color: #000; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="document-wrapper">
+                    <div class="header">
+                        <div class="header-left">
+                            <img src="${logoUrl}" alt="Laveto Logo">
+                            <h1>LAVETO SYSTEM</h1>
+                            <p>SOVEREIGN CAPITAL // GABORONE HUB</p>
+                        </div>
+                        <div class="header-right">
+                            <h2>OFFICIAL QUOTE</h2>
+                            <p>DATE: ${date}</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 30px;">
+                        <span class="matrix-label">TARGET ASSET (VIN DNA)</span>
+                        <div style="font-family: 'Courier Prime', monospace; font-size: 24px; font-weight: bold; color: #111; border-bottom: 1px dashed #ccc; padding-bottom: 10px;">${assetClean}</div>
+                    </div>
+
+                    <div class="matrix">
+                        <div class="matrix-item">
+                            <span class="matrix-label">Principal Requisition</span>
+                            <span class="matrix-value">P${pFormatted}</span>
+                        </div>
+                        <div class="matrix-item">
+                            <span class="matrix-label">Amortization Term</span>
+                            <span class="matrix-value">${term} Months</span>
+                        </div>
+                        <div class="matrix-item">
+                            <span class="matrix-label">Interest Rate</span>
+                            <span class="matrix-value">${rate}%</span>
+                        </div>
+                        <div class="matrix-item">
+                            <span class="matrix-label">Capital Vector</span>
+                            <span class="matrix-value" style="color: #C5A059;">MECHANICAL / EXTERNAL</span>
+                        </div>
+                    </div>
+
+                    <div class="total-box">
+                        <div class="total-label">ESTIMATED MONTHLY INSTALLMENT</div>
+                        <div class="total-value">${m}</div>
+                    </div>
+
+                    <div style="font-size: 11px; color: #666; line-height: 1.6; text-align: justify; margin-bottom: 40px;">
+                        <strong>DECLARATION:</strong> This document represents a projected amortization schedule based on the parameters provided. It does not constitute a binding financial contract until ratified by Laveto Command and signed by the sovereign asset owner. Interest is applied at the standardized Gospel OS rate.
+                    </div>
+
+                    <div class="footer">
+                        <div>
+                            <div class="signature-line"></div>
+                            <div class="signature-text">AUTHORIZED SIGNATURE</div>
+                        </div>
+                        <div class="hash">
+                            SECURE HASH: LVT-${hash}<br>
+                            GOSPEL OS v18.0
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    // Wait 500ms for the logo to download before firing the print dialogue
+                    window.onload = function() {
+                        setTimeout(function() { window.print(); }, 500);
+                    }
+                <\/script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+    }
+
+    function toggleTerminalView() {
+        const filter = document.getElementById('terminalViewFilter').value;
+        const nodes = document.querySelectorAll('.asset-node');
+        const grid = document.getElementById('debtGrid');
+
+        nodes.forEach(node => {
+            const debt = parseFloat(node.getAttribute('data-debt'));
+            node.classList.remove('hidden-node');
+            if (filter === 'active' && debt <= 0) node.classList.add('hidden-node');
+            if (filter === 'hide') node.classList.add('hidden-node');
+
+            const forms = node.querySelector('.action-forms');
+           if (filter === 'minimized') {
+                grid.style.gridTemplateColumns = "repeat(auto-fill, minmax(220px, 1fr))"; // Compressed further
+                if(forms) forms.style.display = 'none';
+            } else {
+                grid.style.gridTemplateColumns = "repeat(auto-fill, minmax(280px, 1fr))"; // New high-density standard
+                if(forms) forms.style.display = 'flex';
+            }
+        });
+    }
+
+   function exportLedgerData() {
+    const nodes = document.querySelectorAll('.asset-node');
+
+    // 1. Expand the CSV Headers for a Master Audit
+    let csv = "MEMBER NAME,VIN/DNA,SHIELD RESERVOIR,SAVINGS BALANCE,ACTIVE DEBT,TOTAL YIELD,STATUS\n";
+
+    // 2. Loop through each node and extract the full financial data
+    nodes.forEach(n => {
+        // Grab attributes, with fallbacks just in case data is missing
+        const name = n.getAttribute('data-name') || 'UNKNOWN';
+        const vin = n.getAttribute('data-vin') || 'N/A';
+        const shield = n.getAttribute('data-shield') || '0.00';
+        const savings = n.getAttribute('data-savings') || '0.00';
+        const debt = n.getAttribute('data-debt') || '0.00';
+        const totalYield = n.getAttribute('data-yield') || '0.00';
+        const status = n.getAttribute('data-status') || 'UNKNOWN';
+
+        // Add the row to the CSV (wrapping text strings in quotes to prevent comma breaks)
+        csv += `"${name}","${vin}",${shield},${savings},${debt},${totalYield},"${status}"\n`;
+    });
+
+    // 3. Trigger the file download
+    const link = document.createElement("a");
+    // encodeURIComponent is safer than encodeURI for CSVs to prevent data corruption
+    link.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+    link.download = `LAVETO_MASTER_AUDIT_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+}
+</script>
+{% endblock %}

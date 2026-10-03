@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* 🛑 AGGRESSIVE TERMINAL ROOT */
+    body {
+        background-color: #030303;
+        color: var(--text-main);
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* 🚨 HYPER-AGGRESSIVE ANIMATIONS */
+    @keyframes severe-strobe {
+        0% { background: #1a0000; box-shadow: inset 0 0 0px red; border-color: red; }
+        50% { background: #330000; box-shadow: inset 0 0 20px red; border-color: #ff4444; }
+        100% { background: #1a0000; box-shadow: inset 0 0 0px red; border-color: red; }
+    }
+
+    @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+
+    /* 🛡️ BRUTALIST HEADERS */
+    .diagnostic-header {
+        background: #0a0a0a;
+        border: 2px solid var(--border-ui);
+        border-left: 8px solid var(--sanctified-blue);
+        padding: 30px;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .diagnostic-header::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(rgba(0, 51, 102, 0.1) 50%, transparent 50%);
+        background-size: 100% 4px;
+        pointer-events: none;
+    }
+
+    .diagnostic-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 15px;
+    }
+
+    .node-card {
+        background: #080808;
+        border: 1px solid var(--border-ui);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .critical-node {
+        animation: severe-strobe 1s infinite;
+        border: 2px solid var(--critical-red) !important;
+    }
+
+    .healthy-node {
+        border-left: 5px solid var(--integrity-green);
+        background: linear-gradient(180deg, #051005 0%, #000 100%);
+    }
+
+    /* 🩸 THE BLEED RADAR */
+    .bleed-radar-panel {
+        background: #110000;
+        border: 2px solid var(--critical-red);
+        border-left: 10px solid var(--critical-red);
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+
+    /* 🛰️ CRT TERMINAL STYLING */
+    .crt-terminal {
+        background: #000;
+        border: 2px solid #222;
+        border-top: 5px solid var(--integrity-green);
+        padding: 20px;
+        margin-top: 20px;
+        position: relative;
+    }
+
+    .crt-text {
+        font-family: 'Courier Prime', monospace;
+        color: #0f0;
+        text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+        font-size: 0.85rem;
+    }
+
+    .crt-scanline {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.2) 50%);
+        background-size: 100% 4px;
+        pointer-events: none;
+    }
+
+    .btn-brutal {
+        background: transparent;
+        color: var(--text-main);
+        border: 1px solid var(--border-ui);
+        padding: 8px 15px;
+        font-family: 'Courier Prime', monospace;
+        font-weight: 900;
+        text-transform: uppercase;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-brutal.red { border-color: var(--critical-red); color: var(--critical-red); }
+    .btn-brutal.red:hover { background: var(--critical-red); color: white; }
+
+    .btn-brutal.gold { border-color: var(--integrity-gold); color: var(--integrity-gold); }
+    .btn-brutal.gold:hover { background: var(--integrity-gold); color: black; }
+
+    .scroll-hide::-webkit-scrollbar { width: 6px; }
+    .scroll-hide::-webkit-scrollbar-track { background: #000; }
+    .scroll-hide::-webkit-scrollbar-thumb { background: var(--integrity-green); border-radius: 2px; }
+</style>
+
+<div class="diagnostic-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <span style="font-family: 'Courier Prime'; color: var(--integrity-gold); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 4px;">[ LAVETO COMMAND // SOLE-OPERATOR MATRIX ]</span>
+            <h1 style="margin: 5px 0 0 0; font-family: 'Montserrat'; font-weight: 900; text-transform: uppercase; color: white;">🛰️ GLOBAL TELEMETRY</h1>
+        </div>
+        <a href="{{ url_for('hangar.view_ledger') }}" class="btn-brutal gold">◀ ABORT TO COMMAND WALL</a>
+    </div>
+</div>
+
+{% if bleeding_assets and bleeding_assets|length > 0 %}
+<div class="bleed-radar-panel">
+    <h2 style="margin: 0 0 15px 0; color: var(--critical-red); font-family: 'Courier Prime'; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; animation: blink 1s infinite;">
+        ⚠️ TRIAGE ALERT: {{ bleeding_assets|length }} CRITICAL ASSETS DETECTED
+    </h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 10px;">
+        {% for b in bleeding_assets %}
+            {% if "SILK ROAD" in b.reason %}
+                <div style="background: #001100; border: 1px solid #00ff00; padding: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: inset 0 0 10px rgba(0,255,0,0.1);">
+                    <div>
+                        <strong style="color: #00ff00; font-family: 'Courier Prime'; font-size: 0.9rem;">📦 QUOTE RECEIVED</strong><br>
+                        <span style="color: #888; font-family: 'Montserrat'; font-size: 0.6rem; font-weight: 900; text-transform: uppercase;">{{ b.reason }}</span>
+                    </div>
+                    <a href="{{ url_for('hangar.client_vault', asset_id=b.vin_dna) }}" class="btn-brutal gold">⚖️ SIGN & ORDER</a>
+                </div>
+            {% else %}
+                <div style="background: #000; border: 1px solid var(--critical-red); padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="color: white; font-family: 'Courier Prime'; font-size: 0.9rem;">{{ b.vin_dna }}</strong><br>
+                        <span style="color: var(--critical-red); font-family: 'Montserrat'; font-size: 0.65rem; font-weight: 900;">{{ b.reason }}</span>
+                    </div>
+                    <a href="{{ url_for('hangar.client_vault', asset_id=b.vin_dna) }}" class="btn-brutal red" style="padding: 6px 12px; font-size: 0.65rem;">👁️ FIX VAULT</a>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% else %}
+<div style="background: #051005; border: 1px solid var(--integrity-green); border-left: 10px solid var(--integrity-green); padding: 15px; margin-bottom: 30px; color: var(--integrity-green); font-family: 'Courier Prime'; font-weight: 900; letter-spacing: 2px;">
+    [ RADAR CLEAR: ALL SYSTEMS OPERATING WITHIN MARGINS ]
+</div>
+{% endif %}
+
+<div class="diagnostic-grid">
+    {% for system_name, data in diagnostics.items() %}
+        <div class="node-card {% if data.status in ['OFFLINE', 'CRITICAL', 'ERROR', 'UNSECURE'] %}critical-node{% else %}healthy-node{% endif %}">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <h3 style="margin: 0; font-family: 'Montserrat'; text-transform: uppercase; font-size: 0.9rem; color: white;">{{ system_name }}</h3>
+                <span style="border: 1px solid {{ data.color }}; color: {{ data.color }}; padding: 2px 8px; font-family: 'Courier Prime'; font-size: 0.7rem;">{{ data.status }}</span>
+            </div>
+            <div style="background: #000; border: 1px dashed #333; padding: 10px; margin-top: 10px;">
+                <span style="font-family: 'Courier Prime'; font-size: 0.75rem; color: #aaa;">&gt; {{ data.detail }}</span>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+<div class="diagnostic-grid" style="margin-top: 20px;">
+    <div style="background: #080808; border: 1px solid var(--border-ui); padding: 20px;">
+        <h3 style="color: #fff; font-family: 'Montserrat'; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">
+            ⚙️ NODE HEALTH DENSITY MAP
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(18px, 1fr)); gap: 4px; max-height: 300px; overflow-y: auto;" class="scroll-hide">
+            {% for r in all_records %}
+                <div style="width: 18px; height: 18px; border-radius: 1px;
+                            background: {% if (r.health_score or 100) > 80 %}var(--integrity-green)
+                                      {% elif (r.health_score or 100) > 50 %}var(--integrity-gold)
+                                      {% else %}var(--critical-red){% endif %};"
+                     title="{{ r.vin_dna }} | Health: {{ r.health_score or 100 }}%">
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="crt-terminal" style="margin-top: 0;">
+        <div class="crt-scanline"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 10px;">
+            <h3 style="color: #0f0; font-family: 'Courier Prime'; text-transform: uppercase; margin: 0; font-size: 0.8rem;">&gt; ANALYZED_FORENSIC_LOGS.sh</h3>
+        </div>
+        <div style="max-height: 300px; overflow-y: auto;" class="scroll-hide crt-text">
+            {% set global_logs = [] %}
+            {% for r in all_records %}
+                {% if r.transactions %}
+                    {% for tx in r.transactions %}
+                        {% if tx.timestamp %}
+                            {% set _ = global_logs.append({'time': tx.timestamp, 'intent': tx.intent, 'vin': r.vin_dna, 'amount': tx.amount}) %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+
+            {% set sorted_logs = global_logs | sort(attribute='time', reverse=true) %}
+            {% if sorted_logs|length > 0 %}
+                {% for log in sorted_logs[:100] %}
+                    {% set status_tag = "AUDIT" %}
+                    {% set color_code = "#66b3ff" %}
+                    {% if log.amount and log.amount > 0 %}
+                        {% set status_tag = "YIELD" %}
+                        {% set color_code = "#0f0" %}
+                    {% elif log.amount and log.amount < 0 %}
+                        {% set status_tag = "DEBIT" %}
+                        {% set color_code = "#C5A059" %}
+                    {% elif 'MAYDAY' in log.intent %}
+                        {% set status_tag = "TRIAGE" %}
+                        {% set color_code = "#ff0000" %}
+                    {% elif 'FAIL' in log.intent or 'REJECT' in log.intent %}
+                        {% set status_tag = "ERROR" %}
+                        {% set color_code = "#ff4444" %}
+                    {% endif %}
+
+                    <div style="border-bottom: 1px solid #111; padding: 6px 0; display: flex; align-items: center; gap: 10px;">
+                        <span style="color: #555; white-space: nowrap;">[{{ log.time.strftime('%Y-%m-%d %H:%M:%S') }}]</span>
+                        <span style="color: {{ color_code }}; font-weight: bold; white-space: nowrap;">[{{ status_tag }}]</span>
+                        <span style="color: #ccc; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ log.intent }}{% if log.amount %} (P{{ "{:,.2f}".format(log.amount|abs) }}){% endif %}</span>
+                        <span style="color: var(--integrity-gold); font-weight: bold; white-space: nowrap;">(VIN: {{ log.vin[-6:] }})</span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; color: #555; padding: 20px; font-style: italic;">[ NO FORENSIC DATA DETECTED IN SATELLITE UPLINK ]</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if current_user.role == 'ARCHITECT' %}
+<div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px; background: #0a0a0a; padding: 20px; border: 1px solid #333; flex-wrap: wrap; align-items: center;">
+    <span style="color: var(--integrity-gold); font-family: 'Courier Prime'; font-weight: 900; align-self: center;">GLOBAL COMMANDS:</span>
+    <form action="{{ url_for('hangar.distribute_yield') }}" method="POST" style="margin: 0; display: flex; gap: 5px;" onsubmit="return confirm('WARNING: Deploy capital?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="number" step="0.01" name="gross_yield" placeholder="BWP" required style="background: #000; border: 1px solid var(--integrity-gold); color: #fff; padding: 8px 12px; font-family: 'Courier Prime'; font-size: 0.75rem; width: 100px;">
+        <button type="submit" class="btn-brutal gold" style="background: var(--integrity-gold); color: #000;">💰 DEPLOY YIELD</button>
+    </form>
+    <form action="{{ url_for('hangar.force_mail_engine') }}" method="POST" style="margin: 0;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn-brutal gold">📧 FORCE MAIL</button>
+    </form>
+    <form action="{{ url_for('hangar.force_backup') }}" method="POST" style="margin: 0;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn-brutal gold" style="border-color: #555; background: #222; color: #fff;">👻 FORCE BACKUP</button>
+    </form>
+</div>
+{% endif %}
+
+<div class="crt-terminal">
+    <div class="crt-scanline"></div>
+    <h3 style="color: #0f0; font-family: 'Courier Prime'; text-transform: uppercase; border-bottom: 2px solid #222; padding-bottom: 10px;">&gt; RAW_SATELLITE_DB_DUMP.sh</h3>
+    <div style="max-height: 400px; overflow-y: auto;" class="scroll-hide crt-text">
+        {% for r in all_records %}
+            <div style="border-bottom: 1px dashed #333; padding: 15px 0; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <span style="color: #00ff00;">[SYS_ID: {{ r.id }}]</span>
+                    <strong style="color: var(--integrity-gold);">VIN:</strong> <span style="color: #fff;">{{ r.vin_dna }}</span> //
+                    <strong>STAT:</strong> {{ r.status }}
+                </div>
+                <div style="display: flex; gap: 5px;">
+                    <a href="{{ url_for('hangar.client_vault', asset_id=r.vin_dna) }}" class="btn-brutal" style="color: #66b3ff; border-color: #66b3ff; font-size: 0.6rem;">👁️ VIEW VAULT</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

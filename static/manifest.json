@@ -1,0 +1,25 @@
+{
+  "background_color": "#080c14",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Laveto Ecosystem",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "short_name": "Laveto",
+  "start_url": "/",
+  "theme_color": "#14b8a6",
+  "icons": [
+    {
+      "src": "https://www.laveto.net/static/Laveto_logo-01.png",
+      "type": "image/png",
+      "sizes": "3508x1304"
+    },
+    {
+      "src": "https://www.laveto.net/favicon.ico",
+      "type": "image/x-icon",
+      "sizes": "any"
+    }
+  ],
+  "description": "Botswana Digital Commerce Ledger, Smart Basket Aggregator & Instant Till Point",
+  "id": "/merchant/botique-demo/dashboard"
+}

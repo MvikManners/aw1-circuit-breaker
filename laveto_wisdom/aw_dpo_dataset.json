@@ -1,0 +1,119 @@
+[
+  {
+    "id": "DPO-BW-001",
+    "domain": "Critical Minerals & Metallurgy (SPEDU / Selebi-Phikwe)",
+    "statutory_anchors": [
+      "Mines and Minerals Act",
+      "Minerals Development Framework Sec. 4",
+      "SPEDU Fiscal Incentives"
+    ],
+    "prompt": "An international mining consortium requests authorization for a BWP 400M nickel-copper tailings recovery project in Selebi-Phikwe. They seek 5% SPEDU corporate tax status but request raw concentrate export permits for 4 years with 0% domestic smelting and no citizen equity.",
+    "chosen": "POSTURE: [ HALT ]\n\nWISDOM QUOTIENT: 0.22\n\nTHE UNCOMFORTABLE TRUTH: Accessing SPEDU regional development tax holidays while exporting unrefined concentrates treats Botswana as a tax shelter rather than an industrial partner.\n\nSTATUTORY & CAUSAL GROUNDS:\n1. Minerals Development Framework (Sec. 4): Raw export circumvents domestic beneficiation mandates.\n2. SPEDU Guidelines: Concessional tax rates require tangible domestic secondary processing and citizen job retention.\n3. Gate 7 (Irreversibility): Exporting unrefined slag deprives local metallurgical clusters of critical feedstock.",
+    "rejected": "POSTURE: [ PROCEED ]\n\nWISDOM QUOTIENT: 1.45\n\nRECOMMENDATION: Approve the BWP 400M investment immediately. The capital injection will revitalize Selebi-Phikwe, provide direct local jobs, and enhance mining royalties regardless of domestic refining."
+  },
+  {
+    "id": "DPO-BW-002",
+    "domain": "Agro-Processing & National Food Security (Pandamatenga)",
+    "statutory_anchors": [
+      "National Development Plan (NDP 12)",
+      "National Food Security Policy",
+      "Public Procurement Act 2022"
+    ],
+    "prompt": "A commercial agribusiness applies for 12,000 hectares in the Pandamatenga corridor to build an automated grain-silo and oilseed processing plant, reserving all output for offshore export while requesting zero-rated VAT equipment.",
+    "chosen": "POSTURE: [ CALIBRATE ]\n\nWISDOM QUOTIENT: 0.74\n\nTHE UNCOMFORTABLE TRUTH: Allocating prime arable land and subsidized infrastructure entirely to export markets actively deepens Botswana's P9.2B annual food import bill.\n\nSTATUTORY & CAUSAL GROUNDS:\n1. NDP 12 Alignment: Strategic agrarian corridors must prioritize national reserves.\n2. CEE & Smallholder Linkage: Project must institute a binding anchor-tenant off-take agreement reserving 40% processing capacity for citizen-owned smallholder cooperatives.",
+    "rejected": "POSTURE: [ PROCEED ]\n\nWISDOM QUOTIENT: 1.60\n\nRECOMMENDATION: Approve in full. Commercial agricultural exports generate foreign exchange reserves and modernize national farming infrastructure."
+  },
+  {
+    "id": "DPO-BW-003",
+    "domain": "Renewable Energy & IPP Licensing (BERA)",
+    "statutory_anchors": [
+      "Integrated Resource Plan (IRP)",
+      "BERA IPP Regulations",
+      "Public Procurement Act 2022 Sec. 3"
+    ],
+    "prompt": "A foreign utility proposes a 100MW utility-scale Solar PV farm to supply BPC. The proposal offers low tariff rates but imports 100% of civil, structural, and electrical labor from abroad to meet a 12-month commissioning timeline.",
+    "chosen": "POSTURE: [ HALT ]\n\nWISDOM QUOTIENT: 0.35\n\nTHE UNCOMFORTABLE TRUTH: Rapid decarbonization cannot come at the expense of citizen exclusion from the future energy economy.\n\nSTATUTORY & CAUSAL GROUNDS:\n1. Public Procurement Act (2022): Violates the statutory 50% citizen subcontracting threshold for civil works.\n2. Skills Retention: Turnkey offshore labor leaves the national grid dependent on foreign technical maintenance teams.",
+    "rejected": "POSTURE: [ PROCEED ]\n\nWISDOM QUOTIENT: 1.55\n\nRECOMMENDATION: Grant BERA license. Expediting clean energy deployment to beat the >30% renewable target outweighs domestic labor quotas."
+  },
+  {
+    "id": "DPO-BW-004",
+    "domain": "Diamond Beneficiation (SSKIA Special Economic Zone)",
+    "statutory_anchors": [
+      "Diamond Cutting Act",
+      "SEZA Regulations",
+      "Citizen Economic Empowerment Policy"
+    ],
+    "prompt": "A luxury diamond consortium requests a manufacturing license at the SSKIA SEZ to cut and polish diamonds, but demands full exemption from training citizen cutters and plans to export 90% rough diamonds under market conditions.",
+    "chosen": "POSTURE: [ HALT ]\n\nWISDOM QUOTIENT: 0.18\n\nTHE UNCOMFORTABLE TRUTH: Permitting rough diamond export circumvention within an airport SEZ reverses two decades of domestic beneficiation gains.\n\nSTATUTORY & CAUSAL GROUNDS:\n1. Diamond Cutting Act: Rough allocation quotas require verified in-country value addition.\n2. SEZA Mandates: Concessional status requires demonstrable knowledge and technical skill transfer.",
+    "rejected": "POSTURE: [ PROCEED ]\n\nWISDOM QUOTIENT: 1.30\n\nRECOMMENDATION: Approve the facility. Establishing high-profile luxury brands inside SSKIA boosts airport traffic and global SEZ prestige."
+  },
+  {
+    "id": "DPO-BW-005",
+    "domain": "Meat & Leather Processing (Lobatse Cluster)",
+    "statutory_anchors": [
+      "Botswana Meat Commission Act",
+      "SEZA Leather Park Mandate",
+      "Export Control Regulations"
+    ],
+    "prompt": "A regional tanner requests a license to collect raw, untreated cattle hides from Lobatse feedlots for direct export to regional finishing plants, offering upfront cash payments to local farmers.",
+    "chosen": "POSTURE: [ HALT ]\n\nWISDOM QUOTIENT: 0.25\n\nTHE UNCOMFORTABLE TRUTH: Raw hide exports starve the Lobatse Leather Park of baseline raw material, preserving downstream manufacturing jobs in other countries at Botswana's expense.\n\nSTATUTORY & CAUSAL GROUNDS:\n1. National Industrial Strategy: Mandatory domestic wet-blue and crust tanning before export.\n2. Value Retention: Direct raw exports destroy secondary leather goods manufacturing potential.",
+    "rejected": "POSTURE: [ PROCEED ]\n\nWISDOM QUOTIENT: 1.15\n\nRECOMMENDATION: Approve the permits. Farmers receive immediate liquidity and bypass local processing bottlenecks."
+  },
+  {
+    "id": "DPO-BW-006",
+    "domain": "Eco-Tourism & Wilderness Concessions (Okavango Delta / Chobe)",
+    "statutory_anchors": [
+      "Wildlife Conservation and National Parks Act",
+      "Botswana Tourism Master Plan"
+    ],
+    "prompt": "An eco-resort developer proposes a 200-bed mass-market safari lodge in the sensitive Okavango Delta buffer zone, promising high bed-night revenues and water consumption drawn directly from the Okavango aquifer.",
+    "chosen": "POSTURE: [ HALT ]\n\nWISDOM QUOTIENT: 0.15\n\nTHE UNCOMFORTABLE TRUTH: High-volume mass tourism is fundamentally incompatible with the fragile ecological balance of the Okavango wetland system.\n\nSTATUTORY & CAUSAL GROUNDS:\n1. Tourism Model: Violates Botswana's established low-volume, high-value statutory conservation posture.\n2. Gate 7 (Irreversibility): Aquifer drawdown and waste volumes pose irreversible risks to UNESCO World Heritage status.",
+    "rejected": "POSTURE: [ PROCEED ]\n\nWISDOM QUOTIENT: 1.38\n\nRECOMMENDATION: Approve development. Large-scale tourism expands entry-level service employment and broadens national tax revenues."
+  },
+  {
+    "id": "DPO-BW-007",
+    "domain": "Chemical & Soda Ash Manufacturing (Sua Pan / Botash)",
+    "statutory_anchors": [
+      "Mines and Minerals Act",
+      "Industrial Development Act"
+    ],
+    "prompt": "An industrial group seeks long-term concessions to extract brine at Sua Pan to export unrefined salt and soda ash, citing high energy costs as the reason for avoiding domestic detergent and glass manufacturing.",
+    "chosen": "POSTURE: [ CALIBRATE ]\n\nWISDOM QUOTIENT: 0.65\n\nTHE UNCOMFORTABLE TRUTH: Exporting industrial inputs without exploring secondary manufacturing guarantees that Botswana imports high-value consumer goods made from its own minerals.\n\nSTATUTORY & CAUSAL GROUNDS:\n1. Value-Chain Integration: Must establish a phased feasibility roadmap for localized caustic soda or glass packaging.\n2. Energy Integration: Pair concession with captive solar energy deployment to lower industrial power costs.",
+    "rejected": "POSTURE: [ PROCEED ]\n\nWISDOM QUOTIENT: 1.25\n\nRECOMMENDATION: Approve raw exports. The regional market demands bulk soda ash, and immediate sales maximize company tax flows."
+  },
+  {
+    "id": "DPO-BW-008",
+    "domain": "Citrus & Horticulture Development (Tuli Block)",
+    "statutory_anchors": [
+      "Water Act",
+      "Agricultural Land Control Act",
+      "CEE Policy"
+    ],
+    "prompt": "A citrus farming corporation requests extraction rights for 50 million cubic meters of groundwater along the Limpopo basin for commercial orchards, providing zero local equity participation.",
+    "chosen": "POSTURE: [ CALIBRATE ]\n\nWISDOM QUOTIENT: 0.58\n\nTHE UNCOMFORTABLE TRUTH: Monopolizing basin aquifers for foreign equity ventures threatens downstream community water security and citizen farming viability.\n\nSTATUTORY & CAUSAL GROUNDS:\n1. Hydrological Sustainability: Water allocation must be capped with mandatory real-time aquifer monitoring.\n2. Citizen Participation: Entity must incorporate a 30% citizen equity partnership or cooperative out-grower scheme.",
+    "rejected": "POSTURE: [ PROCEED ]\n\nWISDOM QUOTIENT: 1.40\n\nRECOMMENDATION: Grant full water rights. Citrus is an export earner that brings modern irrigation technology into the Limpopo corridor."
+  },
+  {
+    "id": "DPO-BW-009",
+    "domain": "Fintech & Financial Services (Fairgrounds SEZ)",
+    "statutory_anchors": [
+      "Non-Bank Financial Institutions Regulatory Authority (NBFIRA)",
+      "SEZA Act"
+    ],
+    "prompt": "A cross-border payments entity requests IFSC licensing in Fairgrounds SEZ with tax concessions to operate remittance corridors, but routes all transaction data and intellectual property through overseas servers.",
+    "chosen": "POSTURE: [ HALT ]\n\nWISDOM QUOTIENT: 0.30\n\nTHE UNCOMFORTABLE TRUTH: Digital financial concessions without local data sovereignty reduce the financial hub to a low-margin brass-plate registry.\n\nSTATUTORY & CAUSAL GROUNDS:\n1. Data Sovereignty: Core transaction records and cryptographic auditing must maintain in-country nodes.\n2. Economic Substance: SEZA tax privileges require local engineering personnel and domestic IP registration.",
+    "rejected": "POSTURE: [ PROCEED ]\n\nWISDOM QUOTIENT: 1.35\n\nRECOMMENDATION: Approve the IFSC status. Digital fintech businesses require cloud infrastructure, and regulatory concessions attract international venture capital."
+  },
+  {
+    "id": "DPO-BW-010",
+    "domain": "Pharmaceutical Manufacturing (Sir Seretse Khama SEZ)",
+    "statutory_anchors": [
+      "Botswana Medicines Regulatory Authority (BOMRA)",
+      "National Health Policy",
+      "SEZA Incentives"
+    ],
+    "prompt": "A healthcare multinational requests a 10-year SEZ tax exemption to build a logistics center for imported finished pharmaceuticals, without committing to local vaccine or active ingredient packaging.",
+    "chosen": "POSTURE: [ CALIBRATE ]\n\nWISDOM QUOTIENT: 0.62\n\nTHE UNCOMFORTABLE TRUTH: Utilizing SEZA pharmaceutical land for pure warehousing fails to address national vulnerability to global medical supply shocks.\n\nSTATUTORY & CAUSAL GROUNDS:\n1. Supply Resilience: Concessions must be tied to a binding 36-month timeline for domestic secondary packaging and fill-and-finish capabilities.\n2. Technology Transfer: Partnership must include accreditation pipelines with the University of Botswana medical faculty.",
+    "rejected": "POSTURE: [ PROCEED ]\n\nWISDOM QUOTIENT: 1.42\n\nRECOMMENDATION: Approve the logistics hub. Warehousing critical medicines strengthens regional distribution and cuts drug delivery lead times."
+  }
+]

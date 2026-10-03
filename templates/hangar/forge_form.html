@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Forge Payroll Mandate | Laveto System</title>
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background: #0a0a0a; color: #fff; padding: 40px; display: flex; justify-content: center; }
+        .forge-card { background: #fff; color: #333; width: 100%; max-width: 600px; padding: 40px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { color: #0033a0; border-bottom: 2px solid #C5A059; padding-bottom: 10px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 11px; font-weight: 700; color: #555; text-transform: uppercase; margin-bottom: 5px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: 'Courier Prime', monospace; }
+        
+        /* Signature Pad Styles */
+        .signature-container { margin-bottom: 20px; border: 2px dashed #ccc; padding: 10px; background: #f9f9f9; }
+        canvas { width: 100%; height: 150px; background: #fff; cursor: crosshair; }
+        .clear-btn { background: #666; font-size: 10px; padding: 5px 10px; margin-top: 5px; width: auto; text-transform: uppercase; }
+
+        button { width: 100%; padding: 15px; background: #0033a0; color: white; border: none; font-weight: 900; text-transform: uppercase; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        button:hover { background: #002266; }
+        button:disabled { background: #555; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <div class="forge-card">
+        <h2>Forge Payroll Mandate</h2>
+        <form id="mandate-form" method="POST" action="{{ url_for('hangar.forge_payroll_mandate') }}" onsubmit="showProcessing()">
+            <div class="form-group">
+                <label>Vehicle VIN (DNA)</label>
+                <input type="text" name="vin_dna" required>
+            </div>
+            <div class="form-group">
+                <label>Ministry / Department</label>
+                <input type="text" name="department" required>
+            </div>
+            <div class="form-group">
+                <label>Omang Number</label>
+                <input type="text" name="omang_number" required>
+            </div>
+            <div class="form-group">
+                <label>Employee / Payroll ID</label>
+                <input type="text" name="employee_number" required>
+            </div>
+            <div class="form-group">
+                <label>Monthly Pledge (P)</label>
+                <input type="number" name="monthly_pledge" step="0.01" required>
+            </div>
+
+            <div class="form-group">
+                <label>Authorized Signature</label>
+                <div class="signature-container">
+                    <canvas id="covenantSignaturePad"></canvas>
+                    <button type="button" class="clear-btn" onclick="clearSovereignSignature()">Clear Signature</button>
+                </div>
+            </div>
+
+            <input type="hidden" id="digital_signature_base64" name="signature_data">
+            
+            <button id="submit-btn" type="submit">Execute Payroll Forging</button>
+        </form>
+    </div>
+
+    <script>
+        // Signature Engine
+        let signaturePad = null;
+        let sigCtx = null;
+        let isDrawing = false;
+        let signatureStarted = false;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            signaturePad = document.getElementById('covenantSignaturePad');
+            if (signaturePad) {
+                sigCtx = signaturePad.getContext('2d');
+                sigCtx.strokeStyle = '#000000';
+                sigCtx.lineWidth = 3;
+                sigCtx.lineCap = 'round';
+
+                signaturePad.addEventListener('mousedown', startDrawing);
+                signaturePad.addEventListener('mousemove', draw);
+                signaturePad.addEventListener('mouseup', stopDrawing);
+                signaturePad.addEventListener('mouseleave', stopDrawing);
+
+                signaturePad.addEventListener('touchstart', handleTouchStart, {passive: false});
+                signaturePad.addEventListener('touchmove', handleTouchMove, {passive: false});
+                signaturePad.addEventListener('touchend', stopDrawing);
+            }
+        });
+
+        function startDrawing(e) {
+            isDrawing = true;
+            signatureStarted = true;
+            draw(e);
+        }
+
+        function draw(e) {
+            if (!isDrawing || !sigCtx || !signaturePad) return;
+            const rect = signaturePad.getBoundingClientRect();
+            const scaleX = signaturePad.width / rect.width;
+            const scaleY = signaturePad.height / rect.height;
+            const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            const x = (clientX - rect.left) * scaleX;
+            const y = (clientY - rect.top) * scaleY;
+            sigCtx.lineTo(x, y);
+            sigCtx.stroke();
+            sigCtx.beginPath();
+            sigCtx.moveTo(x, y);
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+            if (sigCtx) sigCtx.beginPath();
+            syncSignatureToHiddenField();
+        }
+
+        function handleTouchStart(e) {
+            if (e.touches.length === 1 && signaturePad) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent("mousedown", { clientX: touch.clientX, clientY: touch.clientY });
+                signaturePad.dispatchEvent(mouseEvent);
+            }
+        }
+
+        function handleTouchMove(e) {
+            if (e.touches.length === 1 && signaturePad) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent("mousemove", { clientX: touch.clientX, clientY: touch.clientY });
+                signaturePad.dispatchEvent(mouseEvent);
+            }
+        }
+
+        function syncSignatureToHiddenField() {
+            const hiddenField = document.getElementById('digital_signature_base64');
+            if (hiddenField && signaturePad && signatureStarted) {
+                hiddenField.value = signaturePad.toDataURL('image/png');
+            }
+        }
+
+        function clearSovereignSignature() {
+            if (sigCtx && signaturePad) {
+                sigCtx.clearRect(0, 0, signaturePad.width, signaturePad.height);
+                signatureStarted = false;
+                const hiddenField = document.getElementById('digital_signature_base64');
+                if (hiddenField) hiddenField.value = '';
+            }
+        }
+
+        // Form Submission Handling
+        function showProcessing() {
+            const btn = document.getElementById('submit-btn');
+            btn.innerText = 'TRANSMITTING MANDATE...';
+            btn.style.backgroundColor = '#555';
+            setTimeout(() => { btn.disabled = true; }, 100);
+        }
+    </script>
+</body>
+</html>

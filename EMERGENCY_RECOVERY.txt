@@ -1,0 +1,37 @@
+# EMERGENCY RECOVERY PROTOCOL - LAVETO SYSTEM
+# Last Verified: 2026-06-02
+# Author: Vela (The Architect)
+
+---
+
+## 1. PRE-RECOVERY: ENVIRONMENT PREPARATION
+1. Ensure the new environment has `python3.10`, `sqlite3`, and the `cryptography` library installed.
+2. Ensure you have the `BACKUP_ENCRYPTION_KEY` available (Found in your .env or secure vault).
+3. Identify the most recent '.zip.enc' file from your off-site storage.
+
+## 2. DECRYPTION & EXTRACTION
+Execute the following process to unlock the system payload:
+1. Run a script containing:
+    from cryptography.fernet import Fernet
+    cipher_suite = Fernet(SECRET_KEY)
+    with open('ledger_YYYY-MM-DD_HHMMSS.zip.enc', 'rb') as f:
+        data = cipher_suite.decrypt(f.read())
+    with open('system_restored.zip', 'wb') as f:
+        f.write(data)
+2. Unzip `system_restored.zip` to a temporary directory.
+
+## 3. STRUCTURAL RESTORATION
+1. Move `gospel_v4.db` to `/home/LavetoLab/instance/`.
+2. Move `/static/` assets (images, CSS, manifests) back to their respective folders.
+3. Verify integrity:
+    sqlite3 /home/LavetoLab/instance/gospel_v4.db "PRAGMA integrity_check;"
+    (Expected output: 'ok')
+
+## 4. RE-INITIATION
+1. Restart the application server.
+2. Initialize the Sentinel daemon:
+    python3.10 /home/LavetoLab/vault_sync.py &
+3. Verify logs in `/home/LavetoLab/logs/vault_sync.log`.
+
+---
+WARNING: Do not lose the SECRET_KEY. Without it, the archive is permanently inaccessible.

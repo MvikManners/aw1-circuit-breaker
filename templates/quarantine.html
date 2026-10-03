@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --bg-dark: #0a0a0a; --panel-bg: #111111; --border-ui: #333333;
+        --text-main: #f9f9f9; --text-muted: #888888;
+        --sanctified-blue: #003366; --integrity-gold: #C5A059;
+        --critical-red: #d9534f; --integrity-green: #28a745;
+        --warning-orange: #fd7e14;
+    }
+
+    body { margin: 0; padding: 0; background: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; }
+
+    .header { background: var(--panel-bg); padding: 20px 5%; border-bottom: 2px solid var(--integrity-gold); display: flex; justify-content: space-between; align-items: center; border-radius: 2px; margin-bottom: 30px;}
+    .header h1 { font-family: 'Montserrat'; font-weight: 900; letter-spacing: 2px; font-size: 1.2rem; margin: 0; text-transform: uppercase; color: var(--sanctified-blue); }
+    .badge-count { background: var(--critical-red); color: white; padding: 6px 12px; border-radius: 2px; font-family: 'Courier Prime'; font-size: 0.8rem; font-weight: bold;}
+
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    /* AUDIT CARDS - Fixed Grid Blowout */
+    .audit-card {
+        background: var(--panel-bg); border: 1px solid var(--border-ui);
+        border-left: 5px solid var(--warning-orange); border-radius: 2px;
+        margin-bottom: 20px; display: grid; grid-template-columns: 1.2fr 2fr 1fr;
+        gap: 30px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    .dna-block h2 { margin: 0 0 5px 0; font-family: 'Courier Prime'; color: var(--integrity-gold); font-size: 1.5rem; font-weight: 900;}
+    .dna-block p { margin: 0; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-family: 'Montserrat', sans-serif; font-weight: bold;}
+
+    /* 📸 SECURE VAULT CARD UPGRADE */
+    .evidence-block { min-width: 0; overflow: hidden; }
+    .evidence-strip { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 15px; margin-top: 15px; width: 100%; }
+    .evidence-item { display: flex; flex-direction: column; align-items: center; min-width: 130px; }
+
+    .secure-file-card {
+        width: 130px; height: 90px;
+        background: #000;
+        border: 1px solid var(--border-ui);
+        border-radius: 2px;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        cursor: pointer; transition: 0.3s;
+        text-decoration: none; color: var(--integrity-gold);
+        font-family: 'Courier Prime', monospace;
+    }
+    .secure-file-card:hover {
+        border-color: var(--integrity-gold);
+        background: rgba(197, 160, 89, 0.05);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(197, 160, 89, 0.15);
+    }
+    .secure-file-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .secure-file-text { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;}
+
+    .evidence-label { font-family: 'Courier Prime', monospace; font-size: 0.65rem; color: var(--text-muted); margin-top: 10px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; font-weight: bold; }
+
+    /* SCROLLBAR REFINEMENT */
+    .evidence-strip::-webkit-scrollbar { height: 6px; }
+    .evidence-strip::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+    .evidence-strip::-webkit-scrollbar-track { background: transparent; }
+
+    /* 📋 TRAUMA MANIFEST UPGRADE */
+    .trauma-manifest { margin-top: 15px; border-top: 1px dashed var(--border-ui); padding-top: 10px; }
+    .trauma-item { font-family: 'Courier Prime', monospace; font-size: 0.7rem; color: var(--critical-red); margin-bottom: 4px; display: flex; justify-content: space-between;}
+    .trauma-grade { background: rgba(255, 0, 0, 0.1); border: 1px solid var(--critical-red); padding: 2px 6px; border-radius: 2px; font-weight: bold; }
+
+    /* ACTION CONSOLE */
+    .action-console { display: flex; flex-direction: column; gap: 12px; justify-content: center; border-left: 1px dashed var(--border-ui); padding-left: 30px; }
+    .btn-action { padding: 15px; font-family: 'Montserrat'; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; border: none; border-radius: 2px; cursor: pointer; color: white; font-size: 0.75rem; transition: 0.3s; width: 100%; box-sizing: border-box; }
+    .btn-approve { background: var(--integrity-green); }
+    .btn-approve:hover { background: #218838; box-shadow: 0 0 15px rgba(40, 167, 69, 0.4); }
+    .btn-reject { background: transparent; border: 1px solid var(--critical-red); color: var(--critical-red); }
+    .btn-reject:hover { background: var(--critical-red); color: white; }
+
+    .reject-input { background: #000; border: 1px dashed var(--critical-red); color: #fff; padding: 12px; font-family: 'Courier Prime'; font-size: 0.8rem; width: 100%; box-sizing: border-box; margin-bottom: 5px; display: none; border-radius: 2px; outline: none; }
+    .reject-input:focus { border-color: #ff4444; }
+
+    /* 💰 FINANCIAL STATE INJECTION */
+    .financial-state-box { background: rgba(0, 51, 102, 0.1); border: 1px solid var(--sanctified-blue); border-radius: 2px; padding: 15px; margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center; }
+    .fin-state-label { font-family: 'Montserrat'; font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: bold;}
+    .fin-state-value { font-family: 'Courier Prime'; font-size: 1.1rem; font-weight: 900; color: var(--text-main); }
+    .fin-state-value.green { color: var(--integrity-green); }
+
+    .shortfall-alert { background: rgba(255,0,0,0.1); border: 1px dashed var(--critical-red); color: var(--critical-red); padding: 12px; margin-top: 15px; text-align: center; font-family: 'Courier Prime'; font-weight: 900; font-size: 0.9rem; border-radius: 2px; }
+    .surplus-alert { background: rgba(40,167,69,0.1); border: 1px dashed var(--integrity-green); color: var(--integrity-green); padding: 12px; margin-top: 15px; text-align: center; font-family: 'Courier Prime'; font-weight: 900; font-size: 0.9rem; border-radius: 2px; }
+
+    /* MOBILE RESPONSIVE */
+    @media screen and (max-width: 900px) {
+        .audit-card { grid-template-columns: 1fr; gap: 20px; padding: 20px; }
+        .action-console { border-left: none; padding-left: 0; border-top: 1px dashed var(--border-ui); padding-top: 20px; }
+        .btn-action { flex: 1; }
+    }
+</style>
+
+<div class="header">
+    <div>
+        <h1>Sovereign Command <span style="color:var(--integrity-gold);">// Quarantine</span></h1>
+        <p style="font-family: 'Courier Prime', monospace; color: var(--text-muted); font-size: 0.75rem; margin: 5px 0 0 0;">ZERO-TRUST OVERSIGHT DESK</p>
+    </div>
+    <div style="display: flex; gap: 15px; align-items: center;">
+        <a href="{{ url_for('view_ledger') }}" style="font-family: 'Montserrat', sans-serif; font-size: 0.7rem; font-weight: bold; color: var(--text-main); text-decoration: none; text-transform: uppercase; border: 1px solid var(--border-ui); padding: 8px 15px; border-radius: 2px;">⬅ Return to Wall</a>
+        <div class="badge-count">{{ audits|length }} PENDING</div>
+    </div>
+</div>
+
+<div class="container">
+    {% for audit in audits %}
+    <div class="audit-card">
+
+        <div class="dna-block">
+            <h2>{{ audit.vin_dna }}</h2>
+            <p>Bay: <span style="color: var(--text-main);">{{ audit.bay_assignment or 'UNASSIGNED' }}</span></p>
+            <p style="margin-top: 10px; color: #aaa; font-family: 'Courier Prime', monospace; text-transform: none;">Submitted: {{ audit.date_created|string|truncate(16, True, '') if audit.date_created else 'DATE UNKNOWN' }}</p>
+
+            <div style="background: #000; border: 1px dashed var(--critical-red); padding: 15px; margin-top: 20px; text-align: center; border-radius: 2px;">
+                <div style="font-family: 'Montserrat'; font-size: 0.65rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-weight: bold;">Required Hardening Toll</div>
+                <div style="color: var(--critical-red); font-size: 1.6rem; font-weight: 900; font-family: 'Courier Prime';">P{{ "{:,.2f}".format(audit.target_repair_cost or 0) }}</div>
+            </div>
+
+            {% set total_funds = audit.shield_reservoir or 0 %}
+            {% set repair_cost = audit.target_repair_cost or 0 %}
+            {% set deficit = repair_cost - total_funds %}
+
+            <div class="financial-state-box">
+                <div>
+                    <div class="fin-state-label">Maintenance Fund</div>
+                    <div class="fin-state-value {% if total_funds >= repair_cost %}green{% endif %}">P{{ "{:,.2f}".format(total_funds) }}</div>
+                </div>
+                <div style="border-left: 1px dashed var(--border-ui); padding-left: 10px;">
+                    <div class="fin-state-label">Compounding Yield</div>
+                    <div class="fin-state-value" style="color: var(--integrity-gold);">P{{ "{:,.2f}".format(audit.yield_interest or 0) }}</div>
+                </div>
+            </div>
+
+            {% if deficit > 0 and repair_cost > 0 %}
+                <div class="shortfall-alert">
+                    ⚠️ SHORTFALL: P{{ "{:,.2f}".format(deficit) }}
+                </div>
+            {% elif repair_cost > 0 %}
+                <div class="surplus-alert">
+                    ✅ FULLY COVERED BY FUNDS
+                </div>
+            {% endif %}
+
+            <div class="trauma-manifest">
+                <div style="font-size: 0.65rem; color: var(--integrity-gold); font-family: 'Montserrat'; margin-bottom: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Detected Trauma</div>
+
+                {% set ns_trauma = namespace(has_trauma=false) %}
+                {% for comp in audit.components %}
+                    {% if comp.grade and comp.grade <= 2 %}
+                        {% set ns_trauma.has_trauma = true %}
+                        <div class="trauma-item">
+                            <span>⚠️ {{ comp.name }}</span>
+                            <span class="trauma-grade">Grade: {{ comp.grade }}</span>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if not ns_trauma.has_trauma %}
+                    <div style="font-family: 'Courier Prime'; font-size: 0.7rem; color: #666;">No critical trauma logged.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="evidence-block">
+            <div style="font-size: 0.75rem; color: var(--integrity-gold); font-family: 'Montserrat'; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px dashed var(--border-ui); padding-bottom: 12px;">
+                CRITICAL TRAUMA & PART IMAGERY
+            </div>
+
+            <div class="evidence-strip">
+                {% set ns = namespace(has_photos=false) %}
+                {% for ghost in audit.ghost_orders %}
+                    {% for ev in ghost.evidence %}
+                        {% set ns.has_photos = true %}
+
+                        {% set file_link = ev.image_path %}
+                        {% if file_link and not file_link.startswith('http') %}
+                            {% set file_link = url_for('static', filename=file_link) %}
+                        {% endif %}
+
+                        <div class="evidence-item">
+                            <a href="{{ file_link or '#' }}" target="_blank" class="secure-file-card">
+                                <span class="secure-file-icon">📄</span>
+                                <span class="secure-file-text">VIEW DATA</span>
+                            </a>
+                            <div class="evidence-label">{{ ghost.component_name }}</div>
+                            <!-- 🛑 NEW WELD: Live Silk Road Verification Status -->
+                            <div style="font-size: 0.55rem; color: {% if ghost.status == 'DELIVERED TO BAY' %}var(--integrity-green){% else %}var(--warning-orange){% endif %}; font-family: 'Courier Prime'; text-align: center; margin-top: 4px; font-weight: bold;">[{{ ghost.status }}]</div>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+
+                {% if not ns.has_photos %}
+                    <div style="color: var(--critical-red); font-family: 'Courier Prime'; font-size: 0.8rem; padding: 40px 20px; border: 1px dashed var(--critical-red); border-radius: 2px; width: 100%; text-align: center; background: rgba(255,0,0,0.05); margin-top: 15px; box-sizing: border-box;">
+                        [ NO FORENSIC IMAGERY DETECTED ]<br>
+                        <span style="font-size: 0.65rem; color: #888; display: block; margin-top: 8px;">Sanctification impossible without visual proof. Reject recommended.</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="action-console">
+            <form action="{{ url_for('approve_audit', asset_id=audit.id) }}" method="POST" style="margin: 0; width: 100%;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                {% if deficit > 0 and repair_cost > 0 %}
+                    <button type="submit" class="btn-action btn-approve" style="background: var(--warning-orange); color: #000;" onclick="return confirm('Account has a shortfall. Approve and route to AWAITING PAYMENT for top-up?');">
+                        ⚠️ APPROVE & REQUIRE TOP-UP
+                    </button>
+                {% else %}
+                    <button type="submit" class="btn-action btn-approve" onclick="return confirm('Verify: Photographic evidence is clear and parts are authorized for install?');">
+                        ✓ SANCTIFY AUDIT & PARTS
+                    </button>
+                {% endif %}
+            </form>
+
+            <div style="border-top: 1px dashed var(--border-ui); margin: 5px 0;"></div>
+
+            <form action="{{ url_for('reject_audit', asset_id=audit.id) }}" method="POST" style="margin: 0; width: 100%;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <select name="rejection_reason_preset" id="reason_preset_{{ audit.id }}" class="reject-input" style="display: none; margin-bottom: 5px;" onchange="handlePresetChange({{ audit.id }})" required>
+                    <option value="" disabled selected>Select preset reason...</option>
+                    <option value="Photos are blurry/unreadable">Photos are blurry/unreadable</option>
+                    <option value="Wrong component depicted in evidence">Wrong component depicted in evidence</option>
+                    <option value="Photos are too dark">Photos are too dark</option>
+                    <option value="Sentinel-A GPS geofence failure">Sentinel-A GPS geofence failure</option>
+                    <option value="Evidence appears fraudulent/photoshopped">Evidence appears fraudulent/photoshopped</option>
+                    <option value="_OTHER_">Other (specify details below)</option>
+                </select>
+
+                <input type="text" name="rejection_reason" class="reject-input" id="other_reason_{{ audit.id }}" placeholder="Provide custom reason details..." style="display: none; margin-bottom: 5px;">
+
+                <button type="button" class="btn-action btn-reject" id="btn_reject_{{ audit.id }}" onclick="toggleRejectInput({{ audit.id }})">✖ REJECT & PURGE</button>
+
+                <div id="reject_actions_{{ audit.id }}" style="display: none; flex-direction: column; gap: 10px;">
+                    <a href="tel:+26770000000" class="btn-action" style="background: var(--warning-orange); color: #000; text-decoration: none; text-align: center; display: block; box-sizing: border-box;">📞 CALL AGENT</a>
+
+                    <button type="submit" class="btn-action btn-reject" style="background: var(--critical-red); color: white; border-color: var(--critical-red);">CONFIRM REJECTION</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 100px 20px; font-family: 'Courier Prime'; color: var(--text-muted); border: 1px dashed var(--border-ui); border-radius: 2px; font-size: 1.2rem; background: var(--panel-bg);">
+        [ QUARANTINE EMPTY. ALL ASSETS PROCESSED. ]
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    // 🛡️ HARD LOCK: Force login redirect if session is null
+    {% if not current_user.is_authenticated %}
+        window.location.href = "{{ url_for('auth.login') }}";
+    {% endif %}
+
+    function toggleRejectInput(id) {
+        const presetSelect = document.getElementById('reason_preset_' + id);
+        const actionWrapper = document.getElementById('reject_actions_' + id);
+        const originalBtn = document.getElementById('btn_reject_' + id);
+        const customInput = document.getElementById('other_reason_' + id);
+        customInput.style.display = 'none';
+        customInput.required = false;
+        presetSelect.style.display = 'block';
+        actionWrapper.style.display = 'flex';
+        originalBtn.style.display = 'none';
+        presetSelect.focus();
+    }
+
+    function handlePresetChange(id) {
+        const presetSelect = document.getElementById('reason_preset_' + id);
+        const customInput = document.getElementById('other_reason_' + id);
+        if (presetSelect.value === '_OTHER_') {
+            customInput.style.display = 'block';
+            customInput.required = true;
+            customInput.focus();
+        } else {
+            customInput.style.display = 'none';
+            customInput.required = false;
+            customInput.value = '';
+        }
+    }
+</script>
+{% endblock %}

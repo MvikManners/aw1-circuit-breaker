@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 580 120" width="100%" height="100%">
+  <defs>
+    <linearGradient id="goldAura" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="50%" stop-color="#D97706" />
+      <stop offset="100%" stop-color="#B45309" />
+    </linearGradient>
+    <linearGradient id="shieldSheen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.95" />
+    </linearGradient>
+    <linearGradient id="cyanCircuit" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+    <filter id="subtleGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  <g transform="translate(10, 10)">
+    <polygon points="50,4 92,26 92,74 50,96 8,74 8,26" fill="url(#shieldSheen)" stroke="url(#goldAura)" stroke-width="2.5" stroke-linejoin="round" />
+    <path d="M 50 14 L 82 31 L 82 69 L 50 86 L 18 69 L 18 31 Z" fill="none" stroke="#334155" stroke-width="1.2" stroke-dasharray="3, 3" />
+    <circle cx="50" cy="4" r="2.5" fill="#F59E0B" />
+    <circle cx="92" cy="50" r="2.5" fill="#10B981" />
+    <circle cx="8" cy="50" r="2.5" fill="#10B981" />
+    <circle cx="50" cy="96" r="2.5" fill="#D97706" />
+    <path d="M 33 68 L 41 68 C 41 68 36 56 36 47 C 36 38 42 33 50 33 C 58 33 64 38 64 47 C 64 56 59 68 59 68 L 67 68" fill="none" stroke="url(#goldAura)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#subtleGlow)" />
+    <circle cx="50" cy="48" r="3.5" fill="url(#cyanCircuit)" />
+    <line x1="50" y1="52" x2="50" y2="62" stroke="#06B6D4" stroke-width="1.8" stroke-linecap="round" />
+  </g>
+  <text x="125" y="52" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Montserrat', sans-serif" font-size="34" font-weight="800" letter-spacing="5" fill="#F8FAFC">LAVETO</text>
+  <text x="310" y="52" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Montserrat', sans-serif" font-size="34" font-weight="800" letter-spacing="4" fill="url(#goldAura)">WISDOM</text>
+  <g transform="translate(510, 26)">
+    <rect x="0" y="0" width="52" height="30" rx="4" fill="#1E293B" stroke="#D97706" stroke-width="1.5" />
+    <text x="26" y="20" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14" font-weight="900" letter-spacing="1.5" fill="#F59E0B" text-anchor="middle">AW</text>
+  </g>
+  <line x1="125" y1="66" x2="562" y2="66" stroke="#232E42" stroke-width="1.2" />
+  <text x="125" y="84" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10" font-weight="600" letter-spacing="1.8" fill="#94A3B8">INDEPENDENT ALGORITHMIC CONSCIENCE &amp; DECISION ASSURANCE</text>
+  <text x="125" y="99" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="8.5" font-weight="500" letter-spacing="1.2" fill="#64748B">BOTSWANA REGULATORY &amp; AGRO-ECONOMIC GROUND-TRUTH ENGINE</text>
+</svg>

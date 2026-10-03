@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAVETO | ARCHITECT LOGIN</title>
+    <style>
+        body { 
+            background: #050505; 
+            color: #00ff41; 
+            font-family: 'Courier New', monospace; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden;
+        }
+        .terminal { 
+            border: 1px solid #00ff41; 
+            padding: 40px; 
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.15); 
+            width: 350px; 
+            background: rgba(0, 0, 0, 0.9);
+        }
+        h2 { 
+            font-size: 0.9rem; 
+            text-align: center; 
+            border-bottom: 1px solid #00ff41; 
+            padding-bottom: 15px; 
+            margin-bottom: 25px; 
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .input-group { margin-bottom: 15px; }
+        input { 
+            background: #000; 
+            border: 1px solid #003300; 
+            color: #00ff41; 
+            padding: 14px; 
+            width: 100%; 
+            box-sizing: border-box; 
+            outline: none; 
+            transition: border 0.3s ease;
+        }
+        input:focus { border: 1px solid #00ff41; }
+        
+        button { 
+            background: #00ff41; 
+            color: #000; 
+            border: none; 
+            padding: 14px; 
+            cursor: pointer; 
+            width: 100%; 
+            font-weight: bold; 
+            margin-top: 15px; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        button:hover { 
+            background: #003300; 
+            color: #00ff41; 
+            border: 1px solid #00ff41;
+        }
+        .error { 
+            color: #ff0000; 
+            font-size: 0.75rem; 
+            text-align: center; 
+            margin-top: 20px; 
+            border: 1px solid #ff0000;
+            padding: 10px;
+            background: rgba(255, 0, 0, 0.1);
+        }
+        .status-line {
+            font-size: 0.6rem;
+            text-align: center;
+            margin-top: 15px;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <h2>PROTOCOL: ARCHITECT BYPASS</h2>
+        
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="input-group">
+                <input type="text" name="admin_id" placeholder="ARCHITECT ID" required autocomplete="off">
+            </div>
+            
+            <div class="input-group">
+                <input type="password" name="admin_key" placeholder="SOVEREIGN KEY" required>
+            </div>
+            
+            <button type="submit">INITIATE BYPASS</button>
+        </form>
+        
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="error">🚨 ERROR: {{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="status-line">ESTABLISHING SECURE FREQUENCY...</div>
+    </div>
+</body>
+</html>

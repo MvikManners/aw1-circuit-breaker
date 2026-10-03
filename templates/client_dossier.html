@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sovereign Dossier // {{ asset.vin_dna }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Inter:wght@400;600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* 🌟 HIGH-CONTRAST TACTICAL PALETTE */
+            --bg-dark: #121620; 
+            --panel-bg: #1a202c; 
+            --border-ui: #2d3748;
+            --text-main: #f7fafc; 
+            --text-muted: #cbd5e0;
+            --sanctified-blue: #3182ce; 
+            --integrity-gold: #d4af37;
+            --critical-red: #e53e3e; 
+            --status-wear: #dd6b20;
+            --integrity-green: #38a169;
+        }
+
+        /* 🛡️ Compensation for Floating Bottom Dock */
+        body { margin: 0; padding: 0; padding-bottom: 110px; background: var(--bg-dark); color: var(--text-main); font-family: 'Inter', sans-serif; }
+
+        /* --- 🏎️ ASSET HERO PROFILE STYLES (Cinematic) --- */
+        .hero-profile { width: 100%; height: 350px; background: #1a202c; border-bottom: 4px solid var(--integrity-gold); overflow: hidden; margin-bottom: 30px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .hero-img { width: 100%; height: 100%; object-fit: cover; opacity: 0.75; filter: contrast(1.1); }
+        .hero-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 30px; display: flex; justify-content: space-between; align-items: flex-end; background: linear-gradient(0deg, rgba(18,22,32,0.95) 0%, transparent 100%); }
+        .hero-tag { border-left: 4px solid var(--integrity-gold); padding-left: 20px; }
+        .dna-tag { background: rgba(26, 32, 44, 0.9); display: inline-block; padding: 8px 15px; font-family: 'Courier Prime', monospace; color: var(--integrity-gold); font-size: 0.9rem; border: 1px solid var(--integrity-gold); border-radius: 3px; font-weight: bold; }
+
+        /* CONTENT WRAPPER */
+        .container { padding: 20px; max-width: 650px; margin: 0 auto; }
+
+        .briefing-text { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 25px; text-align: center; font-weight: 500; }
+
+        /* 🛑 STATE-BASED EVIDENCE CARDS */
+        .evidence-card { background: var(--panel-bg); border-radius: 8px; overflow: hidden; margin-bottom: 20px; transition: all 0.3s ease; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .evidence-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border-ui); background: #232a3b; }
+        .comp-name { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 0.95rem; margin: 0; text-transform: uppercase; color: #ffffff; letter-spacing: 0.5px; }
+        .grade-badge { font-family: 'Courier Prime', monospace; font-size: 0.8rem; font-weight: 900; padding: 5px 10px; border-radius: 4px; color: #fff; letter-spacing: 1px; }
+
+        /* STATE 1: CRITICAL */
+        .card-critical {
+            border: 1px solid var(--critical-red);
+            border-top: 4px solid var(--critical-red);
+            box-shadow: 0 0 20px rgba(229, 62, 62, 0.25);
+            animation: border-pulse-red 2s infinite;
+        }
+        .badge-critical { background: var(--critical-red); }
+        @keyframes border-pulse-red {
+            0% { box-shadow: 0 0 10px rgba(229, 62, 62, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(229, 62, 62, 0.5); }
+            100% { box-shadow: 0 0 10px rgba(229, 62, 62, 0.2); }
+        }
+
+        /* STATE 2: NOMINAL */
+        .card-nominal {
+            border: 1px solid var(--border-ui);
+            border-top: 4px solid var(--border-ui);
+        }
+        .badge-nominal { background: #4a5568; color: #ffffff; }
+
+        /* STATE 3: SECURED */
+        .card-secured {
+            border: 1px solid var(--border-ui);
+            border-top: 4px solid var(--integrity-green);
+        }
+        .badge-secured { background: rgba(56, 161, 105, 0.2); color: #68d391; border: 1px solid var(--integrity-green); }
+
+        /* Photo Display */
+        .photo-frame { width: 100%; height: 250px; background: #121620; position: relative; }
+        .tech-note { padding: 18px 20px; font-size: 0.85rem; color: #edf2f7; border-top: 1px dashed var(--border-ui); background: #141822; line-height: 1.5; }
+        .tech-note strong { color: var(--integrity-gold); }
+
+        @keyframes text-pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        /* 🚀 TACTICAL FLOATING COMMAND DOCK */
+        .tactical-dock {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 900;
+            background: rgba(26, 32, 44, 0.98); backdrop-filter: blur(12px);
+            border-top: 2px solid var(--integrity-gold);
+            padding: 14px 20px;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.6);
+        }
+        .dock-inner { max-width: 650px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+
+        .btn-dock-action {
+            background: var(--integrity-gold); color: #000000; border: none; padding: 14px 22px;
+            font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.85rem;
+            text-transform: uppercase; letter-spacing: 1px; border-radius: 4px; cursor: pointer;
+            transition: 0.3s; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+        .btn-dock-action:hover { filter: brightness(1.2); transform: translateY(-2px); }
+
+        /* 📱 ACTION POP-UP MODAL ENGINE */
+        .action-modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999;
+            justify-content: center; align-items: flex-end;
+        }
+        .action-modal-card {
+            width: 100%; max-width: 650px; background: var(--panel-bg);
+            border-top: 4px solid var(--integrity-gold); border-radius: 12px 12px 0 0;
+            padding: 25px; box-sizing: border-box; max-height: 85vh; overflow-y: auto;
+            box-shadow: 0 -20px 60px rgba(0,0,0,0.8); animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .modal-close-btn {
+            background: #2d3748; border: 1px solid var(--border-ui); color: #ffffff;
+            padding: 8px 14px; font-family: 'Montserrat', sans-serif; font-size: 0.75rem; font-weight: 900;
+            border-radius: 4px; cursor: pointer; text-transform: uppercase; transition: 0.3s;
+        }
+        .modal-close-btn:hover { background: var(--critical-red); border-color: var(--critical-red); }
+
+        /* 🔍 ZOOM LIGHTBOX ENGINE */
+        #zoomOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; justify-content: center; align-items: center; cursor: zoom-out; flex-direction: column; }
+        #zoomOverlay img { max-width: 95%; max-height: 80vh; border: 2px solid var(--integrity-gold); border-radius: 4px; }
+        .close-zoom { color: #fff; font-family: 'Montserrat', sans-serif; margin-top: 20px; text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <div class="hero-profile">
+        <a id="smartBackBtn" href="{{ url_for('hangar.view_ledger') }}" style="position: absolute; top: 20px; left: 20px; color: #fff; text-decoration: none; font-family: 'Montserrat', sans-serif; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.4); padding: 8px 14px; border-radius: 4px; transition: 0.3s; z-index: 10; background: rgba(26, 32, 44, 0.8);" onmouseover="this.style.color='var(--integrity-gold)'; this.style.borderColor='var(--integrity-gold)';" onmouseout="this.style.color='#fff'; this.style.borderColor='rgba(255,255,255,0.4)';">⬅ WALL</a>
+
+        {% set ns = namespace(profile_raw=None) %}
+        {% for p in asset.proofs %}
+            {% if p.category == 'Vehicle Profile' %}
+                {% set ns.profile_raw = p.photo_url %}
+            {% endif %}
+        {% endfor %}
+
+        {% if ns.profile_raw %}
+            {% set profile_clean = ns.profile_raw|replace('\\', '/') %}
+            {% set profile_final = profile_clean.split('static/')[-1] if 'static/' in profile_clean else profile_clean %}
+
+            {% set file_id = '' %}
+            {% if '/d/' in profile_final %}
+                {% set file_id = profile_final.split('/d/')[1].split('/')[0] %}
+            {% elif 'id=' in profile_final %}
+                {% set file_id = profile_final.split('id=')[1].split('&')[0] %}
+            {% endif %}
+
+            {% if file_id %}
+                <img src="https://drive.google.com/thumbnail?id={{ file_id }}&sz=w1000" class="hero-img">
+            {% elif profile_final.startswith('http') %}
+                <img src="{{ profile_final }}" class="hero-img" onerror="this.style.display='none'">
+            {% else %}
+                <img src="{{ url_for('static', filename=profile_final) }}" class="hero-img" onerror="this.style.display='none'">
+            {% endif %}
+        {% else %}
+            <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: repeating-linear-gradient(45deg, var(--panel-bg), var(--panel-bg) 10px, var(--bg-dark) 10px, var(--bg-dark) 20px);">
+                <div style="color: #ffffff; font-family: 'Montserrat'; font-weight: 900; font-size: 2rem; letter-spacing: 8px; opacity: 0.7;">LAVETO SOVEREIGN</div>
+                <div style="color: var(--text-muted); font-family: 'Courier Prime'; font-size: 1rem; margin-top: 15px; font-weight: bold;">AWAITING VEHICLE PROFILE SCAN</div>
+            </div>
+        {% endif %}
+
+        <div class="hero-overlay">
+            <div class="hero-tag">
+                <div style="font-family: 'Courier Prime'; font-size: 0.85rem; color: var(--integrity-gold); text-transform: uppercase; font-weight: bold; letter-spacing: 1px;">Sovereign Dossier</div>
+                <div style="font-family: 'Montserrat'; font-weight: 900; color: #ffffff; font-size: 1.7rem; letter-spacing: 2px; margin-top: 5px;">
+                    {{ asset.vehicle_year or '' }} {{ asset.vehicle_make or '' }} {{ asset.vehicle_model or 'UNKNOWN ASSET' }}
+                </div>
+            </div>
+            <div class="dna-tag">DNA: {{ asset.vin_dna }}</div>
+        </div>
+    </div>
+
+    <!-- 🛞 UNFAILING TIRE MAYDAY & AUDIT EVALUATION -->
+    {% set fl = (asset.tread_fl if asset.tread_fl is not none else 8.0) | float %}
+    {% set fr = (asset.tread_fr if asset.tread_fr is not none else 8.0) | float %}
+    {% set rl = (asset.tread_rl if asset.tread_rl is not none else 8.0) | float %}
+    {% set rr = (asset.tread_rr if asset.tread_rr is not none else 8.0) | float %}
+    {% set min_tread = [fl, fr, rl, rr] | min %}
+
+    {% set safe_fl = (asset.fault_level or '') | string | upper %}
+    {% set safe_st = (asset.status or asset.current_status or '') | string | upper %}
+
+    {# Compute repair cost and current funds for global template evaluation #}
+    {% set repair_cost = (asset.target_repair_cost or 0) | float %}
+    {% set current_funds = (asset.shield_reservoir or 0) | float %}
+    {% set deficit = repair_cost - current_funds %}
+    {% set is_funded = deficit <= 0 %}
+    {% set is_dispatched = (repair_cost == 0.0) or ('ACTIVE' in safe_st) or ('APPROVED' in safe_st and is_funded) %}
+
+    {# Trigger action only when critical defect exists AND asset is NOT YET fully funded or dispatched #}
+    {% set tire_critical = ('CRITICAL' in safe_fl) or (min_tread <= 1.6) or ('MAYDAY' in safe_st) %}
+    {% set action_needed = (tire_critical or 'AUDIT FAILED' in safe_st) and not is_dispatched %}
+
+    <div class="container">
+
+        <!-- 🚨 SYSTEM NOTIFICATION HUD -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div style="padding: 15px; margin-bottom: 20px; border-radius: 4px; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; font-weight: 900; text-align: center; text-transform: uppercase; {% if category == 'error' %}background: var(--critical-red); color: white; border: 1px solid darkred;{% else %}background: var(--integrity-green); color: white; border: 1px solid darkgreen;{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <p class="briefing-text">
+            {% if is_dispatched %}
+                <strong style="color: #68d391;">PROCUREMENT AUTHORIZED & DISPATCHED.</strong><br>
+                Component routing is active via Silk Road Terminal. Immutable evidence is logged below.
+            {% elif is_funded %}
+                <strong style="color: var(--integrity-gold);">ASSET FULLY FUNDED. READY FOR AUTHORIZATION.</strong><br>
+                Maintenance fund reconciled. Authorize procurement protocol below to execute dispatch.
+            {% else %}
+                <strong style="color: #fc8181;">FORENSIC AUDIT COMPLETE. ACTION REQUIRED.</strong><br>
+                Mechanical deficiencies or critical wear patterns have been identified. Review the high-fidelity evidence below to authorize Silk Road procurement.
+            {% endif %}
+        </p>
+
+        <!-- 🛞 TIRE DEFICIENCY EVIDENCE CARD -->
+        {% if tire_critical %}
+        <div class="evidence-card {% if is_dispatched %}card-secured{% else %}card-critical{% endif %}">
+            <div class="evidence-header">
+                <h3 class="comp-name">🛞 CRITICAL TIRE TREAD WEAR</h3>
+                <span class="grade-badge {% if is_dispatched %}badge-secured{% else %}badge-critical{% endif %}">
+                    {% if is_dispatched %}🔒 CLEARED{% else %}🚨 LOWEST: {{ "%.1f"|format(min_tread) }}mm{% endif %}
+                </span>
+            </div>
+
+            <div style="padding: 20px; background: #141822; text-align: center; border-bottom: 1px dashed var(--border-ui);">
+                <div style="font-family: 'Courier Prime', monospace; color: var(--integrity-gold); font-size: 0.95rem; font-weight: bold; margin-bottom: 15px;">
+                    BRAND: {{ asset.tire_brand or 'BRIDGESTONE POTENZA RE050' }}
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+                    <div style="border: 1px solid var(--border-ui); padding: 12px 6px; background: #1e2433; border-radius: 4px;">
+                        <div style="font-size: 0.65rem; color: var(--text-muted); font-family: 'Courier Prime'; font-weight: bold;">FRONT L</div>
+                        <div style="font-family: 'Courier Prime'; font-weight: 900; font-size: 1.2rem; margin-top: 4px; color: {% if fl <= 1.6 %}#fc8181{% elif fl <= 3.0 %}var(--status-wear){% else %}#68d391{% endif %};">{{ fl }}<span style="font-size: 0.65rem;">mm</span></div>
+                    </div>
+                    <div style="border: 1px solid var(--border-ui); padding: 12px 6px; background: #1e2433; border-radius: 4px;">
+                        <div style="font-size: 0.65rem; color: var(--text-muted); font-family: 'Courier Prime'; font-weight: bold;">FRONT R</div>
+                        <div style="font-family: 'Courier Prime'; font-weight: 900; font-size: 1.2rem; margin-top: 4px; color: {% if fr <= 1.6 %}#fc8181{% elif fr <= 3.0 %}var(--status-wear){% else %}#68d391{% endif %};">{{ fr }}<span style="font-size: 0.65rem;">mm</span></div>
+                    </div>
+                    <div style="border: 1px solid var(--border-ui); padding: 12px 6px; background: #1e2433; border-radius: 4px;">
+                        <div style="font-size: 0.65rem; color: var(--text-muted); font-family: 'Courier Prime'; font-weight: bold;">REAR L</div>
+                        <div style="font-family: 'Courier Prime'; font-weight: 900; font-size: 1.2rem; margin-top: 4px; color: {% if rl <= 1.6 %}#fc8181{% elif rl <= 3.0 %}var(--status-wear){% else %}#68d391{% endif %};">{{ rl }}<span style="font-size: 0.65rem;">mm</span></div>
+                    </div>
+                    <div style="border: 1px solid var(--border-ui); padding: 12px 6px; background: #1e2433; border-radius: 4px;">
+                        <div style="font-size: 0.65rem; color: var(--text-muted); font-family: 'Courier Prime'; font-weight: bold;">REAR R</div>
+                        <div style="font-family: 'Courier Prime'; font-weight: 900; font-size: 1.2rem; margin-top: 4px; color: {% if rr <= 1.6 %}#fc8181{% elif rr <= 3.0 %}var(--status-wear){% else %}#68d391{% endif %};">{{ rr }}<span style="font-size: 0.65rem;">mm</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tech-note">
+                <strong>INSPECTOR LOG:</strong> Caliper measurement ({{ min_tread }}mm) is at or below the 1.6mm safety threshold. Wholesale set replacement authorized via Silk Road Terminal.
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- PHOTOGRAPHIC EVIDENCE CARDS LIST -->
+        {% for item in evidence_list %}
+            {% set is_critical = item.ghost_order.grade <= 2 %}
+
+            <div class="evidence-card
+                {% if is_dispatched %} card-secured
+                {% elif is_critical %} card-critical
+                {% else %} card-nominal {% endif %}">
+
+                <div class="evidence-header">
+                    <h3 class="comp-name">{{ item.ghost_order.component_name }}</h3>
+
+                    {% if is_dispatched %}
+                        <span class="grade-badge badge-secured">🔒 CLEARED</span>
+                    {% elif is_critical %}
+                        <span class="grade-badge badge-critical">🚨 GRADE {{ item.ghost_order.grade }}/5</span>
+                    {% else %}
+                        <span class="grade-badge badge-nominal">✅ GRADE {{ item.ghost_order.grade }}/5</span>
+                    {% endif %}
+                </div>
+
+                <div class="photo-frame">
+                    {% set file_link = item.image_path %}
+                    {% if not file_link.startswith('http') %}
+                        {% set file_link = url_for('static', filename=file_link) %}
+                    {% endif %}
+
+                    <a href="{{ file_link }}" target="_blank" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; width: 100%; text-decoration: none; color: var(--integrity-gold); background: #141822; transition: 0.3s;" onmouseover="this.style.background='#1a202c'" onmouseout="this.style.background='#141822'">
+                        <span style="font-size: 3.5rem; margin-bottom: 12px;">📸</span>
+                        <span style="font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 2px; font-size: 1rem; color: #ffffff;">VIEW FORENSIC EVIDENCE</span>
+                        <span style="font-family: 'Courier Prime', monospace; font-size: 0.75rem; color: var(--text-muted); margin-top: 8px; text-transform: uppercase;">Opens Secure Drive Vault</span>
+                    </a>
+                </div>
+
+                <div class="tech-note">
+                    <strong>INSPECTOR LOG:</strong> {{ item.technician_note or 'Structural degradation detected. Replacement mandated to restore integrity.' }}
+                </div>
+            </div>
+        {% else %}
+            {% if not tire_critical %}
+            <div style="text-align: center; color: var(--text-muted); font-family: 'Courier Prime', monospace; margin-top: 50px; font-size: 0.9rem;">
+                [ NO PHOTOGRAPHIC EVIDENCE LOGGED FOR THIS ASSET YET ]
+            </div>
+            {% endif %}
+        {% endfor %}
+
+    </div>
+
+    <!-- ⚡ TACTICAL FLOATING COMMAND DOCK -->
+    <div class="tactical-dock">
+        <div class="dock-inner">
+            <div style="font-family: 'Courier Prime', monospace; text-align: left;">
+                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold;">FINANCIAL STATUS:</div>
+                <div style="font-size: 1rem; font-weight: 900; color: {% if is_funded %}#68d391{% else %}#fc8181{% endif %};">
+                    {% if is_funded %}
+                        ✅ FULLY FUNDED
+                    {% else %}
+                        ⚠️ SHORTFALL: P{{ "{:,.2f}".format(deficit) }}
+                    {% endif %}
+                </div>
+            </div>
+
+            <button type="button" onclick="openActionModal()" class="btn-dock-action">
+                ⚡ REVIEW & RESOLVE ACTION ⬆
+            </button>
+        </div>
+    </div>
+
+    <!-- 📱 ACTION POP-UP MODAL -->
+    <div id="actionModal" class="action-modal-overlay" onclick="closeActionModal(event)">
+        <div class="action-modal-card" onclick="event.stopPropagation()">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-ui); padding-bottom: 12px;">
+                <div style="font-family: 'Montserrat', sans-serif; font-size: 0.95rem; font-weight: 900; color: var(--integrity-gold); text-transform: uppercase; letter-spacing: 1px;">
+                    🛡️ DOSSIER FINANCIAL RECONCILIATION
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeActionModal()">✕ CLOSE</button>
+            </div>
+
+            <!-- FINANCIAL ESTIMATE SUMMARY BOX -->
+            <div style="background: #121620; border: 1px dashed {% if is_funded %}var(--integrity-green){% else %}var(--critical-red){% endif %}; padding: 18px; margin-bottom: 20px; border-radius: 6px; text-align: left; font-family: 'Courier Prime', monospace;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">TOTAL PROCUREMENT ESTIMATE:</span>
+                    <span style="color: #ffffff; font-weight: bold; font-size: 0.95rem;">P{{ "{:,.2f}".format(repair_cost) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid var(--border-ui); padding-bottom: 10px;">
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">AVAILABLE MAINTENANCE FUND:</span>
+                    <span style="color: var(--integrity-gold); font-weight: bold; font-size: 0.95rem;">P{{ "{:,.2f}".format(current_funds) }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 5px;">
+                    <span style="color: {% if is_funded %}#68d391{% else %}#fc8181{% endif %}; font-size: 0.85rem; font-weight: 900; text-transform: uppercase;">
+                        {% if is_funded %}✅ FULLY FUNDED (SURPLUS):{% else %}⚠️ SHORTFALL DUE:{% endif %}
+                    </span>
+                    <span style="color: {% if is_funded %}#68d391{% else %}#fc8181{% endif %}; font-weight: 900; font-size: 1.25rem; {% if not is_funded %}animation: text-pulse 1.5s infinite;{% endif %}">
+                        P{{ "{:,.2f}".format(current_funds - repair_cost if is_funded else deficit) }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- 🔒 CONDITIONAL ACTION PANELS -->
+            {% if not is_funded %}
+
+                <!-- 🛡️ ADMIN SHORTFALL VIEW -->
+                <div id="admin-shortfall-view" style="display: none; background: rgba(229, 62, 62, 0.1); border: 1px solid var(--critical-red); border-left: 4px solid var(--critical-red); padding: 20px; border-radius: 6px; text-align: center; margin-bottom: 20px;">
+                    <div style="font-family: 'Montserrat', sans-serif; font-size: 0.85rem; color: #fc8181; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;">
+                        ⚠️ CLIENT RECONCILIATION REQUIRED
+                    </div>
+                    <div style="font-size: 0.8rem; color: #e2e8f0; font-family: 'Inter', sans-serif; margin-bottom: 15px;">
+                        A shortfall of <strong style="color: #fc8181;">P{{ "{:,.2f}".format(deficit) }}</strong> is pending reconciliation before Silk Road procurement can execute.
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+                        <a href="{{ url_for('hangar.dispatch_covenant_whatsapp', asset_id=asset.id) }}"
+                           style="flex: 1; min-width: 200px; background: #25D366; color: black; border: none; padding: 14px; font-family: 'Montserrat', sans-serif; font-weight: 900; text-transform: uppercase; font-size: 0.75rem; border-radius: 4px; text-decoration: none; text-align: center; box-sizing: border-box; cursor: pointer; transition: 0.3s;"
+                           onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">
+                            📲 PING CLIENT TO RECONCILE
+                        </a>
+                        <form action="{{ url_for('hangar.dispatch_single_email', doc_type='STATEMENT', entry_id=asset.id) }}" method="POST" style="flex: 1; min-width: 200px; margin: 0;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit"
+                                    style="width: 100%; background: var(--sanctified-blue); color: white; border: none; padding: 14px; font-family: 'Montserrat', sans-serif; font-weight: 900; text-transform: uppercase; font-size: 0.75rem; border-radius: 4px; cursor: pointer; transition: 0.3s;"
+                                    onmouseover="this.style.filter='brightness(1.2)'" onmouseout="this.style.filter='brightness(1)'">
+                                📧 EMAIL SHORTFALL STATEMENT
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 👤 CLIENT SHORTFALL VIEW -->
+                <div id="client-shortfall-view" style="display: none; background: rgba(229, 62, 62, 0.1); border: 1px solid var(--critical-red); border-left: 4px solid var(--critical-red); padding: 20px; border-radius: 6px; text-align: center; margin-bottom: 20px;">
+                    <div style="font-family: 'Montserrat', sans-serif; font-size: 0.85rem; color: #fc8181; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;">
+                        ⚠️ ACTION REQUIRED: SHORTFALL DUE
+                    </div>
+                    <div style="font-size: 0.8rem; color: #e2e8f0; font-family: 'Inter', sans-serif; margin-bottom: 15px;">
+                        A shortfall deposit of <strong style="color: #fc8181;">P{{ "{:,.2f}".format(deficit) }}</strong> is required to fully clear this asset.
+                    </div>
+
+                    <!-- 🏛️ SOVEREIGN CLEARING ACCOUNT DETAILS -->
+                    <div style="background: #121620; border: 1px dashed var(--integrity-gold); padding: 16px; border-radius: 6px; margin-bottom: 15px; text-align: left; font-family: 'Courier Prime', monospace; font-size: 0.8rem;">
+                        <div style="color: var(--integrity-gold); font-weight: bold; margin-bottom: 10px; text-transform: uppercase; border-bottom: 1px dashed var(--border-ui); padding-bottom: 6px;">🏦 Sovereign Clearing Account Details:</div>
+                        <div style="color: #ffffff; margin-bottom: 6px;">Bank: <strong>First National Bank (FNB)</strong></div>
+                        <div style="color: #ffffff; margin-bottom: 6px;">Account Name: <strong>Laveto System Restoration</strong></div>
+                        <div style="color: #ffffff; margin-bottom: 6px;">Account Number: <strong>62889912345</strong></div>
+                        <div style="color: #ffffff;">Branch Code: <strong>281467</strong></div>
+                    </div>
+
+                    <div style="font-size: 0.8rem; color: var(--text-muted); font-family: 'Inter', sans-serif; margin-bottom: 15px; line-height: 1.5;">
+                        After transferring the exact amount, click below to send your <strong>proof of payment</strong> via WhatsApp for automated zero-skim reconciliation.
+                    </div>
+
+                    <!-- WHATSAPP DEPOSIT & PROOF ACTION BUTTON -->
+                    <div style="width: 100%; border-top: 1px dashed rgba(229, 62, 62, 0.4); padding-top: 15px; margin-top: 5px;">
+                        <a href="https://wa.me/26772989561?text=Laveto%20Command:%20I%20am%20arranging%20the%20shortfall%20deposit%20of%20P{{ '{:,.2f}'.format(deficit) }}%20for%20asset%20{{ asset.vin_dna }}.%20I%20will%20send%20my%20proof%20of%20payment%20shortly."
+                           target="_blank"
+                           style="display: block; width: 100%; background: var(--integrity-gold); color: #000000; border: none; padding: 14px; font-family: 'Montserrat', sans-serif; font-weight: 900; text-transform: uppercase; font-size: 0.8rem; border-radius: 4px; text-decoration: none; cursor: pointer; transition: 0.3s; box-sizing: border-border-box;"
+                           onmouseover="this.style.filter='brightness(1.15)'" onmouseout="this.style.filter='brightness(1)'">
+                            📤 ARRANGE DEPOSIT & SEND PROOF VIA WHATSAPP
+                        </a>
+                    </div>
+                </div>
+
+            {% elif not is_dispatched %}
+
+                <!-- 🛡️ ADMIN AUTH VIEW -->
+                <form id="admin-auth-view" style="display: none;" action="{{ url_for('hangar.override_asset') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="entry_id" value="{{ asset.id }}">
+                    <input type="hidden" name="status" value="APPROVED">
+                    <input type="hidden" name="next" value="{{ url_for('hangar.silk_road', vin=asset.vin_dna) }}">
+                    <button type="submit" class="btn-authorize" style="background: var(--critical-red); color: white;" onclick="return confirm('ADMIN OVERRIDE: Do you authorize Laveto Sovereign to bypass client approval and procure these components via the Silk Road?');">
+                        ADMIN OVERRIDE: DISPATCH TO SILK ROAD ➡
+                    </button>
+                </form>
+
+                <!-- 👤 CLIENT AUTH VIEW -->
+                <form id="client-auth-view" style="display: none;" action="{{ url_for('hangar.override_asset') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="entry_id" value="{{ asset.id }}">
+                    <input type="hidden" name="status" value="APPROVED">
+                    <input type="hidden" name="next" value="{{ url_for('hangar.client_vault', asset_id=asset.vin_dna) }}">
+                    <button type="submit" class="btn-authorize" onclick="return confirm('By clicking OK, you authorize Laveto Sovereign to initiate the procurement protocol for this asset.');">
+                        AUTHORIZE PROCUREMENT PROTOCOL ➡
+                    </button>
+                </form>
+
+            {% endif %}
+
+            <!-- STATUS BANNER -->
+            <div style="background: #121620; border: 1px solid var(--border-ui); padding: 18px; text-align: center; border-radius: 6px; margin-top: 15px;">
+                {% if is_dispatched %}
+                    <div style="color: #68d391; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">
+                        ✅ Procurement Authorized & Dispatched to Zone 1
+                    </div>
+                {% elif is_funded %}
+                    <div style="color: #68d391; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">
+                        ✅ Procurement Funded — Awaiting Command Dispatch
+                    </div>
+                {% else %}
+                    <div style="color: #fc8181; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;">
+                        🛡️ Authorization Locked — Awaiting Funding Shortfall Clearance
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div id="zoomOverlay" onclick="closeZoom()">
+        <img id="zoomedImg" src="" alt="High Fidelity View">
+        <div class="close-zoom">TAP ANYWHERE TO CLOSE</div>
+    </div>
+
+    <script>
+        function openActionModal() {
+            document.getElementById('actionModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeActionModal(event) {
+            if (!event || event.target.id === 'actionModal' || event.target.tagName === 'BUTTON') {
+                document.getElementById('actionModal').style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function openZoom(src) {
+            document.getElementById('zoomedImg').src = src;
+            document.getElementById('zoomOverlay').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeZoom() {
+            document.getElementById('zoomOverlay').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const vin = "{{ asset.vin_dna }}";
+            const storageKey = "dossier_source_" + vin;
+            const ref = document.referrer.toLowerCase();
+
+            if (ref && !ref.includes("dossier")) {
+                if (ref.includes("vault") || ref.includes("cockpit") || ref.includes("client")) {
+                    sessionStorage.setItem(storageKey, "vault");
+                } else {
+                    sessionStorage.setItem(storageKey, "wall");
+                }
+            }
+
+            const source = sessionStorage.getItem(storageKey);
+            const backBtn = document.getElementById("smartBackBtn");
+
+            const adminShortfall = document.getElementById("admin-shortfall-view");
+            const clientShortfall = document.getElementById("client-shortfall-view");
+            const adminAuth = document.getElementById("admin-auth-view");
+            const clientAuth = document.getElementById("client-auth-view");
+
+            if (source === "vault") {
+                backBtn.innerHTML = "⬅ VAULT";
+                backBtn.href = "{{ url_for('hangar.client_vault', asset_id=asset.vin_dna) }}";
+
+                if(clientShortfall) clientShortfall.style.display = "block";
+                if(clientAuth) clientAuth.style.display = "block";
+            } else {
+                backBtn.innerHTML = "⬅ WALL";
+                backBtn.href = "{{ url_for('hangar.view_ledger') }}";
+
+                if(adminShortfall) adminShortfall.style.display = "block";
+                if(adminAuth) adminAuth.style.display = "block";
+            }
+        });
+    </script>
+</body>
+</html>
