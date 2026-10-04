@@ -18,3 +18,16 @@ def get_system_counts():
         "bleeding_count": bleeding,
         "quarantine_count": quarantine
     }
+
+import secrets
+import string
+
+def generate_human_pin(length=4):
+    """Generates a secure numeric human PIN."""
+    return ''.join(secrets.choice(string.digits) for _ in range(length))
+
+def generate_sovereign_pin(prefix='SOV', length=8):
+    """Generates a sovereign vault alphanumeric authorization PIN."""
+    chars = string.ascii_uppercase + string.digits
+    token = ''.join(secrets.choice(chars) for _ in range(length))
+    return f'{prefix}-{token}'

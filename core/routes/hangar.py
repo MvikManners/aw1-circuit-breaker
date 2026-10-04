@@ -47,7 +47,7 @@ from werkzeug.utils import secure_filename
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy import func, or_, text
 from core.extensions import db, mail
-from core.utils.gdrive_sync import trigger_background_sync
+# from core.utils.gdrive_sync import trigger_background_sync
 
 # PDF Engine
 import pdfkit
@@ -684,7 +684,7 @@ def get_loan_denial_html(entry, current_date, reason_str, hash_id):
 # ==========================================
 
 # Add this to /home/LavetoLab/core/routes/hangar.py
-from core.utils.sovereign_vault import generate_sovereign_pin
+from core.utils import generate_sovereign_pin
 
 # --- GLOBAL VARIABLE BROADCASTER ---
 @hangar_bp.app_context_processor
@@ -3475,7 +3475,7 @@ import os
 sys.path.insert(0, '/home/LavetoLab')
 
 # Import both generators
-from core.utils.sovereign_vault import generate_human_pin, generate_sovereign_pin
+from core.utils import generate_human_pin, generate_sovereign_pin
 import os
 from werkzeug.utils import secure_filename
 

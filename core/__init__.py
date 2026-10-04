@@ -21,7 +21,10 @@ from flask import (
 from flask.sessions import NullSession, SecureCookieSession
 from jinja2 import ChoiceLoader, FileSystemLoader
 from dotenv import load_dotenv
-from flask_session import Session
+try:
+    from flask_session import Session
+except ImportError:
+    Session = None
 from flask_login import current_user, login_required
 from sqlalchemy import text
 
@@ -266,8 +269,7 @@ def create_app(config_class=Config):
     # ROOT & SHORTCUT ROUTE HANDLERS
     @app.route('/')
     def index():
-        return render_template('nexus.html')
-
+        return redirect('/wisdom/')
     @app.route('/nexus')
     @app.route('/nexus/')
     @app.route('/ledger')
