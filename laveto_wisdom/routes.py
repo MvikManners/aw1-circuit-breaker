@@ -15239,3 +15239,67 @@ def view_bob_trust_compliance():
     if not row:
         return jsonify({"compliance_status": "NO_TRANSACTIONS_RECORDED", "reserve_ratio": 1.0}), 200
     return jsonify(dict(row)), 200
+
+
+# =====================================================================
+
+
+
+# =====================================================================
+# TRACK B: UNIVERSITY BUILDERS GUILD PORTAL (UB & BIUST)
+# =====================================================================
+@wisdom_bp.route("/guild", methods=["GET"])
+def view_builders_guild():
+    guild_html = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>University Builders Guild - PoUC Node Network</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #070B14; color: #F8FAFC; margin: 0; padding: 30px; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; background: #0F172A; border: 1px solid #1E293B; border-radius: 12px; padding: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h1 { color: #FBBF24; margin-top: 0; font-size: 1.6rem; display: flex; align-items: center; gap: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 24px 0; }
+        .card { background: #070B14; border: 1px solid #1E293B; border-radius: 8px; padding: 18px; }
+        .card-val { font-size: 1.5rem; font-weight: bold; color: #38BDF8; font-family: monospace; }
+        .card-label { font-size: 0.8rem; color: #94A3B8; text-transform: uppercase; margin-top: 4px; }
+        .terminal-box { background: #030712; border: 1px solid #1E293B; border-radius: 8px; padding: 20px; font-family: monospace; font-size: 0.9rem; color: #34D399; margin: 20px 0; overflow-x: auto; }
+        .btn { display: inline-block; background: #D97706; color: #000; font-weight: bold; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; margin-top: 10px; }
+        .btn:hover { background: #F59E0B; }
+        ul { padding-left: 20px; color: #CBD5E1; }
+        li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span>🎓</span> University Builders Guild - UB & BIUST</h1>
+        <p style="color: #94A3B8;">Decentralized Proof of Useful Contribution (PoUC) edge node network for academic and student builders across Botswana.</p>
+        <div class="grid">
+            <div class="card">
+                <div class="card-val">+12.5 AWT</div>
+                <div class="card-label">Liquid Reward / Task</div>
+            </div>
+            <div class="card">
+                <div class="card-val">+0.0625</div>
+                <div class="card-label">Soulbound Reputation (W_tau)</div>
+            </div>
+            <div class="card">
+                <div class="card-val">4-Tier</div>
+                <div class="card-label">Hardware Interlocks</div>
+            </div>
+        </div>
+        <h3 style="color: #FDE68A;">Campus Terminal Activation</h3>
+        <p style="font-size: 0.9rem; color: #CBD5E1;">Run this command on your laptop or campus lab terminal to connect to the federated verification swarm:</p>
+        <div class="terminal-box">python3 /home/LavetoLab/pouc_student_daemon.py node-ub-$(whoami)</div>
+        <h3 style="color: #FDE68A;">Hardware Interlock Covenants</h3>
+        <ul>
+            <li><b>AC Charging:</b> Nodes only execute when plugged into wall power (zero battery drain).</li>
+            <li><b>Unmetered Wi-Fi:</b> Cellular mobile data is blocked; tasks require unmetered Wi-Fi.</li>
+            <li><b>Battery & Thermal Ceiling:</b> Execution halts if battery &lt; 80% or device temperature exceeds 34C (mobile) / 70C (PC).</li>
+            <li><b>Local Pula Cash-Out:</b> Earned AWT balances settle directly to Orange Money or Mascom MyZaka via Laveto Pay.</li>
+        </ul>
+        <a href="/wisdom/" class="btn">&larr; Return to Sovereign Assurance Console</a>
+    </div>
+</body>
+</html>"""
+    return render_template_string(guild_html)
