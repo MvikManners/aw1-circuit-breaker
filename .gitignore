@@ -2,3 +2,22 @@ __pycache__/
 *.pyc
 .env
 venv/
+
+# Python Bytecode & Environment Caches
+.cache/
+__pycache__/
+*.pyc
+
+# Local Databases & Logs
+*.db
+*.log
+logs/
+
+# Archive dumps & backup staging
+*.zip
+backups/
+backup_extracted/
+extracted_backup/
+isolated_recovery_2/
+isolated_restore/
+pay_release_extracted/
