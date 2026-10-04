@@ -15043,3 +15043,29 @@ def submit_pouc_gradient():
 
     except Exception as e:
         return jsonify({"status": "ERROR", "message": str(e)}), 500
+
+
+
+@wisdom_bp.route("/audit/<audit_id>/term-sheet-pdf", methods=["GET"])
+def download_audit_term_sheet(audit_id):
+    conn = get_db_connection()
+    row = None
+    try:
+        cur = conn.cursor()
+        row = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (audit_id,)).fetchone()
+    finally:
+        conn.close()
+        
+    if not row:
+        audit_dict = {"audit_id": audit_id, "posture": "CALIBRATE", "wisdom_quotient": 0.85}
+    else:
+        audit_dict = dict(row)
+        
+    from .pdf_generator import generate_term_sheet_pdf
+    pdf_bytes = generate_term_sheet_pdf(audit_dict)
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=f"Statutory_Remedy_Term_Sheet_{audit_id}.pdf"
+    )
