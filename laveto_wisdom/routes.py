@@ -15666,3 +15666,43 @@ def citizen_portal():
 </body>
 </html>"""
     return render_template_string(template)
+
+
+API_DOCS_HTML = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Laveto Wisdom AW — Live API Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root { --bg: #0B0F19; --card: #151C2C; --gold: #D97706; --text: #F3F4F6; --border: #232E42; --post: #16A34A; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 2rem 1rem; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 2.5rem; }
+        .header h1 { color: var(--gold); font-size: 2.2rem; margin-bottom: 0.25rem; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 4px; font-weight: 800; font-size: 0.85rem; background: var(--post); color: #fff; }
+        pre { background: #07090E; padding: 1rem; border-radius: 4px; overflow-x: auto; color: #A7F3D0; font-size: 0.85rem; border: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>LAVETO WISDOM AW</h1>
+        <p>Public API & Enterprise Integration Portal</p>
+    </div>
+    <section class="card">
+        <div><span class="badge">POST</span> <code>/wisdom/api/v1/aw/audit</code></div>
+        <p>Executes decision assurance and automatically processes a <strong>20% Buyback-and-Burn</strong> on audit revenues.</p>
+    </section>
+    <section class="card">
+        <div><span class="badge">POST</span> <code>/wisdom/api/v1/aw/pouc/submit</code></div>
+        <p>Submits mobile edge device micro-evaluation and settles dual-token rewards.</p>
+    </section>
+</div>
+</body>
+</html>"""
+
+@wisdom_bp.route('/docs', methods=['GET'])
+def render_live_api_docs():
+    return render_template_string(API_DOCS_HTML)

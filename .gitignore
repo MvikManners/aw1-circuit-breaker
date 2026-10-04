@@ -21,3 +21,22 @@ extracted_backup/
 isolated_recovery_2/
 isolated_restore/
 pay_release_extracted/
+
+# Secrets & Service Accounts
+.env
+credentials.json
+google_key.json
+client_secrets.json
+token.json
+
+# Cache & Bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Local Databases & Backups
+*.db
+*.sqlite3
+*.bak*
+snapshots/
+Decision_Assurance_Dossier.pdf
