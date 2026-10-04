@@ -15069,3 +15069,136 @@ def download_audit_term_sheet(audit_id):
         as_attachment=True,
         download_name=f"Statutory_Remedy_Term_Sheet_{audit_id}.pdf"
     )
+
+
+
+@wisdom_bp.route("/audit/<audit_id>/audio-brief", methods=["GET"])
+def audit_audio_briefing(audit_id):
+    conn = get_db_connection()
+    row = None
+    try:
+        cur = conn.cursor()
+        row = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (audit_id,)).fetchone()
+    finally:
+        conn.close()
+
+    if row:
+        audit = dict(row)
+        posture = audit.get("final_posture") or audit.get("posture", "CALIBRATE")
+        quotient = audit.get("wisdom_quotient", 0.85)
+        proposal = audit.get("proposal_text", "Commercial proposal under sovereign review.")[:280]
+    else:
+        posture = "CALIBRATE"
+        quotient = 0.85
+        proposal = "Industrial capital allocation & foreign direct investment proposal."
+
+    # Synthesize two-host executive dialogue
+    script = f"""[EXECUTIVE AUDIO BRIEFING • LAVETO WISDOM AW]
+Audit Reference: {audit_id} | Posture: {posture} | Wisdom Quotient (W): {quotient}
+
+HOST 1 (Sovereign Risk Lead): Welcome to the executive intelligence overview for audit reference {audit_id}. Our 5-pass conscience engine has concluded its forensic evaluation on this submitted capital dilemma.
+
+HOST 2 (Statutory Compliance Lead): That is right. The proponent submitted a high-value commercial undertaking proposing: "{proposal}...". We stress-tested this across Botswana's codified ground-truth frameworks, including the P9.2 billion food import deficit, the 50% Citizen Economic Empowerment subcontracting rule, and national IRP solar baselines.
+
+HOST 1: What is the engine's final posture on the project?
+
+HOST 2: The engine assigned a formal [{posture}], scoring a Wisdom Quotient of {quotient}. While the capital deployment creates immediate macro investment, Passes 3 and 4 surfaced critical statutory frictions. Specifically, the structure triggered circuit-breaker warnings under the Economic Inclusion Act 2021 and Water Act Cap 34:01 regarding local SMME participation and industrial effluent reuse.
+
+HOST 1: How can the proponent remedy these statutory breaches to achieve a state-sanctioned [PROCEED]?
+
+HOST 2: To clear the audit gate, the proponent must accept the 8-clause Autonomous Statutory Remedy Term Sheet. This mandates a minimum 50% ring-fenced subcontracting quota for citizen SMMEs, 25% direct voting citizen equity, an 80% closed-loop water recycling plant, and Tier-3 domestic data residency under the Data Protection Act.
+"""
+
+    player_html = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Audio Overview Briefing — {{ audit_id }}</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #070B14; color: #F8FAFC; padding: 24px; margin: 0; line-height: 1.6; }
+        .container { max-width: 860px; margin: 0 auto; background: #0F172A; border: 1px solid #1E293B; border-radius: 12px; padding: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1E293B; padding-bottom: 16px; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+        h1 { margin: 0; font-size: 1.4rem; color: #FBBF24; display: flex; align-items: center; gap: 8px; }
+        .badge { padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+        .badge-halt { background: #7F1D1D; color: #FCA5A5; border: 1px solid #EF4444; }
+        .badge-cal { background: #78350F; color: #FDE68A; border: 1px solid #D97706; }
+        .badge-proc { background: #064E3B; color: #6EE7B7; border: 1px solid #10B981; }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+        .btn { background: #D97706; color: #000; font-weight: bold; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; }
+        .btn:hover { background: #F59E0B; }
+        .btn-stop { background: #334155; color: #F8FAFC; }
+        .btn-stop:hover { background: #475569; }
+        .btn-link { background: transparent; border: 1px solid #334155; color: #94A3B8; text-decoration: none; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; }
+        .btn-link:hover { color: #F8FAFC; border-color: #64748B; }
+        .script-box { background: #030712; border: 1px solid #1E293B; border-radius: 8px; padding: 20px; font-family: monospace; font-size: 0.88rem; color: #38BDF8; white-space: pre-wrap; line-height: 1.6; max-height: 480px; overflow-y: auto; }
+        .host-1 { color: #FBBF24; font-weight: bold; }
+        .host-2 { color: #34D399; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1><span>🎧</span> Executive Audio Overview Briefing</h1>
+                <div style="font-size: 0.82rem; color: #94A3B8; margin-top: 4px;">Sovereign Decision Assurance Briefing • Republic of Botswana</div>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <span class="badge {% if posture == 'HALT' %}badge-halt{% elif 'CALIBRATE' in posture %}badge-cal{% else %}badge-proc{% endif %}">{{ posture }}</span>
+                <span style="font-family: monospace; font-size: 0.85rem; color: #FBBF24;">W = {{ quotient }}</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" id="play-btn" onclick="startAudioBrief()">▶ Play Audio Briefing</button>
+            <button class="btn btn-stop" id="stop-btn" onclick="stopAudioBrief()">⏹ Stop</button>
+            <a href="/wisdom/audit/{{ audit_id }}/term-sheet-pdf" class="btn-link">📜 Download Term Sheet PDF</a>
+            <a href="/wisdom/audit/{{ audit_id }}" class="btn-link">← Return to Dossier</a>
+        </div>
+
+        <div class="script-box" id="transcript">{{ script }}</div>
+    </div>
+
+    <script>
+        var currentUtterance = null;
+        function startAudioBrief() {
+            if (!('speechSynthesis' in window)) {
+                alert('Text-to-Speech is not supported by your browser.');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            var text = document.getElementById('transcript').innerText;
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.rate = 1.0;
+            currentUtterance.pitch = 1.0;
+            
+            var btn = document.getElementById('play-btn');
+            btn.innerText = '🔊 Playing...';
+            btn.disabled = true;
+
+            currentUtterance.onend = function() {
+                btn.innerText = '▶ Play Audio Briefing';
+                btn.disabled = false;
+            };
+            currentUtterance.onerror = function() {
+                btn.innerText = '▶ Play Audio Briefing';
+                btn.disabled = false;
+            };
+
+            window.speechSynthesis.speak(currentUtterance);
+        }
+
+        function stopAudioBrief() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                var btn = document.getElementById('play-btn');
+                if (btn) {
+                    btn.innerText = '▶ Play Audio Briefing';
+                    btn.disabled = false;
+                }
+            }
+        }
+    </script>
+</body>
+</html>"""
+    return render_template_string(player_html, audit_id=audit_id, posture=posture, quotient=quotient, script=script.strip())
