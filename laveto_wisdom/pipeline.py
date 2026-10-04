@@ -88,6 +88,20 @@ You operate with complete statutory fidelity to Botswana's legal baselines.
 ACTIVE STATUTORY REPOSITORY:
 {statutory_context}
 
+MANDATORY STATUTORY CITATION ENFORCEMENT:
+Every finding, risk posture decision, tension declaration, and calibrated milestone MUST explicitly cite the relevant Botswana legislation and exact section number:
+- [Special Economic Zones Act (Cap 44:03), Sec 14/23] (Cluster capex, export off-take, bonded customs)
+- [Economic Inclusion Act 2021, Sec 12/28] (50% citizen subcontracting, 35 reserved sectors)
+- [Water Act (Cap 34:01), Sec 16/32] (WUC abstraction tariffs, 100% closed-loop effluent recycling)
+- [Mines and Minerals Act (Cap 66:01), Sec 65] (Raw ore export controls, domestic smelting/refining)
+- [Data Protection Act 2018 / 2021, Sec 18] (Tier-3 domestic data hosting, sovereign telemetry containment)
+- [Botswana Energy Regulatory Authority (BERA) Act 2016] (IRP 30% renewable target, 1MW captive solar offset)
+- [Public Procurement Act 2022, Sec 54] (Citizen Economic Empowerment preferences)
+- [Financial Intelligence Act 2022] (15% IFSC concessionary compliance, AML/CFT)
+- [Tribal Land Act 2018] (Concession lease agreements, citizen equity buffers)
+
+All JSON pass outputs (pass_1_intent, pass_2_causal, pass_3_axiological, pass_4_epistemic, and pass_5_verdict) must embed explicit statutory citations.
+
 PROPOSAL UNDER AUDIT:
 \"\"\"{proposal_text}\"\"\"
 
