@@ -2493,7 +2493,34 @@ HTML_OFFRAMP = """<!DOCTYPE html>
             <div class="space-y-4 bg-gray-900/50 p-6 rounded-xl border border-gray-800">
                 <div>
                     <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Downline Node CSV / Number List (Format: Number, AWT):</label>
-                    <textarea rows="3" id="batch-csv" class="w-full bg-black border border-gray-700 text-white p-3 rounded-lg text-xs font-mono" placeholder="+26771111111, 25.0\n+26772222222, 40.5">+26771234567, 15.0\n+26772345678, 30.5</textarea>
+                    
+            <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #1E293B; border-radius: 8px; padding: 12px 16px; margin-bottom: 14px;">
+                <div style="font-size: 0.82rem; font-weight: 700; color: #F1F5F9; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="display: flex; align-items: center; gap: 6px;">⚖️ Select Statutory Audit Lenses (Scope Filter)</span>
+                    <span style="font-size: 0.72rem; color: #94A3B8; font-weight: normal;">Toggle to isolate regulatory statutory frameworks</span>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.8rem; color: #CBD5E1;">
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: #93C5FD;">
+                        <input type="checkbox" name="lens_seza" value="1" checked> 🏭 SEZA / SPEDU Hubs
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: #86EFAC;">
+                        <input type="checkbox" name="lens_cee" value="1" checked> 🇧🇼 50% CEE & Reserved Sectors
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: #FDE047;">
+                        <input type="checkbox" name="lens_energy" value="1" checked> ⚡ Energy & IRP Solar
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: #67E8F9;">
+                        <input type="checkbox" name="lens_water" value="1" checked> 💧 Water & Effluent Recycling
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: #FCA5A5;">
+                        <input type="checkbox" name="lens_mining" value="1" checked> 💎 Mining & Beneficiation
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: #D8B4FE;">
+                        <input type="checkbox" name="lens_dpa" value="1" checked> 🛡️ Data Sovereignty (DPA)
+                    </label>
+                </div>
+            </div>
+            <textarea rows="3" id="batch-csv" class="w-full bg-black border border-gray-700 text-white p-3 rounded-lg text-xs font-mono" placeholder="+26771111111, 25.0\n+26772222222, 40.5">+26771234567, 15.0\n+26772345678, 30.5</textarea>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-xs text-gray-400">Total Batch Volume: <strong class="text-white">45.5 AWT (P 113.75)</strong></span>
