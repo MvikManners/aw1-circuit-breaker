@@ -1702,6 +1702,142 @@ window.generatePromptFromDoc = uploadAndFormulate;
 window.handleFileSelected = uploadAndFormulate;
 </script>
 
+
+<!-- INTERACTIVE STATUTORY WHAT-IF SIMULATOR MODAL -->
+<div id="whatif-modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(4px); align-items:center; justify-content:center;">
+    <div style="background:#0F172A; border:1px solid #1E293B; border-radius:12px; max-width:850px; width:95%; max-height:90vh; overflow-y:auto; padding:24px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; pb:12px; margin-bottom:18px;">
+            <div>
+                <h3 style="color:#38BDF8; margin:0; font-size:1.2rem;">🛡️ Statutory "What-If" Simulator & Dossier Engine</h3>
+                <span style="font-size:0.75rem; color:#94A3B8;">Economic Inclusion Act 2021 & AW-1 Out-of-Band Risk Auditing</span>
+            </div>
+            <button type="button" onclick="toggleWhatIfModal()" style="background:transparent; border:none; color:#94A3B8; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <!-- Inputs -->
+            <div style="background:#090D16; padding:16px; border-radius:8px; border:1px solid #1E293B;">
+                <h4 style="color:#CBD5E1; margin-top:0; font-size:0.85rem; border-bottom:1px solid #1E293B; padding-bottom:8px;">🎛️ Scenario Inputs</h4>
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.75rem; color:#94A3B8; display:flex; justify-content:space-between;">
+                        <span>Loan / Tender Valuation</span>
+                        <span id="lbl-loan" style="color:#38BDF8; font-family:monospace;">BWP 25,000,000</span>
+                    </label>
+                    <input type="range" id="wi-loan" min="1000000" max="100000000" step="1000000" value="25000000" style="width:100%; accent-color:#0284C7;" oninput="updateWhatIf()">
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.75rem; color:#94A3B8; display:flex; justify-content:space-between;">
+                        <span>Local Labor Quota (%)</span>
+                        <span id="lbl-labor" style="color:#38BDF8; font-family:monospace;">55%</span>
+                    </label>
+                    <input type="range" id="wi-labor" min="10" max="100" value="55" style="width:100%; accent-color:#0284C7;" oninput="updateWhatIf()">
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.75rem; color:#94A3B8; display:flex; justify-content:space-between;">
+                        <span>Local Subcontracting Quota (%)</span>
+                        <span id="lbl-subcontract" style="color:#38BDF8; font-family:monospace;">50%</span>
+                    </label>
+                    <input type="range" id="wi-subcontract" min="10" max="100" value="50" style="width:100%; accent-color:#0284C7;" oninput="updateWhatIf()">
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; color:#94A3B8; display:flex; justify-content:space-between;">
+                        <span>Environmental Compliance (0 - 10)</span>
+                        <span id="lbl-env" style="color:#38BDF8; font-family:monospace;">8.5</span>
+                    </label>
+                    <input type="range" id="wi-env" min="1" max="10" step="0.5" value="8.5" style="width:100%; accent-color:#0284C7;" oninput="updateWhatIf()">
+                </div>
+            </div>
+
+            <!-- Calculated Metrics -->
+            <div style="display:flex; flex-direction:column; justify-content:space-between; background:#090D16; padding:16px; border-radius:8px; border:1px solid #1E293B;">
+                <div>
+                    <h4 style="color:#CBD5E1; margin-top:0; font-size:0.85rem; border-bottom:1px solid #1E293B; padding-bottom:8px;">📊 Simulated Statutory Metrics</h4>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+                        <div style="background:#0F172A; padding:10px; border-radius:6px; border:1px solid #1E293B;">
+                            <span style="font-size:0.7rem; color:#94A3B8; display:block;">Effective CEE Quota</span>
+                            <span id="res-cee" style="font-size:1.2rem; font-weight:bold; color:#10B981;">52.0%</span>
+                            <span style="font-size:0.65rem; color:#64748B; display:block;">Min Statute: 50.0%</span>
+                        </div>
+                        <div style="background:#0F172A; padding:10px; border-radius:6px; border:1px solid #1E293B;">
+                            <span style="font-size:0.7rem; color:#94A3B8; display:block;">Wisdom Quotient (W)</span>
+                            <span id="res-w" style="font-size:1.2rem; font-weight:bold; color:#10B981;">2.45</span>
+                            <span style="font-size:0.65rem; color:#64748B; display:block;">Threshold: &ge; 1.50</span>
+                        </div>
+                    </div>
+                    <div style="background:#0F172A; padding:10px; border-radius:6px; border:1px solid #1E293B; margin-top:10px;">
+                        <span style="font-size:0.7rem; color:#94A3B8; display:block;">Predicted Default (NPL) Risk</span>
+                        <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                            <span id="res-npl" style="font-size:1.1rem; font-weight:bold; color:#38BDF8;">4.8%</span>
+                            <span style="font-size:0.75rem; color:#10B981; font-weight:bold;">(-64% vs Base)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1-Click PDF Button -->
+                <div style="margin-top:14px;">
+                    <button type="button" onclick="exportDossierPdfFromWhatIf()" style="width:100%; background:#0284C7; hover:background:#0369A1; color:#FFF; font-weight:bold; font-size:0.8rem; padding:10px; border:none; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                        <span>📄</span> Export 1-Click SHA-256 Decision Assurance Dossier (PDF)
+                    </button>
+                    <span id="pdf-export-msg" style="display:none; font-size:0.7rem; color:#10B981; text-align:center; margin-top:6px; font-family:monospace; display:block;"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleWhatIfModal() {
+    var m = document.getElementById('whatif-modal');
+    m.style.display = (m.style.display === 'none' || m.style.display === '') ? 'flex' : 'none';
+    if (m.style.display === 'flex') updateWhatIf();
+}
+
+function updateWhatIf() {
+    var loan = parseFloat(document.getElementById('wi-loan').value);
+    var labor = parseFloat(document.getElementById('wi-labor').value);
+    var subcontract = parseFloat(document.getElementById('wi-subcontract').value);
+    var env = parseFloat(document.getElementById('wi-env').value);
+
+    document.getElementById('lbl-loan').textContent = 'BWP ' + Number(loan).toLocaleString();
+    document.getElementById('lbl-labor').textContent = labor + '%';
+    document.getElementById('lbl-subcontract').textContent = subcontract + '%';
+    document.getElementById('lbl-env').textContent = env.toFixed(1);
+
+    var cee = (0.4 * labor + 0.6 * subcontract);
+    var axiological = Math.min(1.0, (cee / 100.0) * (env / 10.0));
+    var irreversibility = Math.max(0.2, (loan / 50000000.0));
+    var w = Math.max(0.1, (4.0 * axiological) / (irreversibility + 0.5));
+    var npl = Math.max(2.1, (15.0 * (1.0 - (w / 4.0))));
+
+    var elCee = document.getElementById('res-cee');
+    elCee.textContent = cee.toFixed(1) + '%';
+    elCee.style.color = (cee >= 50.0) ? '#10B981' : '#F43F5E';
+
+    var elW = document.getElementById('res-w');
+    elW.textContent = w.toFixed(2);
+    elW.style.color = (w >= 1.50) ? '#10B981' : '#FBBF24';
+
+    document.getElementById('res-npl').textContent = npl.toFixed(1) + '%';
+}
+
+function exportDossierPdfFromWhatIf() {
+    var loan = document.getElementById('wi-loan').value;
+    var w = document.getElementById('res-w').textContent;
+    var cee = document.getElementById('res-cee').textContent.replace('%','');
+    var msg = document.getElementById('pdf-export-msg');
+    
+    msg.style.display = 'block';
+    msg.textContent = '⏳ Compiling SHA-256 Dossier PDF...';
+    
+    var url = '/wisdom/api/v1/whatif/export-dossier-pdf?loan_amount_bwp=' + loan + '&wisdom_quotient_W=' + w + '&cee_quota_percentage=' + cee;
+    window.location.href = url;
+    
+    setTimeout(function() {
+        msg.textContent = '✓ Decision_Assurance_Dossier.pdf exported with SHA-256 seal';
+    }, 1500);
+}
+</script>
+
 </body>
 </html>"""
 
@@ -15404,3 +15540,129 @@ def api_formulate_dossier():
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+
+
+# =====================================================================
+# STATUTORY WHAT-IF SIMULATION & 1-CLICK DOSSIER PDF EXPORT
+# =====================================================================
+@wisdom_bp.route("/api/v1/whatif/simulate", methods=["POST"])
+def api_whatif_simulate():
+    from flask import request, jsonify
+    from .statutory_whatif_simulator import StatutoryWhatIfSimulator
+    data = request.get_json() or {}
+    loan_amount = float(data.get("loan_amount_bwp", 25000000))
+    labor = float(data.get("local_labor", 55))
+    subcontract = float(data.get("local_subcontract", 50))
+    env = float(data.get("env_score", 8.5))
+    foresight = float(data.get("foresight_years", 4.0))
+
+    result = StatutoryWhatIfSimulator.simulate_deal_scenario(
+        loan_amount_bwp=loan_amount,
+        local_labor_percentage=labor,
+        local_subcontracting_percentage=subcontract,
+        environmental_compliance_score=env,
+        foresight_depth_years=foresight
+    )
+    return jsonify(result), 200
+
+@wisdom_bp.route("/api/v1/whatif/export-dossier-pdf", methods=["POST", "GET"])
+def api_whatif_export_pdf():
+    import io
+    from flask import request, send_file
+    from .dossier_pdf_generator import generate_dossier_pdf_stream
+    
+    if request.method == "POST":
+        data = request.get_json() or {}
+    else:
+        data = request.args.to_dict()
+
+    payload = {
+        "dossier_id": data.get("dossier_id", f"DOS-CEDA-{int(time.time())}"),
+        "dilemma_title": data.get("dilemma_title", "CEDA / SEZA Statutory Assurance Evaluation"),
+        "applicant": data.get("applicant", "Commercial Credit Applicant (Botswana)"),
+        "loan_amount_bwp": float(data.get("loan_amount_bwp", 25000000.0)),
+        "wisdom_quotient_W": float(data.get("wisdom_quotient_W", 2.45)),
+        "cee_quota_percentage": float(data.get("cee_quota_percentage", 52.0)),
+        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    }
+
+    pdf_bytes = generate_dossier_pdf_stream(payload)
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name="Decision_Assurance_Dossier.pdf"
+    )
+
+
+# =====================================================================
+# CITIZEN PORTAL (PUBLIC EMPOWERMENT & SMME VERIFICATION)
+# =====================================================================
+
+
+@wisdom_bp.route("/citizen", methods=["GET"])
+def citizen_portal():
+    from flask import render_template_string
+    template = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Citizen Portal — Laveto Wisdom AW</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root { --bg: #0B0F19; --card: #151C2C; --gold: #D97706; --gold-light: #FBBF24; --text: #F3F4F6; --border: #232E42; --accent: #0284C7; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 2rem 1rem; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.8rem; margin-bottom: 1.5rem; }
+        h1 { color: var(--gold-light); margin: 0 0 8px 0; font-size: 1.8rem; }
+        h2 { color: #38BDF8; font-size: 1.2rem; margin-top: 0; }
+        p { color: #94A3B8; font-size: 0.95rem; line-height: 1.5; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 1.2rem; }
+        .feature-box { background: #0A0F1D; border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+        .feature-box h3 { color: var(--gold-light); font-size: 1rem; margin: 0 0 6px 0; }
+        .btn { display: inline-block; background: var(--gold); color: #000; font-weight: 700; padding: 10px 20px; border-radius: 6px; text-decoration: none; margin-top: 10px; font-size: 0.9rem; }
+        .btn-outline { display: inline-block; background: transparent; color: #38BDF8; border: 1px solid #0284C7; font-weight: 700; padding: 10px 20px; border-radius: 6px; text-decoration: none; margin-top: 10px; font-size: 0.9rem; margin-left: 8px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🏠 Laveto Citizen Portal</h1>
+        <p>Sovereign Citizen Empowerment & Statutory Rights under the Economic Inclusion Act 2021</p>
+        <div style="margin-top: 10px;">
+            <a href="/wisdom/" class="btn">&larr; Assurance Console</a>
+            <a href="/wisdom/generate" class="btn-outline">💡 Idea Incubator</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>🛡 What the Citizen Portal Does for You</h2>
+        <p>Under Botswana's <strong>Economic Inclusion Act 2021</strong>, state tenders, SEZA anchor investments, and CEDA-funded facilities must legally guarantee citizen equity, local subcontracting quotas, and job preservation. This portal allows local entrepreneurs and communities to verify compliance.</p>
+        
+        <div class="grid">
+            <div class="feature-box">
+                <h3>📊 50% CEE Verification</h3>
+                <p>Check if large state or parastatal tenders in your district fulfill the mandatory 50% citizen subcontracting threshold.</p>
+            </div>
+            <div class="feature-box">
+                <h3>💧 Water & Aquifer Protection</h3>
+                <p>Track borehole extraction covenants and greywater compliance under the Water Act (Cap 34:01).</p>
+            </div>
+            <div class="feature-box">
+                <h3>🎓 University Guild (PoUC)</h3>
+                <p>Students from UB, BIUST, and BAC can attach mobile and laptop edge nodes to audit national decisions for AWT rewards.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" style="border-left: 4px solid var(--gold);">
+        <h2>🚀 Ready to Test an Investment or Tender?</h2>
+        <p>Drop your business plan, CEDA application, or supplier quotation into the AI Assurance Console for instant 7-gate compliance feedback.</p>
+        <a href="/wisdom/" class="btn">Go to Assurance Console</a>
+    </div>
+</div>
+</body>
+</html>"""
+    return render_template_string(template)
