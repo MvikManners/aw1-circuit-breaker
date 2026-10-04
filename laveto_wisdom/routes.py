@@ -15303,3 +15303,28 @@ def view_builders_guild():
 </body>
 </html>"""
     return render_template_string(guild_html)
+
+
+# TRACK C: COMPARATIVE VARIANCE REPORT PDF ROUTE
+@wisdom_bp.route("/sandbox/compare-pdf", methods=["GET", "POST"])
+def download_comparative_variance_pdf():
+    from flask import Response
+    from .pdf_generator import generate_comparative_variance_pdf
+    
+    variant_a = {
+        "proposal_text": "P18.5M Pandamatenga irrigation setup with unmetered groundwater and foreign management.",
+        "posture": "HALT",
+        "wisdom_quotient": 0.28,
+        "uncomfortable_truth": "Violates Water Act Cap 34:01 Chobe aquifer recharge covenants and Economic Inclusion Act 2021 quotas."
+    }
+    variant_b = {
+        "proposal_text": "Remediated Pandamatenga project with 80% closed-loop water treatment, 50% citizen subcontracting, and 25% equity escrow.",
+        "posture": "PROCEED",
+        "wisdom_quotient": 0.82,
+        "uncomfortable_truth": "All statutory covenants satisfied; aquifer draw safely bounded within seasonal recharge ceilings."
+    }
+    
+    pdf_bytes = generate_comparative_variance_pdf(variant_a, variant_b)
+    return Response(pdf_bytes, mimetype="application/pdf", headers={
+        "Content-Disposition": "attachment; filename=Laveto_Wisdom_Comparative_Variance_Report.pdf"
+    })

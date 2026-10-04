@@ -553,3 +553,49 @@ def generate_term_sheet_pdf(audit_data: dict) -> bytes:
     doc.build(story)
     buffer.seek(0)
     return buffer.getvalue()
+
+
+def generate_comparative_variance_pdf(variant_a: dict, variant_b: dict) -> bytes:
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib import colors
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    import io
+
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(buf, pagesize=letter, leftMargin=36, rightMargin=36, topMargin=36, bottomMargin=36)
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], fontName='Helvetica-Bold', fontSize=18, textColor=colors.HexColor('#0F172A'), spaceAfter=8)
+    subtitle_style = ParagraphStyle('SubtitleStyle', parent=styles['Normal'], fontName='Helvetica', fontSize=10, textColor=colors.HexColor('#64748B'), spaceAfter=14)
+    cell_bold = ParagraphStyle('CellBold', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=9, textColor=colors.HexColor('#0F172A'))
+    cell_text = ParagraphStyle('CellText', parent=styles['Normal'], fontName='Helvetica', fontSize=8, textColor=colors.HexColor('#334155'), leading=11)
+
+    elements = [
+        Paragraph("LAVETO WISDOM AW-1 - COMPARATIVE VARIANCE REPORT", title_style),
+        Paragraph("Institutional Decision Simulator • Statutory Compliance & Risk Delta", subtitle_style),
+        Spacer(1, 10)
+    ]
+
+    data = [
+        [Paragraph("Evaluation Parameter", cell_bold), Paragraph("Variant A (Baseline)", cell_bold), Paragraph("Variant B (Remediated)", cell_bold)],
+        [Paragraph("Proposal / Scope", cell_bold), Paragraph(str(variant_a.get('proposal_text', ''))[:120] + '...', cell_text), Paragraph(str(variant_b.get('proposal_text', ''))[:120] + '...', cell_text)],
+        [Paragraph("Verdict Posture", cell_bold), Paragraph(f"<b>{variant_a.get('posture', 'HALT')}</b>", cell_text), Paragraph(f"<b>{variant_b.get('posture', 'PROCEED')}</b>", cell_text)],
+        [Paragraph("Wisdom Quotient (W)", cell_bold), Paragraph(str(variant_a.get('wisdom_quotient', 0.2)), cell_text), Paragraph(str(variant_b.get('wisdom_quotient', 0.85)), cell_text)],
+        [Paragraph("Key Tension / Risk", cell_bold), Paragraph(str(variant_a.get('uncomfortable_truth', 'Severe risk detected')), cell_text), Paragraph(str(variant_b.get('uncomfortable_truth', 'Mitigations verified')), cell_text)],
+        [Paragraph("Statutory Covenants", cell_bold), Paragraph("Breached / Missing mandates", cell_text), Paragraph("Citizen equity and Water Act covenants enforced", cell_text)]
+    ]
+
+    t = Table(data, colWidths=[130, 205, 205])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#F1F5F9')),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#CBD5E1')),
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+        ('TOPPADDING', (0,0), (-1,-1), 8),
+    ]))
+
+    elements.append(t)
+    doc.build(elements)
+    buf.seek(0)
+    return buf.getvalue()
