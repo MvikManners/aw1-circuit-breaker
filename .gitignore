@@ -40,3 +40,4 @@ __pycache__/
 *.bak*
 snapshots/
 Decision_Assurance_Dossier.pdf
+/awesome-ai-plugins/
