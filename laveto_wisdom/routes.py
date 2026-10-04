@@ -15182,6 +15182,7 @@ def submit_pouc_gradient():
         evaluation_scores = payload.get("scores", {})
         surfaced_blindspot = payload.get("surfaced_blindspot", "")
         peer_scores = payload.get("peer_scores", [])
+        economic_proof = payload.get("economic_proof", {})
 
         # 1. Hardware Interlocks Check
         passed_interlocks, interlock_msg = HardwareInterlockVerifier.verify(telemetry)
@@ -15213,7 +15214,13 @@ def submit_pouc_gradient():
         epistemic_delta = PoUCTriadValidator.filter_3_epistemic_delta(surfaced_blindspot, STATUTORY_KEYWORDS)
 
         # 6. Settle Dual-Token Rewards
-        settlement_receipt = settlement_engine.settle_pouc_submission(node_id, epistemic_delta)
+        settlement_receipt = settlement_engine.settle_pouc_submission(node_id, epistemic_delta, economic_proof)
+        if settlement_receipt.get("status") != "SETTLED_WITH_ECONOMIC_PROOF":
+            return jsonify({
+                "status": settlement_receipt.get("status", "REJECTED_UNBACKED_EMISSION"),
+                "message": settlement_receipt.get("reason", "Economic proof verification failed."),
+                "details": settlement_receipt
+            }), 422
 
         return jsonify({
             "status": "VALIDATED_AND_SETTLED",
