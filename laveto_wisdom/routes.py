@@ -6261,7 +6261,14 @@ def wuc_extraction_dashboard():
         permit = bool(data.get('permit_active', True))
 
         result = WUCExtractionComplianceEngine.audit_extraction(volume, cap, permit)
-        return jsonify(result), 200
+        
+    # Trigger asynchronous circuit-breaker alert if client configured a webhook
+    if hasattr(g, 'api_client_id'):
+        trigger_circuit_breaker_webhook(g.api_client_id, result)
+    elif result.get('posture') == 'HALT':
+        trigger_circuit_breaker_webhook('internal-default', result)
+
+    return jsonify(result), 200
 
     return render_template_string(HTML_WUC_WATER)
 
@@ -15202,3 +15209,33 @@ HOST 2: To clear the audit gate, the proponent must accept the 8-clause Autonomo
 </body>
 </html>"""
     return render_template_string(player_html, audit_id=audit_id, posture=posture, quotient=quotient, script=script.strip())
+
+
+# =====================================================================
+# UPGRADE 7: COMMERCIAL SETTLEMENT & BOB TRUST VERIFICATION
+# =====================================================================
+@wisdom_bp.route("/audit/<audit_id>/settle", methods=["POST"])
+def execute_audit_settlement(audit_id):
+    from .commercial_settlement import record_settlement
+    data = request.get_json(silent=True) or request.form.to_dict()
+    tier = data.get("tier", "SME_ASSURANCE")
+    carrier = data.get("carrier", "ORANGE_MONEY")
+    carrier_tx = data.get("carrier_tx_id", f"OM-{int(time.time())}")
+    
+    receipt = record_settlement(audit_id, tier, carrier, carrier_tx)
+    return jsonify({
+        "status": "SUCCESS",
+        "message": "Commercial audit fee settled via Laveto Pay.",
+        "receipt": receipt
+    }), 200
+
+@wisdom_bp.route("/api/v1/compliance/bob-trust", methods=["GET"])
+def view_bob_trust_compliance():
+    import sqlite3
+    conn = sqlite3.connect("/home/LavetoLab/lvt_backend/lvt_database.db", timeout=10.0)
+    conn.row_factory = sqlite3.Row
+    row = conn.cursor().execute("SELECT * FROM bob_trust_reserve_audit ORDER BY id DESC LIMIT 1").fetchone()
+    conn.close()
+    if not row:
+        return jsonify({"compliance_status": "NO_TRANSACTIONS_RECORDED", "reserve_ratio": 1.0}), 200
+    return jsonify(dict(row)), 200
