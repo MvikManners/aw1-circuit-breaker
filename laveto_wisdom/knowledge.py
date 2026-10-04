@@ -180,3 +180,106 @@ def retrieve_statutory_context(text: str = "") -> str:
     # Attach macroeconomic ground truth
     matched.append("### [EMPIRICAL MACROECONOMIC BENCHMARKS]:\n" + BOTSWANA_GROUND_TRUTH)
     return "\n\n".join(matched)
+# ==============================================================================
+# UPGRADE 1: SEZA 8-CLUSTER INDUSTRIAL MATRIX & EMPIRICAL MACRO BASELINES
+# Codified from Special Economic Zones Act (Cap 44:03) & National Integrated Resource Plan
+# ==============================================================================
+
+SEZA_INDUSTRIAL_CLUSTERS = {
+    "SSKIA": {
+        "name": "Sir Seretse Khama International Airport (SSKIA) Special Economic Zone",
+        "focus": ["Diamond Beneficiation", "Jewelry Manufacturing", "Air Cargo Logistics", "High-Value Electronics", "Aerospace Support"],
+        "minimum_capex_pula": 50000000.0,
+        "statutory_anchor": "Special Economic Zones Act [Cap 44:03] Sec 14",
+        "mandatory_covenants": [
+            "Rough diamond local cut-and-polish quota via Okavango Diamond Company (ODC)",
+            "Air freight bonded transit integration within 5km of SSKIA cargo terminal"
+        ]
+    },
+    "FAIRGROUNDS": {
+        "name": "Gaborone Fairgrounds Financial Technology & IFSC Zone",
+        "focus": ["International Financial Services Centre (IFSC)", "Fintech Software Engines", "B2B Data Routing", "Risk Underwriting"],
+        "minimum_capex_pula": 25000000.0,
+        "statutory_anchor": "Income Tax Act (IFSC 15% Concessionary Rate) & FIA 2022",
+        "mandatory_covenants": [
+            "Domestic Tier-3 data hosting compliance under Data Protection Act",
+            "Zero offshore data leak covenants for sovereign financial telemetry"
+        ]
+    },
+    "LOBATSE": {
+        "name": "Lobatse Meat & Leather Processing Cluster",
+        "focus": ["Beef By-Products Processing", "Leather Tannery", "Biogas & Effluent Cogeneration", "Cold Chain Logistics"],
+        "minimum_capex_pula": 30000000.0,
+        "statutory_anchor": "Botswana Meat Commission Act & Industrial Development Act",
+        "mandatory_covenants": [
+            "100% industrial tannery effluent pre-treatment prior to municipal discharge",
+            "Mandatory domestic hide off-take priority over raw wet-blue exports"
+        ]
+    },
+    "SELEBI_PHIKWE": {
+        "name": "Selebi-Phikwe Heavy Metallurgy & Green Industrial Revitalization (SPEDU)",
+        "focus": ["Base Metal Smelting (Copper/Nickel Salvage)", "Scrap Steel Smelting", "Agro-Chemical Manufacturing", "Apparel Garments"],
+        "minimum_capex_pula": 40000000.0,
+        "statutory_anchor": "SPEDU Special Incentive Framework & Mines and Minerals Act [Cap 66:01]",
+        "mandatory_covenants": [
+            "5% corporate tax rate adherence for eligible SPEDU manufacturing pioneers",
+            "Solvent extraction / electrowinning (SX-EW) clean tailing recovery protocol"
+        ]
+    },
+    "PANDAMATENGA": {
+        "name": "Pandamatenga Commercial Agro-Industrial Hub",
+        "focus": ["Sorghum Milling", "Sunflower & Soya Oil Extraction", "Silo Grain Infrastructure", "Export Grade Pulses"],
+        "minimum_capex_pula": 35000000.0,
+        "statutory_anchor": "National Agricultural Policy & BAMB Strategic Reserve Act",
+        "mandatory_covenants": [
+            "Mandatory 30% domestic farmer outgrower off-take contract covenant",
+            "P9.2B import substitution compliance (substitutes edible oil / grain grain tariffs)"
+        ]
+    },
+    "FRANCISTOWN": {
+        "name": "Francistown Multi-Modal Transport, Mining Logistics & Dry Port",
+        "focus": ["SADC Rail-to-Road Freight Intermodal Transshipment", "Heavy Mining Equipment Overhaul", "Warehouse Distribution"],
+        "minimum_capex_pula": 30000000.0,
+        "statutory_anchor": "Railway Act & Customs and Excise Duty Act",
+        "mandatory_covenants": [
+            "Kazungula bridge corridor customs pre-clearance integration",
+            "Minimum 50% citizen-owned road freight subcontracting under CEE Act 2021"
+        ]
+    },
+    "PALAPYE": {
+        "name": "Palapye Energy, Petrochemical & Coal-Bed Methane (CBM) Sector",
+        "focus": ["Clean Coal Gasification", "Captive Solar PV Baseloads", "Coal-Bed Methane (CBM) to Liquids", "Glass Manufacturing"],
+        "minimum_capex_pula": 60000000.0,
+        "statutory_anchor": "BERA Act 2016 & Mines and Minerals Act [Cap 66:01]",
+        "mandatory_covenants": [
+            "30% solar captive offset for energy generation exceeding 5MW baseload",
+            "Zero methane flaring; capture required for domestic grid feed-in"
+        ]
+    },
+    "TULI_BLOCK": {
+        "name": "Tuli Block High-Yield Precision Horticulture Hub",
+        "focus": ["Citrus Production", "Drip-Irrigated Vegetable Processing", "Cold-Storage Aggregation", "Export Packing"],
+        "minimum_capex_pula": 20000000.0,
+        "statutory_anchor": "Water Act [Cap 34:01] & Agrochemicals Act",
+        "mandatory_covenants": [
+            "Closed-loop drip irrigation water efficiency exceeding 90%",
+            "Limpopo river water basin quota abstraction compliance verified by WUC"
+        ]
+    }
+}
+
+NATIONAL_MACRO_DEFICITS = {
+    "FOOD_IMPORT_BILL_BWP": 9200000000.0,  # P9.2 Billion annual food import deficit
+    "DOMESTIC_CROP_YIELD_PCT": 17.3,       # National cereal demand met locally
+    "NATIONAL_UNEMPLOYMENT_RATE_PCT": 27.6, # Overall national baseline
+    "YOUTH_UNEMPLOYMENT_RATE_PCT": 38.0,    # Youth baseline
+    "CEE_MINIMUM_LOCAL_SUBCONTRACT_PCT": 50.0, # Citizen Economic Inclusion Act
+    "CITIZEN_RESERVED_SECTORS_COUNT": 35   # 35 Exclusive citizen commerce sectors
+}
+
+NATIONAL_ENERGY_BASELINE_IRP = {
+    "ANNUAL_SUNSHINE_HOURS": 3200,          # High direct normal irradiance (DNI)
+    "IRP_2030_RENEWABLE_TARGET_PCT": 30.0,   # Integrated Resource Plan requirement
+    "CAPTIVE_SOLAR_PV_MANDATE_KW_THRESHOLD": 1000.0, # 1MW+ facilities mandate offset
+    "WATER_UTILITIES_CORPORATION_EFFLUENT_REUSE_PCT": 100.0 # WUC mandate on heavy industry
+}
