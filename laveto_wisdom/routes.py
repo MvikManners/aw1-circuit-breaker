@@ -1663,6 +1663,45 @@ HTML_MONITOR_DASHBOARD = """<!DOCTYPE html>
             treasuryInterval = setInterval(fetchTreasuryEvent, 3500);
         });
     </script>
+
+<script>
+function uploadAndFormulate(inputElement) {
+    if (!inputElement.files || !inputElement.files[0]) return;
+    var file = inputElement.files[0];
+    var statusText = document.getElementById('upload-status-text') || document.getElementById('file-chosen-name');
+    var promptInput = document.getElementById('proposal-input') || document.querySelector('textarea[name="proposal"]');
+    var fileChosenSpan = document.getElementById('file-chosen-name');
+    
+    if (fileChosenSpan) fileChosenSpan.textContent = "📄 " + file.name + " (" + Math.round(file.size / 1024) + " KB)";
+    if (statusText) statusText.textContent = "⚙️ Extracting statutory parameters & formulating dilemma...";
+    
+    var formData = new FormData();
+    formData.append("file", file);
+    
+    fetch('/wisdom/api/v1/dossier/formulate', {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.status === 'success' && data.formulated_dilemma) {
+            if (promptInput) {
+                promptInput.value = data.formulated_dilemma;
+                promptInput.style.border = "1px solid #10B981";
+            }
+            if (statusText) statusText.textContent = "✓ Dilemma formulated from " + data.filename + " (" + data.char_count + " chars extracted)";
+        } else {
+            if (statusText) statusText.textContent = "⚠️ Formulation note: " + (data.message || "Manual review required");
+        }
+    })
+    .catch(function(err) {
+        if (statusText) statusText.textContent = "❌ Upload parsing error: " + err;
+    });
+}
+window.generatePromptFromDoc = uploadAndFormulate;
+window.handleFileSelected = uploadAndFormulate;
+</script>
+
 </body>
 </html>"""
 
@@ -15328,3 +15367,40 @@ def download_comparative_variance_pdf():
     return Response(pdf_bytes, mimetype="application/pdf", headers={
         "Content-Disposition": "attachment; filename=Laveto_Wisdom_Comparative_Variance_Report.pdf"
     })
+
+
+@wisdom_bp.route("/diff/<parent_id>/<child_id>", methods=["GET"])
+def view_specific_pair_diff(parent_id, child_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    parent = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (parent_id,)).fetchone()
+    child = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (child_id,)).fetchone()
+    conn.close()
+    
+    pairs = []
+    if parent and child:
+        pairs.append({"parent": dict(parent), "child": dict(child)})
+    
+    return render_template_string(HTML_DIFF, pairs=pairs, user_role=get_current_user_role())
+
+
+
+# =====================================================================
+# DOSSIER UPLOAD & AUTOMATIC STATUTORY DILEMMA FORMULATOR
+# =====================================================================
+@wisdom_bp.route("/api/v1/dossier/formulate", methods=["POST"])
+def api_formulate_dossier():
+    from flask import request, jsonify
+    from .dossier_formulator import extract_text_from_file, formulate_statutory_dilemma
+    
+    file = request.files.get("file")
+    if not file or not file.filename:
+        return jsonify({"status": "error", "message": "No file uploaded"}), 400
+        
+    try:
+        content_bytes = file.read()
+        extracted_text = extract_text_from_file(file.filename, content_bytes)
+        result = formulate_statutory_dilemma(file.filename, extracted_text)
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
