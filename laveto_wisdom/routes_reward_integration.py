@@ -171,8 +171,8 @@ class AutonomousAgentInterceptor:
 # ENDPOINTS
 # =====================================================================
 
-@aw_reward_bp.route('/v1/aw/pouc/submit', methods=['POST'])
-@aw_reward_bp.route('/api/v1/aw/pouc/submit', methods=['POST'])
+# @aw_reward_bp.route('/v1/aw/pouc/submit', methods=['POST'])
+# @aw_reward_bp.route('/api/v1/aw/pouc/submit', methods=['POST'])
 def submit_pouc_gradient():
     """
     Endpoint for mobile/edge nodes to submit PoUC micro-evaluations.

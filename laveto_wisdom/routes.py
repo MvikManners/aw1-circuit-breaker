@@ -13644,7 +13644,7 @@ def simulate_payout_route():
 def api_tokenomics_summary():
     return jsonify(tokenomics_engine.get_tokenomics_summary()), 200
 
-@wisdom_bp.route("/api/v1/aw/pouc/submit", methods=["POST"])
+@wisdom_bp.route("/api/v1/aw/pouc/legacy_submit", methods=["POST"])
 def api_pouc_submit():
     data = request.get_json(silent=True) or {}
     node_address = data.get("node_id", "node-edge-anonymous")
