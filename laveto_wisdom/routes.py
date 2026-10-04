@@ -15222,6 +15222,50 @@ def submit_pouc_gradient():
                 "details": settlement_receipt
             }), 422
 
+        # --- Persist Settlement to awt_ledger ---
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT INTO awt_ledger (node_id, contribution_hash, w_tau, awt_minted, status)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    node_id,
+                    economic_proof.get("reference_id", "pouc-settlement"),
+                    settlement_receipt.get("w_tau_credited", 0.0),
+                    settlement_receipt.get("awt_minted", 0.0),
+                    "MINTED"
+                )
+            )
+            conn.commit()
+            conn.close()
+        except Exception as db_err:
+            print(f"Warning: Failed to record settlement to awt_ledger: {db_err}")
+
+        # --- Persist Settlement to awt_ledger ---
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT INTO awt_ledger (node_id, contribution_hash, w_tau, awt_minted, status)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    node_id,
+                    economic_proof.get("reference_id", "pouc-settlement"),
+                    settlement_receipt.get("w_tau_credited", 0.0),
+                    settlement_receipt.get("awt_minted", 0.0),
+                    "MINTED"
+                )
+            )
+            conn.commit()
+            conn.close()
+        except Exception as db_err:
+            print(f"Warning: Failed to record settlement to awt_ledger: {db_err}")
+
         return jsonify({
             "status": "VALIDATED_AND_SETTLED",
             "wisdom_quotient_W": w_score,
