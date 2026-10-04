@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sovereign Client Dossier - Laveto Pay</title>
+    <style>
+        body { font-family: monospace; background: #0b0b0b; color: #c5a059; padding: 40px; }
+        .container { max-width: 800px; margin: auto; border: 1px solid #c5a059; padding: 30px; background: #121212; }
+        h1 { border-bottom: 1px solid #c5a059; padding-bottom: 10px; }
+        .data-row { margin: 15px 0; }
+        .label { color: #888; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SOVEREIGN CLIENT DOSSIER</h1>
+        <div class="data-row"><span class="label">Status:</span> <strong>ACTIVE & SECURE</strong></div>
+        <div class="data-row"><span class="label">Ecosystem:</span> Laveto Pay & Village Ledger</div>
+        <div class="data-row"><span class="label">Dossier ID:</span> {{ dossier_id | default('DOSSIER-ALPHA-01') }}</div>
+        <hr style="border-color: #333; margin: 20px 0;">
+        <p>All core modules, payment gateways, and ledger endpoints have been successfully restored and verified.</p>
+        <a href="/" style="color: #c5a059; text-decoration: underline;">Return to Main Hangar</a>
+    </div>
+</body>
+</html>

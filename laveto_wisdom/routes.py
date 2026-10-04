@@ -14947,3 +14947,72 @@ def verify_statutory_seal(seal_hash):
         "seal_hash": seal_hash,
         "error": "No statutory certificate matching this SHA-256 seal exists in the audit ledger."
     }), 404
+
+
+# ===================================================================================
+# LAVETO WISDOM (AW-1) REWARD ENGINE & TOKENOMICS ROUTES INTEGRATION
+# ===================================================================================
+from .aw_reward_engine import HardwareInterlockVerifier, PoUCTriadValidator, DualTokenSettlementEngine
+
+settlement_engine = DualTokenSettlementEngine()
+STATUTORY_KEYWORDS = ["CEE", "SEZA", "Kazungula", "water", "IRP", "BWP", "food import", "grain"]
+DEFAULT_ANSWERS = ["Proceed with standard execution without additional evaluation."]
+
+@wisdom_bp.route('/api/v1/aw/pouc/submit', methods=['POST'])
+def submit_pouc_gradient():
+    """
+    Mobile Edge Node PoUC Submission Endpoint.
+    1. Verifies mobile hardware interlocks (Battery >=80%, Charging, Unmetered Wi-Fi, Cool Thermal).
+    2. Runs 3-Stage Triad Filters (Semantic Novelty, Peer Triangulation, Epistemic Delta).
+    3. Issues AWT Liquid Tokens + W_tau Soulbound Reputation credits.
+    """
+    try:
+        payload = request.get_json(silent=True) or {}
+        node_id = payload.get("node_id", "anonymous_node")
+        telemetry = payload.get("telemetry", {})
+        evaluation_scores = payload.get("scores", {})
+        surfaced_blindspot = payload.get("surfaced_blindspot", "")
+        peer_scores = payload.get("peer_scores", [])
+
+        # 1. Hardware Interlocks Check
+        passed_interlocks, interlock_msg = HardwareInterlockVerifier.verify(telemetry)
+        if not passed_interlocks:
+            return jsonify({
+                "status": "REJECTED_INTERLOCK_GATE_FAILED",
+                "message": interlock_msg
+            }), 422
+
+        # 2. Compute Wisdom Quotient (W)
+        w_score = PoUCTriadValidator.compute_wisdom_quotient(evaluation_scores)
+
+        # 3. Triad Filter 1: Semantic Novelty Check
+        if not PoUCTriadValidator.filter_1_semantic_novelty(surfaced_blindspot, DEFAULT_ANSWERS):
+            return jsonify({
+                "status": "REJECTED_BOILERPLATE_NOVELTY_FAILED",
+                "message": "Submission similarity to baseline default is too high (>0.92)."
+            }), 400
+
+        # 4. Triad Filter 2: Blind Adversarial Peer Triangulation
+        passed_peer, variance = PoUCTriadValidator.filter_2_peer_triangulation(w_score, peer_scores)
+        if not passed_peer:
+            return jsonify({
+                "status": "REJECTED_HIGH_PEER_VARIANCE",
+                "message": f"Peer score variance ({variance}) exceeded maximum threshold (0.50)."
+            }), 400
+
+        # 5. Triad Filter 3: Epistemic Delta Calculation (ΔE)
+        epistemic_delta = PoUCTriadValidator.filter_3_epistemic_delta(surfaced_blindspot, STATUTORY_KEYWORDS)
+
+        # 6. Settle Dual-Token Rewards
+        settlement_receipt = settlement_engine.settle_pouc_submission(node_id, epistemic_delta)
+
+        return jsonify({
+            "status": "VALIDATED_AND_SETTLED",
+            "wisdom_quotient_W": w_score,
+            "peer_variance": variance,
+            "epistemic_delta": epistemic_delta,
+            "settlement_receipt": settlement_receipt
+        }), 200
+
+    except Exception as e:
+        return jsonify({"status": "ERROR", "message": str(e)}), 500

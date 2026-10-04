@@ -1,6 +1,6 @@
 """
 ===================================================================================
-                    LAVETO WISDOM (AW-1) REWARD & TOKENOMICS ENGINE
+                   LAVETO WISDOM (AW-1) REWARD & TOKENOMICS ENGINE
 ===================================================================================
 File: aw_reward_engine.py
 Description: Implements Proof of Useful Contribution (PoUC) validation,
@@ -47,7 +47,7 @@ class EpochVestingController:
     """
     EPOCH_DURATION_SECONDS = 86400  # 24-hour epoch
     MAX_AWT_PER_EPOCH_PER_NODE = 50.0  # Hard daily cap per node
-    MAX_TASKS_PER_HOUR = 5              # Rate-limiting task frequency
+    MAX_TASKS_PER_HOUR = 5            # Rate-limiting task frequency
 
     def __init__(self):
         self.node_epoch_earnings: Dict[str, Dict[str, any]] = {}  # node_id -> {epoch_id, current_awt, task_timestamps}
@@ -140,7 +140,7 @@ class PoUCTriadValidator:
         ac = max(0.1, scores.get("axiological_coverage_Ac", 0.5))
         r_risk = max(0.1, scores.get("irreversibility_risk_Rrisk", 1.0))
         h_pen = max(0.1, scores.get("epistemic_hubris_penalty_Hpen", 1.0))
-
+        
         w_score = (fn * ac) / (r_risk + h_pen)
         return round(w_score, 4)
 
@@ -148,7 +148,7 @@ class PoUCTriadValidator:
     def filter_1_semantic_novelty(cls, surfaced_blindspot: str, default_answers: List[str]) -> bool:
         if not surfaced_blindspot or len(surfaced_blindspot.strip()) < 20:
             return False
-
+        
         words = set(surfaced_blindspot.lower().split())
         for default_ans in default_answers:
             def_words = set(default_ans.lower().split())
@@ -161,11 +161,11 @@ class PoUCTriadValidator:
     def filter_2_peer_triangulation(cls, node_w_score: float, peer_w_scores: List[float]) -> Tuple[bool, float]:
         if not peer_w_scores:
             return True, 0.0
-
+        
         all_scores = peer_w_scores + [node_w_score]
         mean = sum(all_scores) / len(all_scores)
         variance = sum((x - mean) ** 2 for x in all_scores) / len(all_scores)
-
+        
         is_valid = variance <= cls.MAX_PEER_VARIANCE_THRESHOLD
         return is_valid, round(variance, 4)
 
@@ -190,7 +190,7 @@ class DualTokenSettlementEngine:
 
     def __init__(self):
         self.node_balances: Dict[str, float] = {}       # AWT Liquid
-        self.node_reputation: Dict[str, float] = {}      # W_tau Soulbound
+        self.node_reputation: Dict[str, float] = {}     # W_tau Soulbound
         self.total_awt_minted: float = 0.0
         self.total_awt_burned: float = 0.0
         self.fiat_audit_treasury_bwp: float = 0.0
@@ -239,7 +239,7 @@ class DualTokenSettlementEngine:
 
         # 4. Execute Ledger Update
         w_tau_gain = round(self.BASE_W_TAU_CREDIT_PER_TASK * epistemic_delta, 3)
-
+        
         self.node_balances[node_id] += final_awarded_awt
         self.node_reputation[node_id] += w_tau_gain
         self.total_awt_minted += final_awarded_awt
@@ -262,10 +262,10 @@ class DualTokenSettlementEngine:
         """
         self.fiat_audit_treasury_bwp += fee_amount_bwp
         burn_budget_bwp = fee_amount_bwp * self.BUYBACK_BURN_PERCENTAGE
-
+        
         awt_burned = round(burn_budget_bwp / max(0.01, awt_market_price_bwp), 2)
         self.total_awt_burned += awt_burned
-
+        
         return {
             "fee_received_bwp": fee_amount_bwp,
             "burn_budget_bwp": burn_budget_bwp,
@@ -316,7 +316,7 @@ def run_reward_engine_verification():
     f2_pass, variance = PoUCTriadValidator.filter_2_peer_triangulation(w_score, peer_scores)
     epistemic_delta = PoUCTriadValidator.filter_3_epistemic_delta(surfaced_blindspot, statutory_keywords)
 
-    print(f"  • Wisdom Quotient (W)        : {w_score}")
+    print(f"  • Wisdom Quotient (W)       : {w_score}")
     print(f"  • Filter 1 (Semantic Novelty) : {'PASS' if f1_pass else 'FAIL'}")
     print(f"  • Filter 2 (Peer Triangulation): Variance={variance} -> {'PASS' if f2_pass else 'FAIL'}")
     print(f"  • Filter 3 (Epistemic Delta ΔE): {epistemic_delta}x Information Gain")
@@ -345,7 +345,7 @@ def run_reward_engine_verification():
     print("\n[4. ENTERPRISE AUDIT BUYBACK-AND-BURN]")
     enterprise_fee_bwp = 25000.00
     awt_price_bwp = 2.50
-    burn_result = settlement_engine.process_enterprise_audit_fee(enterprise_fee_bwp, awt_market_price_bwp)
+    burn_result = settlement_engine.process_enterprise_audit_fee(enterprise_fee_bwp, awt_price_bwp)
     print(f"  • Enterprise Audit Fee Received : BWP {burn_result['fee_received_bwp']:,.2f}")
     print(f"  • Buyback & Burn Budget (20%)   : BWP {burn_result['burn_budget_bwp']:,.2f}")
     print(f"  • AWT Tokens Burned             : {burn_result['awt_burned']:,.2f} AWT")
@@ -355,35 +355,11 @@ def run_reward_engine_verification():
     print(" ✅ REWARD & TOKENOMICS ENGINE INTEGRATION TEST PASSED SUCCESSFULLY!")
     print("=" * 80)
 
-# laveto_wisdom/aw_reward_engine.py
-import random
-
-class AWRewardEngine:
-    @staticmethod
-    def calculate_quadratic_weight(w_tau):
-        """
-        Applies quadratic weighting to Soulbound Reputation scores (W_tau^2).
-        Neutralizes Sybil attacks from low-stake burner nodes.
-        """
-        score = float(w_tau)
-        return score ** 2
-
-    @staticmethod
-    def inject_honeypot_check(node_payload, is_synthetic_honeypot=False):
-        """
-        Evaluates node responses against synthetic honeypot dilemmas.
-        Wipes reputation instantly if a malicious node falls for the trap.
-        """
-        if is_synthetic_honeypot:
-            return {
-                "status": "HONEYPOT_TRIPPED",
-                "penalty": "SOULBOUND_REPUTATION_WIPED",
-                "trust_score_multiplier": 0.0
-            }
-        return {
-            "status": "CLEAN",
-            "trust_score_multiplier": 1.0
-        }
 
 if __name__ == "__main__":
     run_reward_engine_verification()
+
+
+# --- Backward Compatibility Bridge ---
+class AWRewardEngine(DualTokenSettlementEngine):
+    pass

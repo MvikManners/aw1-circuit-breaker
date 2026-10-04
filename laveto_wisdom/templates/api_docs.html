@@ -2,190 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Laveto Wisdom AW — Live API Documentation</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laveto Wisdom (AW-1) — Enterprise API Reference</title>
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent-blue: #38bdf8;
-            --accent-green: #22c55e;
-            --accent-purple: #c084fc;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-            --code-bg: #020617;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem;
-        }
-
-        header {
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 1.5rem;
-            margin-bottom: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        h1 {
-            font-size: 2.2rem;
-            color: var(--text-main);
-            margin: 0 0 0.5rem 0;
-        }
-
-        .subtitle {
-            color: var(--accent-blue);
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-right: 0.5rem;
-        }
-
-        .badge-post { background-color: #166534; color: #4ade80; }
-
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        h2 {
-            font-size: 1.5rem;
-            color: var(--accent-blue);
-            margin-top: 0;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.5rem;
-        }
-
-        h3 {
-            font-size: 1.2rem;
-            color: var(--text-main);
-            margin-top: 1.5rem;
-        }
-
-        pre, code {
-            font-family: "Fira Code", Monaco, Consolas, "Courier New", monospace;
-            background-color: var(--code-bg);
-            color: #e2e8f0;
-            border-radius: 6px;
-        }
-
-        pre {
-            padding: 1rem;
-            overflow-x: auto;
-            border: 1px solid var(--border-color);
-        }
-
-        code {
-            padding: 0.2rem 0.4rem;
-            font-size: 0.9rem;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-        }
-
-        th, td {
-            text-align: left;
-            padding: 0.75rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        th {
-            color: var(--accent-blue);
-            background-color: rgba(56, 189, 248, 0.05);
-        }
-
-        .endpoint-title {
-            display: flex;
-            align-items: center;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-        }
-
-        .endpoint-url {
-            color: var(--text-main);
-            margin-left: 0.5rem;
-            font-family: monospace;
-        }
-        
-        .nav-back {
-            color: var(--accent-blue);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            border: 1px solid var(--border-color);
-            padding: 6px 14px;
-            border-radius: 6px;
-            background: rgba(56, 189, 248, 0.05);
-        }
-        .nav-back:hover {
-            border-color: var(--accent-blue);
-        }
+        :root { --bg: #0B0F19; --card: #151C2C; --gold: #D97706; --text: #F3F4F6; --border: #232E42; --post: #16A34A; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 2rem 1rem; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 2.5rem; }
+        .header h1 { color: var(--gold); font-size: 2.2rem; margin-bottom: 0.25rem; letter-spacing: 0.05em; }
+        .header p { color: #9CA3AF; margin-top: 0; font-size: 1.1rem; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .endpoint-title { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 4px; font-weight: 800; font-size: 0.85rem; }
+        .badge-post { background: var(--post); color: #fff; }
+        .endpoint-url { font-family: monospace; font-size: 1.1rem; color: #38BDF8; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        th { color: var(--gold); }
+        code { background: #07090E; padding: 0.2rem 0.4rem; border-radius: 4px; color: #A7F3D0; font-size: 0.9rem; }
+        pre { background: #07090E; padding: 1rem; border-radius: 4px; overflow-x: auto; color: #A7F3D0; font-size: 0.85rem; border: 1px solid var(--border); }
+        ul { color: #9CA3AF; }
+        li { margin-bottom: 0.5rem; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <header>
-        <div>
-            <h1>Laveto Wisdom (AW-1) API Reference</h1>
-            <div class="subtitle">Zero-Trust Cognitive Security &amp; Decentralized Decision Assurance</div>
-            <p style="color: var(--text-muted); margin-top: 0.5rem;">
-                Base Production Endpoint: <code>https://p20.laveto.net/wisdom/api/v1</code>
-            </p>
-        </div>
-        <a href="/wisdom/" class="nav-back">&larr; Return to Console</a>
-    </header>
-
-    <section class="card">
-        <h2>1. Zero-Dependency Python SDK Quickstart</h2>
-        <p>Integrate Laveto Wisdom into Python applications using <code>laveto_sdk.py</code>:</p>
-        <pre><code>from laveto_sdk import LavetoWisdomClient
-
-client = LavetoWisdomClient(base_url="https://p20.laveto.net/wisdom")
-
-# Execute an Enterprise Audit (Triggers 20% Buyback-and-Burn)
-audit_result = client.audit_decision(
-    dilemma_id="CEDA-AGRO-2026",
-    audit_fee_bwp=35000.0,
-    awt_market_price_bwp=2.50
-)</code></pre>
-    </section>
+    <div class="header">
+        <h1>LAVETO WISDOM AW</h1>
+        <p>Public API & Enterprise Integration Portal</p>
+    </div>
 
     <section class="card">
         <div class="endpoint-title">
             <span class="badge badge-post">POST</span>
-            <span class="endpoint-url">/api/v1/aw/audit</span>
+            <span class="endpoint-url">/wisdom/api/v1/aw/audit</span>
         </div>
         <p>Executes 5-Pass decision assurance and automatically processes a <strong>20% Buyback-and-Burn</strong> on audit revenues.</p>
 
@@ -202,17 +52,17 @@ audit_result = client.audit_decision(
                 <tr>
                     <td><code>dilemma_id</code></td>
                     <td>String</td>
-                    <td>Unique transaction or project identifier.</td>
+                    <td>Unique transaction or project identifier[cite: 2].</td>
                 </tr>
                 <tr>
                     <td><code>audit_fee_bwp</code></td>
                     <td>Float</td>
-                    <td>Audit fee paid in BWP (e.g. 50000.0).</td>
+                    <td>Audit fee paid in BWP (e.g. 50000.0)[cite: 2].</td>
                 </tr>
                 <tr>
                     <td><code>awt_market_price_bwp</code></td>
                     <td>Float</td>
-                    <td>Current market spot price per AWT token.</td>
+                    <td>Current market spot price per AWT token[cite: 2].</td>
                 </tr>
             </tbody>
         </table>
@@ -238,16 +88,16 @@ audit_result = client.audit_decision(
     <section class="card">
         <div class="endpoint-title">
             <span class="badge badge-post">POST</span>
-            <span class="endpoint-url">/api/v1/aw/pouc/submit</span>
+            <span class="endpoint-url">/wisdom/api/v1/aw/pouc/submit</span>
         </div>
-        <p>Submits a mobile edge device micro-evaluation. Validates hardware interlocks and 3-stage PoUC Triad filters before issuing dual-token rewards.</p>
+        <p>Submits a mobile edge device micro-evaluation. Validates hardware interlocks and 3-stage PoUC Triad filters before issuing dual-token rewards[cite: 2].</p>
 
         <h3>Hardware Interlock Requirements</h3>
         <ul>
-            <li><strong>Power State:</strong> <code>AC_CHARGING</code></li>
-            <li><strong>Network State:</strong> <code>UNMETERED_WIFI</code></li>
-            <li><strong>Battery Level:</strong> &ge; 80%</li>
-            <li><strong>Thermal State:</strong> &le; 34.0°C</li>
+            <li><strong>Power State:</strong> <code>AC_CHARGING</code>[cite: 2]</li>
+            <li><strong>Network State:</strong> <code>UNMETERED_WIFI</code>[cite: 2]</li>
+            <li><strong>Battery Level:</strong> &ge; 80%[cite: 2]</li>
+            <li><strong>Thermal State:</strong> &le; 34.0°C[cite: 2]</li>
         </ul>
 
         <h3>Response Schema (200 OK)</h3>
@@ -266,6 +116,5 @@ audit_result = client.audit_decision(
 }</code></pre>
     </section>
 </div>
-
 </body>
 </html>
