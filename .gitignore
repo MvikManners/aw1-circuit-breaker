@@ -41,3 +41,4 @@ __pycache__/
 snapshots/
 Decision_Assurance_Dossier.pdf
 /awesome-ai-plugins/
+logs/*.log

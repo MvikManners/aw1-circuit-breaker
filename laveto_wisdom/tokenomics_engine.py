@@ -240,12 +240,26 @@ class TokenomicsEngine:
         cursor = conn.cursor()
         cursor.execute("SELECT total_minted, total_burned, circulating_supply, treasury_bwp_reserve FROM supply_ledger ORDER BY id DESC LIMIT 1;")
         row = cursor.fetchone()
+        
+        # Query live PoUC emissions from awt_ledger
+        try:
+            cur_pouc = conn.cursor()
+            pouc_row = cur_pouc.execute("SELECT COALESCE(SUM(awt_minted), 0.0), COUNT(*) FROM awt_ledger WHERE status = 'MINTED';").fetchone()
+            live_pouc_minted = float(pouc_row[0])
+            total_settled_tasks = int(pouc_row[1])
+        except Exception:
+            live_pouc_minted = 0.0
+            total_settled_tasks = 0
+            
         conn.close()
 
+        base_circulating = row[2] if row else 0.0
         return {
             "max_awt_supply": self.MAX_AWT_SUPPLY,
             "total_burned_awt": row[1] if row else 0.0,
-            "circulating_supply_awt": row[2] if row else self.MAX_AWT_SUPPLY,
+            "circulating_supply_awt": round(base_circulating + live_pouc_minted, 4),
+            "pouc_minted_awt": round(live_pouc_minted, 4),
+            "total_pouc_settlements": total_settled_tasks,
             "treasury_bwp_reserve": row[3] if row else 0.0,
             "spot_rate_bwp": self.DEFAULT_AWT_BWP_SPOT_RATE
         }
