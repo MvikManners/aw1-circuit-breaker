@@ -1,44 +1,34 @@
-__pycache__/
-*.pyc
-.env
-venv/
-
-# Python Bytecode & Environment Caches
-.cache/
-__pycache__/
-*.pyc
-
-# Local Databases & Logs
-*.db
-*.log
-logs/
 
 # Archive dumps & backup staging
-*.zip
-backups/
-backup_extracted/
-extracted_backup/
-isolated_recovery_2/
-isolated_restore/
-pay_release_extracted/
-
-# Secrets & Service Accounts
-.env
-credentials.json
-google_key.json
-client_secrets.json
-token.json
-
 # Cache & Bytecode
-__pycache__/
+# Local Databases & Backups
+# Local Databases & Logs
+# Python Bytecode & Environment Caches
+# Secrets & Service Accounts
+*.bak*
+*.db
+*.log
 *.pyc
 *.pyo
-
-# Local Databases & Backups
-*.db
 *.sqlite3
-*.bak*
-snapshots/
-Decision_Assurance_Dossier.pdf
+*.zip
+.cache/
+.env
+.local/
 /awesome-ai-plugins/
+Decision_Assurance_Dossier.pdf
+__pycache__/
+backup_extracted/
+backups/
+client_secrets.json
+credentials.json
+extracted_backup/
+google_key.json
+isolated_recovery_2/
+isolated_restore/
+logs/
 logs/*.log
+pay_release_extracted/
+snapshots/
+token.json
+venv/
