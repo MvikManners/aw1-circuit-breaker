@@ -19,4 +19,9 @@ setup(
     packages=find_packages(),
     python_requires='>=3.9',
     install_requires=['flask>=2.0.0', 'requests>=2.25.0'],
+    entry_points={
+        'console_scripts': [
+            'aw1-mcp=laveto_wisdom.mcp_server:main',
+        ],
+    },
 )

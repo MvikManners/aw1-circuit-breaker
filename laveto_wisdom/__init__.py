@@ -9,6 +9,8 @@ from laveto_wisdom.quorum import QuorumEngine, QuorumVerificationError
 from laveto_wisdom.statutory import StatutoryLensEngine
 from laveto_wisdom.synthesizer import RuleSynthesizer
 from laveto_wisdom.tee import TEEAttestationEngine
+from laveto_wisdom.middleware import protect_tool, LangChainAW1Callback
+from laveto_wisdom.mcp_server import AW1MCPServer
 
 __version__ = "2.0.0"
 __all__ = [
@@ -20,4 +22,7 @@ __all__ = [
     "StatutoryLensEngine",
     "RuleSynthesizer",
     "TEEAttestationEngine",
+    "protect_tool",
+    "LangChainAW1Callback",
+    "AW1MCPServer",
 ]
