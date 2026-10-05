@@ -2535,7 +2535,7 @@ HTML_LEDGER_VIEW = """<!DOCTYPE html>
 </html>
 """
 
-HTML_OFFRAMP = """<!DOCTYPE html>
+HTML_OFFRAMP = r"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -5076,7 +5076,7 @@ def swarm_hud_view():
     # =====================================================================
 # 🛡️ HARARI SAFETY ALIGNMENT CONSOLE (/wisdom/safety/harari)
 # =====================================================================
-HTML_HARARI_SAFETY = """<!DOCTYPE html>
+HTML_HARARI_SAFETY = r"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -13524,7 +13524,7 @@ from .tokenomics_engine import TokenomicsEngine
 # Initialize the core tokenomics execution engine
 tokenomics_engine = TokenomicsEngine()
 
-HTML_TOKENOMICS_DASHBOARD = """<!DOCTYPE html>
+HTML_TOKENOMICS_DASHBOARD = r"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -13561,15 +13561,15 @@ HTML_TOKENOMICS_DASHBOARD = """<!DOCTYPE html>
             </div>
             <div class="bg-[#07131e] p-4 rounded-xl hud-border space-y-1">
                 <span class="text-purple-400 uppercase text-[10px]">Circulating Supply</span>
-                <div class="text-purple-300 font-bold text-sm">{{ "{:,.2f}".format(summary.circulating_supply_awt) }} AWT</div>
+                <div id="circulating-supply-awt" class="text-purple-300 font-bold text-sm">{{ "{:,.2f}".format(summary.circulating_supply_awt) }} AWT</div>
             </div>
             <div class="bg-[#07131e] p-4 rounded-xl hud-border space-y-1">
                 <span class="text-rose-400 uppercase text-[10px]">Total Burned (20% Sink)</span>
-                <div class="text-rose-300 font-bold text-sm">🔥 {{ "{:,.2f}".format(summary.total_burned_awt) }} AWT</div>
+                <div class="text-rose-300 font-bold text-sm">🔥 <span id="total-burned-awt">{{ "{:,.2f}".format(summary.total_burned_awt) }}</span> AWT</div>
             </div>
             <div class="bg-[#07131e] p-4 rounded-xl hud-border space-y-1">
                 <span class="text-emerald-400 uppercase text-[10px]">Treasury Reserve</span>
-                <div class="text-emerald-300 font-bold text-sm">BWP {{ "{:,.2f}".format(summary.treasury_bwp_reserve) }}</div>
+                <div class="text-emerald-300 font-bold text-sm">BWP <span id="treasury-bwp-reserve">{{ "{:,.2f}".format(summary.treasury_bwp_reserve) }}</span></div>
             </div>
         </div>
 
@@ -13615,6 +13615,57 @@ HTML_TOKENOMICS_DASHBOARD = """<!DOCTYPE html>
     <footer class="w-full max-w-6xl mx-auto py-4 border-t border-slate-800 text-center text-xs text-slate-500 font-mono">
         Laveto Wisdom (AW-1) &bull; Tokenomics Settlement Engine &bull; Republic of Botswana
     </footer>
+
+    <script>
+    async function updateTokenomicsMetrics() {
+        try {
+            const res = await fetch('/wisdom/api/v1/aw/tokenomics/summary');
+            if (!res.ok) return;
+            const data = await res.json();
+            
+            // Format numbers helper
+            const fmt = (num, decimals = 2) => Number(num || 0).toLocaleString(undefined, {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+
+            // Map incoming API fields to DOM elements
+            const mappings = {
+                'circulating-supply-awt': fmt(data.circulating_supply_awt, 2),
+                'pouc-minted-awt': fmt(data.pouc_minted_awt, 2),
+                'total-pouc-settlements': Number(data.total_pouc_settlements || 0).toLocaleString(),
+                'spot-rate-bwp': 'P ' + fmt(data.spot_rate_bwp, 2),
+                'treasury-bwp-reserve': 'P ' + fmt(data.treasury_bwp_reserve, 2),
+                'max-supply-awt': fmt(data.max_supply_awt || data.hard_cap, 0),
+                'total-burned-awt': fmt(data.total_burned_awt, 2)
+            };
+
+            for (const [id, value] of Object.entries(mappings)) {
+                const el = document.getElementById(id);
+                if (el) el.innerText = value;
+            }
+
+            const liveIndicator = document.getElementById('ledger-sync-status');
+            if (liveIndicator) {
+                liveIndicator.innerText = 'SYNCED (LIVE)';
+                liveIndicator.className = 'text-xs font-semibold px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800';
+            }
+        } catch (err) {
+            console.error('Failed to sync live tokenomics:', err);
+            const liveIndicator = document.getElementById('ledger-sync-status');
+            if (liveIndicator) {
+                liveIndicator.innerText = 'DISCONNECTED';
+                liveIndicator.className = 'text-xs font-semibold px-2.5 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800';
+            }
+        }
+    }
+
+    // Initial fetch on mount & poll every 10 seconds
+    document.addEventListener('DOMContentLoaded', () => {
+        updateTokenomicsMetrics();
+        setInterval(updateTokenomicsMetrics, 10000);
+    });
+    </script>
 </body>
 </html>
 """
