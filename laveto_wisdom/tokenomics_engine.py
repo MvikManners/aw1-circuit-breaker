@@ -236,33 +236,49 @@ class TokenomicsEngine:
         }
 
     def get_tokenomics_summary(self) -> Dict[str, Any]:
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        cursor.execute("SELECT total_minted, total_burned, circulating_supply, treasury_bwp_reserve FROM supply_ledger ORDER BY id DESC LIMIT 1;")
-        row = cursor.fetchone()
-        
-        # Query live PoUC emissions from awt_ledger via routes db connection
-        try:
-            from laveto_wisdom.routes import get_db_connection
-            conn_ledger = get_db_connection()
-            cur_pouc = conn_ledger.cursor()
-            pouc_row = cur_pouc.execute("SELECT COALESCE(SUM(awt_minted), 0.0), COUNT(*) FROM awt_ledger WHERE status = 'MINTED';").fetchone()
-            live_pouc_minted = float(pouc_row[0]) if pouc_row else 0.0
-            total_settled_tasks = int(pouc_row[1]) if pouc_row else 0
-            conn_ledger.close()
-        except Exception as e:
-            live_pouc_minted = 0.0
-            total_settled_tasks = 0
-            
-        conn.close()
+        import os
+        import sqlite3
 
-        base_circulating = row[2] if row else 0.0
+        live_pouc_minted = 0.0
+        total_settled_tasks = 0
+
+        # Query live PoUC emissions directly using absolute DB path
+        for candidate_path in ['/home/LavetoLab/laveto.db', '/home/LavetoLab/instance/laveto.db']:
+            if os.path.exists(candidate_path):
+                try:
+                    conn_ledger = sqlite3.connect(candidate_path, timeout=15.0)
+                    cur_pouc = conn_ledger.cursor()
+                    pouc_row = cur_pouc.execute("SELECT COALESCE(SUM(awt_minted), 0.0), COUNT(*) FROM awt_ledger WHERE status = 'MINTED';").fetchone()
+                    if pouc_row:
+                        live_pouc_minted = float(pouc_row[0])
+                        total_settled_tasks = int(pouc_row[1])
+                    conn_ledger.close()
+                    break
+                except Exception:
+                    pass
+
+        base_circulating = 0.0
+        burned = 0.0
+        treasury = 500000.0
+        try:
+            conn = sqlite3.connect(self.db_path, timeout=15.0)
+            cursor = conn.cursor()
+            cursor.execute("SELECT total_minted, total_burned, circulating_supply, treasury_bwp_reserve FROM supply_ledger ORDER BY id DESC LIMIT 1;")
+            row = cursor.fetchone()
+            if row:
+                burned = row[1]
+                base_circulating = row[2]
+                treasury = row[3]
+            conn.close()
+        except Exception:
+            pass
+
         return {
             "max_awt_supply": self.MAX_AWT_SUPPLY,
-            "total_burned_awt": row[1] if row else 0.0,
+            "total_burned_awt": burned,
             "circulating_supply_awt": round(base_circulating + live_pouc_minted, 4),
             "pouc_minted_awt": round(live_pouc_minted, 4),
             "total_pouc_settlements": total_settled_tasks,
-            "treasury_bwp_reserve": row[3] if row else 0.0,
+            "treasury_bwp_reserve": treasury,
             "spot_rate_bwp": self.DEFAULT_AWT_BWP_SPOT_RATE
         }
