@@ -1,13 +1,17 @@
 import ast
 from laveto_wisdom.canary import SyntheticCanary
 from laveto_wisdom.quorum import QuorumEngine
+from laveto_wisdom.statutory import StatutoryLensEngine
 
 class SecurityTripwireException(Exception):
     pass
 
 class ExecutionBreaker:
     """
-    AW-1 Deterministic AST Circuit Breaker with Canary Honeypot & Multi-Agent Quorum Verification.
+    AW-1 Deterministic Execution Guard:
+    Tier 1: AST Static Analysis & Canary Honeypot
+    Tier 2: Statutory Data Sovereignty & Fiduciary Trust Lenses
+    Tier 3: Multi-Agent Quorum Consensus
     """
     FORBIDDEN_CALLS = {'eval', 'exec', '__import__', 'compile'}
     FORBIDDEN_MODULES = {'os', 'sys', 'subprocess', 'shutil', 'socket', 'pty'}
@@ -35,12 +39,11 @@ class ExecutionBreaker:
                     return f"FORBIDDEN_IMPORT_{node.module.upper()}"
         return None
 
-    def execute_tool(self, tool_name: str, payload: str, session_id: str = "agent-session-001", attestations: list = None, quorum_threshold: int = 2):
-        """
-        Validates AST safety, diverts attacks into Canary, and enforces cryptographic
-        multi-agent quorum consensus for sensitive actions.
-        """
-        # 1. AST Structural Inspection
+    def execute_tool(self, tool_name: str, payload: str, session_id: str = "agent-session-001",
+                     agent_id: str = "agent_planner", cost_bwp: float = 0.0,
+                     attestations: list = None, quorum_threshold: int = 2):
+        
+        # 1. AST Structural Inspection & Canary Tripwire
         threat_vector = self._inspect_ast(payload)
         if threat_vector:
             if self.enable_canary:
@@ -61,7 +64,24 @@ class ExecutionBreaker:
             else:
                 raise SecurityTripwireException(f"AST Circuit Breaker Trip: {threat_vector}")
 
-        # 2. Multi-Agent Quorum Consensus Check
+        # 2. Dynamic Statutory & Fiduciary Lenses
+        statutory_clear, reason, decision = StatutoryLensEngine.audit_and_contain(
+            agent_id=agent_id,
+            tool_name=tool_name,
+            payload=payload,
+            estimated_cost_bwp=cost_bwp
+        )
+        if not statutory_clear:
+            return {
+                "execution_status": "BLOCKED",
+                "output": f"Circuit breaker tripped by Statutory Lens: {reason}",
+                "security_audit": {
+                    "circuit_breaker": decision,
+                    "reason": reason
+                }
+            }
+
+        # 3. Cryptographic Multi-Agent Quorum Consensus Check
         if tool_name in QuorumEngine.CRITICAL_TOOLS:
             is_valid, msg, quorum_id = QuorumEngine.verify_attestations(
                 tool_name=tool_name,
@@ -78,7 +98,6 @@ class ExecutionBreaker:
                         "reason": msg
                     }
                 }
-            
             return {
                 "execution_status": "SUCCESS",
                 "output": f"Critical tool '{tool_name}' authorized under multi-agent quorum consensus.",
@@ -89,7 +108,7 @@ class ExecutionBreaker:
                 }
             }
 
-        # 3. Standard Permitted Path
+        # 4. Standard Permitted Path
         return {
             "execution_status": "SUCCESS",
             "output": f"Legitimate tool '{tool_name}' executed safely.",
