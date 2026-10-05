@@ -15809,3 +15809,40 @@ API_DOCS_HTML = """<!DOCTYPE html>
 def render_live_api_docs():
     return render_template_string(API_DOCS_HTML)
 
+
+
+@wisdom_bp.route('/genesis', methods=['GET'])
+@wisdom_bp.route('/join-genesis', methods=['GET'])
+def join_genesis_alias():
+    from flask import redirect
+    return redirect('/wisdom/portal?ref=BW-GENESIS-APEX', code=302)
+
+
+
+@wisdom_bp.route('/join', methods=['GET'])
+def root_join_redirect():
+    from flask import redirect, request
+    ref = request.args.get('ref', 'BW-GENESIS-APEX')
+    return redirect(f'/wisdom/portal?ref={ref}', code=302)
+
+@wisdom_bp.route('/wisdom/sw.js', methods=['GET'])
+@wisdom_bp.route('/sw.js', methods=['GET'])
+def service_worker_stub():
+    from flask import Response
+    return Response("// Service Worker stub\nself.addEventListener('fetch', () => {});", mimetype='application/javascript')
+
+
+
+@wisdom_bp.route('/cover.png', methods=['GET'])
+def get_cover_image():
+    from flask import send_file
+    return send_file('/home/LavetoLab/aw1_cover.png', mimetype='image/png')
+
+
+
+@wisdom_bp.route('/buy', methods=['GET'])
+@wisdom_bp.route('/checkout', methods=['GET'])
+def lemon_checkout_redirect():
+    from flask import redirect
+    return redirect("https://laveto-wisdom.lemonsqueezy.com/checkout/buy/3359aabf-922c-4fe1-a181-1d5b99ce5cb7", code=302)
+

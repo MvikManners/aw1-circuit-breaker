@@ -217,7 +217,7 @@ HTML_UI = """
             </select>
         </div>
         <div class="top-actions">
-            <a href="/wisdom/diff" class="top-btn" title="Compare Lineage Revisions"><span>⚖️</span> Revision Diff</a>
+            <a href="/wisdom/portal?ref=BW-GENESIS-APEX" class="top-btn" title="Compare Lineage Revisions"><span>⚖️</span> Revision Diff</a>
                         <button type="button" onclick="toggleWhatIfModal()" class="top-btn" title="Statutory What-If CEE & NPL Simulator" style="background: #0B1120; border: 1px solid #0284C7; color: #38BDF8; cursor: pointer;"><span>🎛️</span> What-If Simulator</button>
 <a href="/wisdom/ledger/verify" class="top-btn" title="Verify Cryptographic Continuity"><span>🛡️</span> Verify Ledger Chain</a>
             <button type="button" class="top-btn" onclick="toggleDrawer()"><span>📜</span> Past Audits</button>
@@ -244,13 +244,13 @@ HTML_UI = """
             <span style="font-size: 10px; color: #64748B; text-transform: uppercase; font-weight: bold; align-self: center; margin-right: 4px;">Enterprise:</span>
             <a href="/wisdom/api-console" style="color: #38BDF8; border-color: #0369A1;">⚡ API Console</a>
             <a href="/wisdom/docs">B2B API Docs</a>
-            <a href="/wisdom/onboard">Partner Onboarding</a>
+            <a href="/wisdom/buy" target="_blank" style="color: #10B981; font-weight: 700;">💳 Get Commercial License</a>
             <a href="/wisdom/deck">Institutional Deck</a>
         </div>
         <!-- Tier 3: Ecosystem & Citizen Network -->
         <div class="nav-links" style="margin-bottom: 0; gap: 8px;">
             <span style="font-size: 10px; color: #64748B; text-transform: uppercase; font-weight: bold; align-self: center; margin-right: 4px;">Ecosystem:</span>
-            <a href="/join?ref=BW-GENESIS-APEX" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #FFF !important; border: 1px solid #10B981; font-weight: 700;" target="_blank">👑 Join Genesis Squad (+10 AWT)</a>
+            <a href="/wisdom/portal?ref=BW-GENESIS-APEX" ...>👑 Join Genesis Squad (+10 AWT)</a>
             <a href="/wisdom/citizen">🏠 Citizen Portal</a>
         </div>
     </div>
@@ -525,15 +525,15 @@ function exportDossierPdfFromWhatIf() {
     var w = document.getElementById('res-w').textContent;
     var cee = document.getElementById('res-cee').textContent.replace('%','');
     var msg = document.getElementById('pdf-export-msg');
-    
+
     if (msg) {
         msg.style.display = 'block';
         msg.textContent = '⏳ Compiling SHA-256 Dossier PDF...';
     }
-    
+
     var url = '/wisdom/api/v1/whatif/export-dossier-pdf?loan_amount_bwp=' + loan + '&wisdom_quotient_W=' + w + '&cee_quota_percentage=' + cee;
     window.location.href = url;
-    
+
     setTimeout(function() {
         if (msg) msg.textContent = '✓ Decision_Assurance_Dossier.pdf exported with SHA-256 seal';
     }, 1500);
