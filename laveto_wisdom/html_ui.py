@@ -490,7 +490,13 @@ HTML_UI = """
             <span style="background: #0284c7; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">LIVE GATEWAY</span>
         </div>
         
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+            <div style="background: #1e293b; padding: 14px; border-radius: 6px;">
+                <div style="color: #06b6d4; font-weight: bold; margin-bottom: 6px;">🔒 Hardware TEE Attestation</div>
+                <div style="font-size: 0.82rem; color: #94a3b8;">Profile: AWS Nitro / AMD SEV-SNP</div>
+                <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 4px;">Assurance: PCR0/1/2 Cryptographic Seal</div>
+            </div>
+
             <div style="background: #1e293b; padding: 14px; border-radius: 6px;">
                 <div style="color: #f43f5e; font-weight: bold; margin-bottom: 6px;">🛡️ Active Canary Honeypot</div>
                 <div style="font-size: 0.82rem; color: #94a3b8;">Status: Armed & Tripping</div>

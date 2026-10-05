@@ -15860,6 +15860,7 @@ def get_security_telemetry():
     quorum = c.execute("SELECT quorum_id, timestamp, tool_name, signers, status FROM quorum_audit_ledger ORDER BY timestamp DESC LIMIT 5").fetchall()
     statutory = c.execute("SELECT statutory_id, timestamp, agent_id, statute_code, decision FROM statutory_audit_ledger ORDER BY timestamp DESC LIMIT 5").fetchall()
     rules = c.execute("SELECT rule_id, rule_name, threat_pattern, status FROM synthesized_ast_rules ORDER BY created_at DESC LIMIT 5").fetchall()
+    tee_records = c.execute("SELECT attestation_id, timestamp, enclave_type, pcr0, signature_hex, verification_status FROM tee_attestation_records ORDER BY timestamp DESC LIMIT 5").fetchall()
     
     conn.close()
     return jsonify({
@@ -15867,6 +15868,7 @@ def get_security_telemetry():
         "threat_dossiers": threats,
         "quorum_events": quorum,
         "statutory_decisions": statutory,
-        "synthesized_rules": rules
+        "synthesized_rules": rules,
+        "tee_attestations": tee_records
     })
 
