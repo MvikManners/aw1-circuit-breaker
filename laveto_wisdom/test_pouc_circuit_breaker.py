@@ -8,7 +8,7 @@ def test_pipeline():
     print("RUNNING LAVETO AW-1 CIRCUIT BREAKER REGRESSION SUITE")
     print("=" * 60)
 
-    # Gate 1: Hardware Rejection (Discharging / Cellular / Thermal)
+    # Gate 1: Hardware Rejection
     print("\n[Gate 1] Testing Hardware Interlock Rejection...")
     r1 = requests.post(BASE_URL, json={
         "node_id": "rogue_hw_node",
@@ -20,7 +20,7 @@ def test_pipeline():
     assert r1.status_code == 422, f"Failed Gate 1: expected 422, got {r1.status_code}"
     print("  ✓ PASS: Rejected rogue hardware constraints (HTTP 422).")
 
-    # Gate 2: Semantic Novelty (Boilerplate / Echo)
+    # Gate 2: Semantic Novelty Gate
     print("\n[Gate 2] Testing Semantic Novelty Gate...")
     r2 = requests.post(BASE_URL, json={
         "node_id": "boilerplate_bot",
@@ -32,7 +32,7 @@ def test_pipeline():
     assert r2.status_code == 400, f"Failed Gate 2: expected 400, got {r2.status_code}"
     print("  ✓ PASS: Rejected synthetic boilerplate echo (HTTP 400).")
 
-    # Gate 3: Unbacked Economic Proof Rejection
+    # Gate 3: Economic Proof Gate
     print("\n[Gate 3] Testing Economic Proof Gate...")
     r3 = requests.post(BASE_URL, json={
         "node_id": "unbacked_mining_node",
@@ -44,10 +44,10 @@ def test_pipeline():
     assert r3.status_code == 422, f"Failed Gate 3: expected 422, got {r3.status_code}"
     print("  ✓ PASS: Rejected unbacked mint attempt without institutional proof (HTTP 422).")
 
-    # Gate 4: Golden Path Settlement & Persistent Ledger Verification
+    # Gate 4: Golden Path Settlement & Persistence
     print("\n[Gate 4] Testing Golden Path Settlement & Persistence...")
     batch_ref = f"TXN_SEZA_REGRESSION_{int(time.time())}"
-    r4 = requests.post(BASE_URL, json={
+    payload = {
         "node_id": "edge_node_bw_001",
         "telemetry": {"power_source": "AC_CHARGING", "network_type": "UNMETERED_WIFI", "battery_level_percent": 95, "thermal_state_celsius": 30.0},
         "scores": {"comprehension": 0.95, "integrity": 0.95, "practicality": 0.92},
@@ -58,10 +58,18 @@ def test_pipeline():
             "reference_id": batch_ref,
             "fiat_amount_bwp": 50.00
         }
-    })
+    }
+    r4 = requests.post(BASE_URL, json=payload)
     assert r4.status_code == 200, f"Failed Gate 4: expected 200, got {r4.status_code} - {r4.text}"
     receipt = r4.json()["settlement_receipt"]
     print(f"  ✓ PASS: Validated & settled (+{receipt['awt_minted']} AWT, +{receipt['w_tau_credited']} W_tau).")
+
+    # Gate 5: Replay Attack / Idempotency Rejection
+    print("\n[Gate 5] Testing Idempotency & Replay Protection...")
+    r5 = requests.post(BASE_URL, json=payload)
+    assert r5.status_code in (409, 422), f"Failed Gate 5: expected 409/422 on replay, got {r5.status_code}"
+    print(f"  ✓ PASS: Replay rejected with HTTP {r5.status_code}.")
+
     print("\nALL CIRCUIT BREAKER GATES OPERATIONAL.")
 
 if __name__ == "__main__":

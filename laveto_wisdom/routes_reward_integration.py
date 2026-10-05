@@ -214,7 +214,26 @@ def submit_pouc_gradient():
             }), 400
 
         # 5. Triad Filter 3: Epistemic Delta Calculation (ΔE)
-        epistemic_delta = PoUCTriadValidator.filter_3_epistemic_delta(surfaced_blindspot, statutory_keywords)
+        epistemic_delta = PoUCTriadValidator.filter_3_epistemic_delta(surfaced_blindspot, statutory_keywords)        # 5b. Gate 5: Idempotency & Replay Protection Gate
+        ref_hash = economic_proof.get("reference_id") or payload.get("contribution_hash")
+        if ref_hash:
+            import sqlite3
+            try:
+                conn_idemp = sqlite3.connect('/home/LavetoLab/lvt_backend/lvt_database.db', timeout=15.0)
+                existing_tx = conn_idemp.cursor().execute(
+                    "SELECT id, status, awt_minted FROM awt_ledger WHERE contribution_hash = ? AND status = 'MINTED';",
+                    (ref_hash,)
+                ).fetchone()
+                conn_idemp.close()
+                if existing_tx:
+                    return jsonify({
+                        "status": "REJECTED_REPLAY_ATTACK",
+                        "error": f"Economic proof '{ref_hash}' has already been settled in transaction #{existing_tx[0]}."
+                    }), 409
+            except Exception as e:
+                pass
+
+
 
         # 6. Settle Node Payout
         settle_fn = getattr(tokenomics_engine, 'settle_node_payout', getattr(tokenomics_engine, 'Settle_node_payout', None))
