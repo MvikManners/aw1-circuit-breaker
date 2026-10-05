@@ -334,19 +334,7 @@ def get_tokenomics_summary():
     """Live Tokenomics Ledger summary endpoint."""
     try:
         summary = tokenomics_engine.get_tokenomics_summary()
-        return jsonify({
-            "status": "SUCCESS",
-            "token_name": "Artificial Wisdom Token",
-            "symbol": "AWT",
-            "circulating_supply_awt": summary.get("circulating_supply_awt"),
-            "pouc_minted_awt": summary.get("pouc_minted_awt", 0.0),
-            "total_pouc_settlements": summary.get("total_pouc_settlements", 0),
-            "max_supply_awt": summary.get("max_awt_supply"),
-            "hard_cap": summary.get("max_awt_supply"),
-            "total_burned_awt": summary.get("total_burned_awt"),
-            "treasury_bwp_reserve": summary.get("treasury_bwp_reserve"),
-            "spot_rate_bwp": summary.get("spot_rate_bwp")
-        }), 200
+        return jsonify(tokenomics_engine.get_tokenomics_summary()), 200
     except Exception as e:
         return jsonify({
             "status": "SUCCESS",
@@ -356,3 +344,46 @@ def get_tokenomics_summary():
             "treasury_bwp_reserve": 540000.0,
             "spot_rate_bwp": 2.50
         }), 200
+
+
+@aw_reward_bp.route('/api/v1/aw/enterprise/buyback-burn', methods=['POST'])
+def submit_enterprise_buyback_burn():
+    """
+    Enterprise Statutory Service Fee Settlement & Protocol Burn Ingestion.
+    Executes a 20% protocol sink (token burn) against institutional BWP revenues.
+    """
+    data = request.get_json(silent=True) or {}
+    enterprise_id = data.get("enterprise_id")
+    gross_bwp_fee = data.get("gross_bwp_fee")
+    reference_id = data.get("reference_id")
+    service_type = data.get("service_type", "SEZA_ENTERPRISE_AUDIT")
+
+    if not enterprise_id or not gross_bwp_fee or not reference_id:
+        return jsonify({
+            "status": "REJECTED_INVALID_PAYLOAD",
+            "message": "enterprise_id, gross_bwp_fee, and reference_id are required fields."
+        }), 422
+
+    try:
+        gross_fee_float = float(gross_bwp_fee)
+        if gross_fee_float <= 0:
+            raise ValueError()
+    except (ValueError, TypeError):
+        return jsonify({
+            "status": "REJECTED_INVALID_FEE",
+            "message": "gross_bwp_fee must be a positive numeric value."
+        }), 422
+
+    res = tokenomics_engine.process_enterprise_buyback_and_burn(
+        enterprise_id=enterprise_id,
+        gross_bwp_fee=gross_fee_float,
+        reference_id=reference_id,
+        service_type=service_type
+    )
+
+    if res.get("status") == "SUCCESS":
+        return jsonify(res), 200
+    elif res.get("status") == "REJECTED_DUPLICATE_REFERENCE":
+        return jsonify(res), 409
+    else:
+        return jsonify(res), 500

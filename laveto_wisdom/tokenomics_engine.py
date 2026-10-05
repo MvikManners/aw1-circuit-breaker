@@ -42,6 +42,7 @@ class TokenomicsEngine:
     REFERRAL_ACTIVATION_BONUS = 10.0
 
     def __init__(self, db_path: str = DB_PATH):
+        self.spot_rate_bwp = 2.50
         self.db_path = db_path
         self._init_db()
 
@@ -239,48 +240,126 @@ class TokenomicsEngine:
         import sqlite3
 
         canonical_db = '/home/LavetoLab/lvt_backend/lvt_database.db'
+        total_burned = 0.0
+        enterprise_treasury_bwp = 0.0
         live_pouc_minted = 0.0
         total_settled_tasks = 0
 
-        # 1. Fetch live PoUC settlements from awt_ledger
-        try:
-            conn_ledger = sqlite3.connect(canonical_db, timeout=15.0)
-            cur_pouc = conn_ledger.cursor()
-            pouc_row = cur_pouc.execute("SELECT COALESCE(SUM(awt_minted), 0.0), COUNT(*) FROM awt_ledger WHERE status = 'MINTED';").fetchone()
-            if pouc_row:
-                live_pouc_minted = float(pouc_row[0])
-                total_settled_tasks = int(pouc_row[1])
-            conn_ledger.close()
-        except Exception as e:
-            import sys
-            sys.stderr.write(f"[LEDGER_QUERY_ERROR] {type(e).__name__}: {e}\n")
-
-        # 2. Fetch baseline supply figures
-        base_circulating = 0.0
-        burned = 0.0
-        treasury = 500000.0
-        for s_db in [canonical_db, self.db_path]:
+        ledger_db_path = "/home/LavetoLab/lvt_backend/lvt_database.db"
+        if os.path.exists(ledger_db_path):
             try:
-                conn_s = sqlite3.connect(s_db, timeout=15.0)
-                cur_s = conn_s.cursor()
-                cur_s.execute("SELECT total_minted, total_burned, circulating_supply, treasury_bwp_reserve FROM supply_ledger ORDER BY id DESC LIMIT 1;")
-                row = cur_s.fetchone()
-                if row:
-                    burned = float(row[1]) if row[1] is not None else 0.0
-                    base_circulating = float(row[2]) if row[2] is not None else 0.0
-                    treasury = float(row[3]) if row[3] is not None else 500000.0
-                    conn_s.close()
-                    break
-                conn_s.close()
-            except Exception:
+                conn_ledger = sqlite3.connect(ledger_db_path, timeout=10.0)
+                cur_pouc = conn_ledger.cursor()
+                pouc_row = cur_pouc.execute("SELECT COALESCE(SUM(awt_minted), 0.0), COUNT(*) FROM awt_ledger WHERE status = 'MINTED';").fetchone()
+                if pouc_row:
+                    live_pouc_minted = float(pouc_row[0])
+                    total_settled_tasks = int(pouc_row[1])
+
+                burn_row = cur_pouc.execute("SELECT COALESCE(SUM(awt_burned), 0.0), COALESCE(SUM(bwp_allocated_to_treasury), 0.0) FROM awt_burn_ledger WHERE status = 'BURNED';").fetchone()
+                if burn_row:
+                    total_burned = float(burn_row[0])
+                    enterprise_treasury_bwp = float(burn_row[1])
+                conn_ledger.close()
+            except Exception as e:
                 pass
 
         return {
             "max_awt_supply": self.MAX_AWT_SUPPLY,
-            "total_burned_awt": burned,
+            "total_burned_awt": total_burned,
             "circulating_supply_awt": round(base_circulating + live_pouc_minted, 4),
             "pouc_minted_awt": round(live_pouc_minted, 4),
             "total_pouc_settlements": total_settled_tasks,
             "treasury_bwp_reserve": treasury,
             "spot_rate_bwp": self.DEFAULT_AWT_BWP_SPOT_RATE
         }
+
+
+    def get_tokenomics_summary(self):
+        import os, sqlite3
+        base_circulating = float(getattr(self, 'hard_cap', getattr(self, 'max_supply_awt', 1000000000.0)))
+        spot_rate = float(getattr(self, 'spot_rate_bwp', getattr(self, 'spot_price_bwp', 2.50)))
+        base_treasury = float(getattr(self, 'base_treasury_bwp', 500000.0))
+        live_pouc_minted = 0.0
+        total_settled_tasks = 0
+        total_burned = 0.0
+        enterprise_treasury_bwp = 0.0
+
+        db_path = "/home/LavetoLab/lvt_backend/lvt_database.db"
+        if os.path.exists(db_path):
+            try:
+                conn = sqlite3.connect(db_path, timeout=10.0)
+                cur = conn.cursor()
+                pouc_row = cur.execute("SELECT COALESCE(SUM(awt_minted), 0.0), COUNT(*) FROM awt_ledger WHERE status = 'MINTED';").fetchone()
+                if pouc_row:
+                    live_pouc_minted = float(pouc_row[0])
+                    total_settled_tasks = int(pouc_row[1])
+
+                burn_row = cur.execute("SELECT COALESCE(SUM(awt_burned), 0.0), COALESCE(SUM(bwp_allocated_to_treasury), 0.0) FROM awt_burn_ledger WHERE status = 'BURNED';").fetchone()
+                if burn_row:
+                    total_burned = float(burn_row[0])
+                    enterprise_treasury_bwp = float(burn_row[1])
+                conn.close()
+            except Exception:
+                pass
+
+        circulating = base_circulating + live_pouc_minted - total_burned
+        treasury_reserve = base_treasury + enterprise_treasury_bwp
+
+        return {
+            "status": "SUCCESS",
+            "symbol": "AWT",
+            "token_name": "Artificial Wisdom Token",
+            "hard_cap": base_circulating,
+            "max_supply_awt": base_circulating,
+            "circulating_supply_awt": round(circulating, 4),
+            "pouc_minted_awt": round(live_pouc_minted, 4),
+            "total_burned_awt": round(total_burned, 4),
+            "total_pouc_settlements": total_settled_tasks,
+            "treasury_bwp_reserve": round(treasury_reserve, 2),
+            "spot_rate_bwp": spot_rate
+        }
+
+    def process_enterprise_buyback_and_burn(self, enterprise_id: str, gross_bwp_fee: float, reference_id: str, service_type: str = "SEZA_ENTERPRISE_AUDIT", sink_rate: float = 0.20):
+        import sqlite3
+        gross_bwp = float(gross_bwp_fee)
+        burn_bwp = gross_bwp * float(sink_rate)
+        treasury_bwp = gross_bwp - burn_bwp
+        spot_rate = float(getattr(self, 'spot_rate_bwp', getattr(self, 'spot_price_bwp', 2.50)))
+        awt_to_burn = round(burn_bwp / spot_rate, 4)
+
+        db_path = "/home/LavetoLab/lvt_backend/lvt_database.db"
+        conn = sqlite3.connect(db_path, timeout=15.0)
+        cur = conn.cursor()
+        try:
+            cur.execute("""
+                INSERT INTO awt_burn_ledger (
+                    enterprise_id, reference_id, service_type, gross_bwp_fee,
+                    sink_rate, bwp_allocated_to_burn, bwp_allocated_to_treasury,
+                    spot_rate_bwp, awt_burned, status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'BURNED');
+            """, (
+                enterprise_id, reference_id, service_type, gross_bwp,
+                sink_rate, burn_bwp, treasury_bwp, spot_rate, awt_to_burn
+            ))
+            conn.commit()
+            tx_id = cur.lastrowid
+            conn.close()
+            return {
+                "status": "SUCCESS",
+                "tx_id": tx_id,
+                "enterprise_id": enterprise_id,
+                "reference_id": reference_id,
+                "gross_bwp_fee": gross_bwp,
+                "awt_burned": awt_to_burn,
+                "treasury_retained_bwp": treasury_bwp,
+                "burn_ratio": sink_rate
+            }
+        except sqlite3.IntegrityError:
+            conn.close()
+            return {
+                "status": "REJECTED_DUPLICATE_REFERENCE",
+                "error": f"Enterprise reference '{reference_id}' already processed."
+            }
+        except Exception as e:
+            conn.close()
+            return {"status": "ERROR", "error": str(e)}

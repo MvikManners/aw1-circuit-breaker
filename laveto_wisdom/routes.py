@@ -15808,3 +15808,4 @@ API_DOCS_HTML = """<!DOCTYPE html>
 @wisdom_bp.route('/docs', methods=['GET'])
 def render_live_api_docs():
     return render_template_string(API_DOCS_HTML)
+
