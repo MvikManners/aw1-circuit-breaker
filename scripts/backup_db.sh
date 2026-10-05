@@ -13,3 +13,6 @@ done
 
 # Keep only the last 14 days of backups
 find "$BACKUP_DIR" -name "*.db" -type f -mtime +14 -delete
+
+# Trigger log and snapshot pruning
+/bin/bash /home/LavetoLab/scripts/maintain_logs.sh
