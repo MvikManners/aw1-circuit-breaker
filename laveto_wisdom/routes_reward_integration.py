@@ -317,14 +317,16 @@ def get_tokenomics_summary():
         summary = tokenomics_engine.get_tokenomics_summary()
         return jsonify({
             "status": "SUCCESS",
-            "token_name": summary.get("token_name", "Artificial Wisdom Token"),
-            "symbol": summary.get("symbol", "AWT"),
-            "hard_cap": summary.get("hard_cap", 1000000000.0),
-            "max_supply_awt": summary.get("hard_cap", 1000000000.0),
-            "circulating_supply_awt": summary.get("circulating_supply", 450000000.0),
-            "total_burned_awt": summary.get("total_burned", 18000.0),
-            "treasury_bwp_reserve": summary.get("treasury_bwp_reserve", 540000.0),
-            "spot_rate_bwp": summary.get("spot_price_bwp", 2.50)
+            "token_name": "Artificial Wisdom Token",
+            "symbol": "AWT",
+            "circulating_supply_awt": summary.get("circulating_supply_awt"),
+            "pouc_minted_awt": summary.get("pouc_minted_awt", 0.0),
+            "total_pouc_settlements": summary.get("total_pouc_settlements", 0),
+            "max_supply_awt": summary.get("max_awt_supply"),
+            "hard_cap": summary.get("max_awt_supply"),
+            "total_burned_awt": summary.get("total_burned_awt"),
+            "treasury_bwp_reserve": summary.get("treasury_bwp_reserve"),
+            "spot_rate_bwp": summary.get("spot_rate_bwp")
         }), 200
     except Exception as e:
         return jsonify({
