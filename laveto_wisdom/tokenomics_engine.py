@@ -251,8 +251,9 @@ class TokenomicsEngine:
                 live_pouc_minted = float(pouc_row[0])
                 total_settled_tasks = int(pouc_row[1])
             conn_ledger.close()
-        except Exception:
-            pass
+        except Exception as e:
+            import sys
+            sys.stderr.write(f"[LEDGER_QUERY_ERROR] {type(e).__name__}: {e}\n")
 
         # 2. Fetch baseline supply figures
         base_circulating = 0.0
