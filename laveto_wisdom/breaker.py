@@ -2,6 +2,7 @@ import ast
 from laveto_wisdom.canary import SyntheticCanary
 from laveto_wisdom.quorum import QuorumEngine
 from laveto_wisdom.statutory import StatutoryLensEngine
+from laveto_wisdom.synthesizer import RuleSynthesizer
 
 class SecurityTripwireException(Exception):
     pass
@@ -9,7 +10,7 @@ class SecurityTripwireException(Exception):
 class ExecutionBreaker:
     """
     AW-1 Deterministic Execution Guard:
-    Tier 1: AST Static Analysis & Canary Honeypot
+    Tier 1: AST Static Analysis, Dynamic Synthesized Rules, & Canary Honeypot
     Tier 2: Statutory Data Sovereignty & Fiduciary Trust Lenses
     Tier 3: Multi-Agent Quorum Consensus
     """
@@ -26,6 +27,7 @@ class ExecutionBreaker:
         except SyntaxError:
             return "NON_PYTHON_POLYGLOT_PAYLOAD"
 
+        # 1. Base Static Prohibitions
         for node in ast.walk(tree):
             if isinstance(node, ast.Call):
                 if isinstance(node.func, ast.Name) and node.func.id in self.FORBIDDEN_CALLS:
@@ -37,6 +39,22 @@ class ExecutionBreaker:
             elif isinstance(node, ast.ImportFrom):
                 if node.module in self.FORBIDDEN_MODULES:
                     return f"FORBIDDEN_IMPORT_{node.module.upper()}"
+
+        # 2. Dynamic Synthesized AST Invariant Evaluation
+        rules = RuleSynthesizer.load_active_rules()
+        for node in ast.walk(tree):
+            for r in rules:
+                if r['target_node'] == 'Call' and isinstance(node, ast.Call):
+                    if "getattr" in r['predicate'] and isinstance(node.func, ast.Name) and node.func.id == 'getattr':
+                        if len(node.args) >= 2 and isinstance(node.args[1], ast.Constant):
+                            if node.args[1].value in r['predicate']:
+                                return f"SYNTHESIZED_INVARIANT_TRIP_{r['pattern']}"
+
+        # 3. Autonomous Evasion Pattern Analysis & Dynamic Synthesis
+        synthesized_id = RuleSynthesizer.analyze_and_synthesize(code_str)
+        if synthesized_id:
+            return f"AUTONOMOUS_SYNTHESIZED_INTERCEPTION_{synthesized_id}"
+
         return None
 
     def execute_tool(self, tool_name: str, payload: str, session_id: str = "agent-session-001",
@@ -58,6 +76,7 @@ class ExecutionBreaker:
                     "output": trap["synthetic_output"],
                     "security_audit": {
                         "circuit_breaker": "TRIPPED_CANARY",
+                        "threat_vector": threat_vector,
                         "dossier_id": trap["dossier_id"]
                     }
                 }

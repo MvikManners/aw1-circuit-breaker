@@ -482,6 +482,44 @@ HTML_UI = """
             </div>
         </div>
     </div>
+
+    <!-- AW-1 LIVE DEFENSE TELEMETRY & LEDGERS -->
+    <div style="margin-top: 40px; background: #0f172a; border: 1px solid #1e293b; border-radius: 8px; padding: 24px; color: #f8fafc; font-family: monospace;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; padding-bottom: 12px; margin-bottom: 16px;">
+            <h3 style="margin: 0; color: #38bdf8; font-size: 1.15rem;">⚡ AW-1 Sovereign Runtime Audit Ledgers</h3>
+            <span style="background: #0284c7; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;">LIVE GATEWAY</span>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+            <div style="background: #1e293b; padding: 14px; border-radius: 6px;">
+                <div style="color: #f43f5e; font-weight: bold; margin-bottom: 6px;">🛡️ Active Canary Honeypot</div>
+                <div style="font-size: 0.82rem; color: #94a3b8;">Status: Armed & Tripping</div>
+                <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 4px;">Trap Target: Shell/Eval/Exfiltration</div>
+            </div>
+            
+            <div style="background: #1e293b; padding: 14px; border-radius: 6px;">
+                <div style="color: #a855f7; font-weight: bold; margin-bottom: 6px;">🤝 Multi-Agent Quorum</div>
+                <div style="font-size: 0.82rem; color: #94a3b8;">Consensus Mode: 2-of-N Cryptographic HMAC</div>
+                <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 4px;">Guard Rails: Fund Transfers & PII</div>
+            </div>
+
+            <div style="background: #1e293b; padding: 14px; border-radius: 6px;">
+                <div style="color: #10b981; font-weight: bold; margin-bottom: 6px;">⚖️ Statutory & Fiduciary Lensing</div>
+                <div style="font-size: 0.82rem; color: #94a3b8;">Jurisdiction: Botswana DPA 2018 / BoB</div>
+                <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 4px;">Escrow Rails: Real-Time BWP Balances</div>
+            </div>
+
+            <div style="background: #1e293b; padding: 14px; border-radius: 6px;">
+                <div style="color: #eab308; font-weight: bold; margin-bottom: 6px;">🧬 Self-Synthesizing AST</div>
+                <div style="font-size: 0.82rem; color: #94a3b8;">Grammar Engine: Hot-Patching Active</div>
+                <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 4px;">Interception: Dynamic Obfuscation Chains</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; font-size: 0.8rem; text-align: right;">
+            <a href="/wisdom/api/telemetry" target="_blank" style="color: #38bdf8; text-decoration: none;">View Raw JSON Cryptographic Dossiers →</a>
+        </div>
+    </div>
 </div>
 
 <script>

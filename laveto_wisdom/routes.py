@@ -15846,3 +15846,27 @@ def lemon_checkout_redirect():
     from flask import redirect
     return redirect("https://laveto-wisdom.lemonsqueezy.com/checkout/buy/3359aabf-922c-4fe1-a181-1d5b99ce5cb7", code=302)
 
+
+
+@wisdom_bp.route('/api/telemetry', methods=['GET'])
+def get_security_telemetry():
+    import sqlite3
+    from flask import jsonify
+    
+    conn = sqlite3.connect('/home/LavetoLab/lvt_database.db')
+    c = conn.cursor()
+    
+    threats = c.execute("SELECT dossier_id, timestamp, tool_name, threat_vector, status FROM adversary_threat_logs ORDER BY timestamp DESC LIMIT 5").fetchall()
+    quorum = c.execute("SELECT quorum_id, timestamp, tool_name, signers, status FROM quorum_audit_ledger ORDER BY timestamp DESC LIMIT 5").fetchall()
+    statutory = c.execute("SELECT statutory_id, timestamp, agent_id, statute_code, decision FROM statutory_audit_ledger ORDER BY timestamp DESC LIMIT 5").fetchall()
+    rules = c.execute("SELECT rule_id, rule_name, threat_pattern, status FROM synthesized_ast_rules ORDER BY created_at DESC LIMIT 5").fetchall()
+    
+    conn.close()
+    return jsonify({
+        "status": "online",
+        "threat_dossiers": threats,
+        "quorum_events": quorum,
+        "statutory_decisions": statutory,
+        "synthesized_rules": rules
+    })
+
