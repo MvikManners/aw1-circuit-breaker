@@ -241,13 +241,16 @@ class TokenomicsEngine:
         cursor.execute("SELECT total_minted, total_burned, circulating_supply, treasury_bwp_reserve FROM supply_ledger ORDER BY id DESC LIMIT 1;")
         row = cursor.fetchone()
         
-        # Query live PoUC emissions from awt_ledger
+        # Query live PoUC emissions from awt_ledger via routes db connection
         try:
-            cur_pouc = conn.cursor()
+            from laveto_wisdom.routes import get_db_connection
+            conn_ledger = get_db_connection()
+            cur_pouc = conn_ledger.cursor()
             pouc_row = cur_pouc.execute("SELECT COALESCE(SUM(awt_minted), 0.0), COUNT(*) FROM awt_ledger WHERE status = 'MINTED';").fetchone()
-            live_pouc_minted = float(pouc_row[0])
-            total_settled_tasks = int(pouc_row[1])
-        except Exception:
+            live_pouc_minted = float(pouc_row[0]) if pouc_row else 0.0
+            total_settled_tasks = int(pouc_row[1]) if pouc_row else 0
+            conn_ledger.close()
+        except Exception as e:
             live_pouc_minted = 0.0
             total_settled_tasks = 0
             
