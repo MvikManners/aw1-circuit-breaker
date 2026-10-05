@@ -1,12 +1,13 @@
 import ast
 from laveto_wisdom.canary import SyntheticCanary
+from laveto_wisdom.quorum import QuorumEngine
 
 class SecurityTripwireException(Exception):
     pass
 
 class ExecutionBreaker:
     """
-    AW-1 Deterministic AST Circuit Breaker with Synthetic Canary Integration.
+    AW-1 Deterministic AST Circuit Breaker with Canary Honeypot & Multi-Agent Quorum Verification.
     """
     FORBIDDEN_CALLS = {'eval', 'exec', '__import__', 'compile'}
     FORBIDDEN_MODULES = {'os', 'sys', 'subprocess', 'shutil', 'socket', 'pty'}
@@ -19,15 +20,12 @@ class ExecutionBreaker:
         try:
             tree = ast.parse(code_str)
         except SyntaxError:
-            # Polyglot shell or non-Python code passed as string
             return "NON_PYTHON_POLYGLOT_PAYLOAD"
 
         for node in ast.walk(tree):
-            # Check forbidden function calls
             if isinstance(node, ast.Call):
                 if isinstance(node.func, ast.Name) and node.func.id in self.FORBIDDEN_CALLS:
                     return f"FORBIDDEN_CALL_{node.func.id.upper()}"
-            # Check unauthorized module imports
             elif isinstance(node, ast.Import):
                 for alias in node.names:
                     if alias.name in self.FORBIDDEN_MODULES:
@@ -37,13 +35,13 @@ class ExecutionBreaker:
                     return f"FORBIDDEN_IMPORT_{node.module.upper()}"
         return None
 
-    def execute_tool(self, tool_name: str, payload: str, session_id: str = "agent-session-001"):
+    def execute_tool(self, tool_name: str, payload: str, session_id: str = "agent-session-001", attestations: list = None, quorum_threshold: int = 2):
         """
-        Intercepts tool call: permits safe execution, or traps adversary in canary.
+        Validates AST safety, diverts attacks into Canary, and enforces cryptographic
+        multi-agent quorum consensus for sensitive actions.
         """
+        # 1. AST Structural Inspection
         threat_vector = self._inspect_ast(payload)
-
-        # Trap detected attacks
         if threat_vector:
             if self.enable_canary:
                 trap = SyntheticCanary.synthesize_decoy(
@@ -53,7 +51,7 @@ class ExecutionBreaker:
                     session_id=session_id
                 )
                 return {
-                    "execution_status": "SUCCESS", # Deceptive success mask to fool the attacker
+                    "execution_status": "SUCCESS",
                     "output": trap["synthetic_output"],
                     "security_audit": {
                         "circuit_breaker": "TRIPPED_CANARY",
@@ -63,7 +61,35 @@ class ExecutionBreaker:
             else:
                 raise SecurityTripwireException(f"AST Circuit Breaker Trip: {threat_vector}")
 
-        # Authorized safe execution path
+        # 2. Multi-Agent Quorum Consensus Check
+        if tool_name in QuorumEngine.CRITICAL_TOOLS:
+            is_valid, msg, quorum_id = QuorumEngine.verify_attestations(
+                tool_name=tool_name,
+                payload=payload,
+                attestations=attestations or [],
+                threshold=quorum_threshold
+            )
+            if not is_valid:
+                return {
+                    "execution_status": "BLOCKED",
+                    "output": f"Circuit breaker halted '{tool_name}': {msg}",
+                    "security_audit": {
+                        "circuit_breaker": "QUORUM_REJECTED",
+                        "reason": msg
+                    }
+                }
+            
+            return {
+                "execution_status": "SUCCESS",
+                "output": f"Critical tool '{tool_name}' authorized under multi-agent quorum consensus.",
+                "security_audit": {
+                    "circuit_breaker": "QUORUM_ATTESTED",
+                    "quorum_id": quorum_id,
+                    "threshold_met": quorum_threshold
+                }
+            }
+
+        # 3. Standard Permitted Path
         return {
             "execution_status": "SUCCESS",
             "output": f"Legitimate tool '{tool_name}' executed safely.",
