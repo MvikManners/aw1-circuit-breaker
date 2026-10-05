@@ -1,34 +1,24 @@
-
-# Archive dumps & backup staging
-# Cache & Bytecode
-# Local Databases & Backups
-# Local Databases & Logs
-# Python Bytecode & Environment Caches
-# Secrets & Service Accounts
-*.bak*
+# SQLite Databases & Backups
 *.db
-*.log
-*.pyc
-*.pyo
 *.sqlite3
-*.zip
-.cache/
-.env
-.local/
-/awesome-ai-plugins/
-Decision_Assurance_Dossier.pdf
-__pycache__/
-backup_extracted/
+*.db-journal
+*.db-wal
+lvt_database.db
 backups/
-client_secrets.json
-credentials.json
-extracted_backup/
-google_key.json
-isolated_recovery_2/
-isolated_restore/
-logs/
-logs/*.log
-pay_release_extracted/
-snapshots/
-token.json
-venv/
+*.tar.gz
+
+# Environment & Secrets
+.env
+*.env
+secrets.json
+
+# Logs
+*.log
+tokenomics_debug.log
+
+# Build & Python Artifacts
+__pycache__/
+*.pyc
+build/
+dist/
+*.egg-info/
