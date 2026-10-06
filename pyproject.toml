@@ -1,0 +1,18 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aw1-circuit-breaker"
+version = "0.1.1"
+description = "Deterministic AST security circuit breaker and containment middleware for MCP agent tools"
+readme = "README.md"
+authors = [{ name = "Mvik Manners" }]
+license = { text = "Apache-2.0" }
+dependencies = [
+    "mcp>=1.0.0",
+]
+requires-python = ">=3.10"
+
+[project.scripts]
+aw1-circuit-breaker = "mcp_server:main"
