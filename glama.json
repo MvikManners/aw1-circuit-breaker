@@ -1,0 +1,7 @@
+{
+  "$schema": "https://glama.ai/mcp/schema/v1/glama.json",
+  "name": "aw1-circuit-breaker",
+  "description": "Deterministic AST deconstruction and runtime circuit breaker preventing rogue shell escapes, dynamic eval(), and covert lateral socket egress in autonomous LLM tool calls.",
+  "repository": "https://github.com/MvikManners/aw1-circuit-breaker",
+  "license": "Apache-2.0"
+}
