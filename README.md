@@ -53,6 +53,37 @@ AW-1 operates deterministically at the Abstract Syntax Tree (AST) level before c
 python examples/exploit_showcase.py
 ```
 
+## Runtime Latency Telemetry
+
+Deterministic security must not throttle agent execution. AW-1 operates with sub-millisecond AST parsing and microsecond-scale argument filtering across warm execution loops.
+
+*Sample Size: 1,000 synthetic iterations per test vector on Debian Python 3.13.*
+
+| Evaluation Target | p50 Latency | p95 Latency | p99 Latency | Status |
+|---|---|---|---|---|
+| **AST Inspection (Benign Payload)** | **0.0889 ms** | 0.1298 ms | 0.1645 ms | `< 0.2 ms` Overhead |
+| **AST Inspection (Adversarial Exploit)** | **0.0520 ms** | 0.0919 ms | 0.1051 ms | Instant Breakout Halt |
+| **Shell Argument Injection Guard** | **0.0051 ms** | 0.0096 ms | 0.0195 ms | Sub-20 µs Inspection |
+
+Reproduce locally:
+```bash
+python benchmark.py
+```
+
+## Framework Integration (LangGraph Example)
+
+AW-1 drops directly into autonomous agent execution nodes prior to tool dispatch:
+
+```python
+from examples.langgraph_adapter import execute_agent_action, CircuitBreakerException
+
+# Guard autonomous agent tool dispatches
+try:
+    execute_agent_action(bash_tool, "bash_tool", {"cmd": "cat log.txt; rm -rf /"})
+except CircuitBreakerException as blocked:
+    print(f"Tool call halted: {blocked}")
+```
+
 ## License
 
 Licensed under the Apache License, Version 2.0. See LICENSE for details.
