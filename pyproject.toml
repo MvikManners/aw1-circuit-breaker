@@ -16,3 +16,6 @@ requires-python = ">=3.10"
 
 [project.scripts]
 aw1-circuit-breaker = "mcp_server:main"
+
+[tool.hatch.build.targets.wheel]
+only-include = ["mcp_server.py"]
