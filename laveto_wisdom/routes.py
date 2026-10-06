@@ -15844,7 +15844,7 @@ def get_cover_image():
 @wisdom_bp.route('/checkout', methods=['GET'])
 def lemon_checkout_redirect():
     from flask import redirect
-    return redirect("https://laveto-wisdom.lemonsqueezy.com/checkout/buy/3359aabf-922c-4fe1-a181-1d5b99ce5cb7", code=302)
+    return redirect("https://laveto-wisdom.lemonsqueezy.com/checkout/buy/52d3615d-f312-41a3-971d-00d3346b95e5", code=302)
 
 
 
