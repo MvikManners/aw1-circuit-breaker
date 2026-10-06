@@ -25,7 +25,12 @@ Add this to your `claude_desktop_config.json`:
     }
   }
 }
-2. Add to Cursor IDEAdd to .cursor/mcp.json:JSON{
+```
+
+### 2. Add to Cursor IDE
+Add to `.cursor/mcp.json`:
+```json
+{
   "mcpServers": {
     "aw1-guard": {
       "command": "python3",
@@ -33,7 +38,25 @@ Add this to your `claude_desktop_config.json`:
     }
   }
 }
-🛡️ Architecture & Threat ContainmentDefense TierMechanismTarget VectorTier 1: AST CanarySub-millisecond AST parser (<0.2ms)Blocks eval, exec, system, and shell escapes before kernel dispatchTier 2: Network InterlockDynamic import containmentPrevents unauthorized socket and subprocess importsTier 3: Swarm Quorum2-of-N HMAC cryptographic gatesMitigates emergent multi-agent collusion and covert relaysTier 5: Hardware TEEEnclave PCR0 measurement logsGenerates tamper-proof SHA-256 Decision Assurance Dossiers💻 Standalone Python UsagePythonfrom laveto_wisdom import ExecutionBreaker
+```
+
+---
+
+## 🛡️ Architecture & Threat Containment
+
+| Defense Tier | Mechanism | Target Vector |
+| :--- | :--- | :--- |
+| **Tier 1: AST Canary** | Sub-millisecond AST parser (`<0.2ms`) | Blocks `eval`, `exec`, `system`, and shell escapes before kernel dispatch |
+| **Tier 2: Network Interlock** | Dynamic import containment | Prevents unauthorized `socket` and `subprocess` imports |
+| **Tier 3: Swarm Quorum** | 2-of-N HMAC cryptographic gates | Mitigates emergent multi-agent collusion and covert relays |
+| **Tier 5: Hardware TEE** | Enclave PCR0 measurement logs | Generates tamper-proof SHA-256 Decision Assurance Dossiers |
+
+---
+
+## 💻 Standalone Python Usage
+
+```python
+from laveto_wisdom import ExecutionBreaker
 
 breaker = ExecutionBreaker(enable_canary=True)
 result = breaker.execute_tool(
@@ -42,7 +65,14 @@ result = breaker.execute_tool(
 )
 
 # Output: {'execution_status': 'HALTED', 'reason': 'Unauthorized system access attempt'}
-🔌 Universal Middleware: @protect_tool & LangChainPythonfrom laveto_wisdom.middleware import protect_tool, AW1CallbackHandler
+```
+
+---
+
+## 🔌 Universal Middleware: `@protect_tool` & LangChain
+
+```python
+from laveto_wisdom.middleware import protect_tool, AW1CallbackHandler
 
 # Protect any Python function or agent tool
 @protect_tool(max_velocity_bwp=2000.0)
@@ -55,4 +85,10 @@ agent = initialize_agent(
     llm=llm,
     callbacks=[AW1CallbackHandler()]
 )
-📖 Specifications & TelemetryInteractive Documentation: https://p20.laveto.net/wisdom/docsLive Verification Telemetry: https://p20.laveto.net/wisdom/api/telemetry
+```
+
+---
+
+## 📖 Specifications & Telemetry
+- **Interactive Documentation**: https://p20.laveto.net/wisdom/docs
+- **Live Verification Telemetry**: https://p20.laveto.net/wisdom/api/telemetry
