@@ -13,3 +13,26 @@ dist/
 *.egg-info/
 __pycache__/
 *.pyc
+# Credentials & Keys
+credentials.json
+google_key.json
+*.pem
+*.key
+
+# Backups & Archives
+*.zip
+*.bak*
+
+# Python & Caches
+.cache/
+__pycache__/
+*.pyc
+
+# Local Logs
+*.log
+logs/
+
+# Local Build Artifacts
+build/
+dist/
+*.egg-info/
