@@ -86,4 +86,4 @@ except CircuitBreakerException as blocked:
 
 ## License
 
-Licensed under the Apache License, Version 2.0. See LICENSE for details.
+Licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0). See [LICENSE](LICENSE) for details.
