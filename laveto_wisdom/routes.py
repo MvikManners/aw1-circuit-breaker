@@ -1671,13 +1671,13 @@ function uploadAndFormulate(inputElement) {
     var statusText = document.getElementById('upload-status-text') || document.getElementById('file-chosen-name');
     var promptInput = document.getElementById('proposal-input') || document.querySelector('textarea[name="proposal"]');
     var fileChosenSpan = document.getElementById('file-chosen-name');
-    
+
     if (fileChosenSpan) fileChosenSpan.textContent = "📄 " + file.name + " (" + Math.round(file.size / 1024) + " KB)";
     if (statusText) statusText.textContent = "⚙️ Extracting statutory parameters & formulating dilemma...";
-    
+
     var formData = new FormData();
     formData.append("file", file);
-    
+
     fetch('/wisdom/api/v1/dossier/formulate', {
         method: 'POST',
         body: formData
@@ -1825,13 +1825,13 @@ function exportDossierPdfFromWhatIf() {
     var w = document.getElementById('res-w').textContent;
     var cee = document.getElementById('res-cee').textContent.replace('%','');
     var msg = document.getElementById('pdf-export-msg');
-    
+
     msg.style.display = 'block';
     msg.textContent = '⏳ Compiling SHA-256 Dossier PDF...';
-    
+
     var url = '/wisdom/api/v1/whatif/export-dossier-pdf?loan_amount_bwp=' + loan + '&wisdom_quotient_W=' + w + '&cee_quota_percentage=' + cee;
     window.location.href = url;
-    
+
     setTimeout(function() {
         msg.textContent = '✓ Decision_Assurance_Dossier.pdf exported with SHA-256 seal';
     }, 1500);
@@ -1916,6 +1916,56 @@ HTML_AUDIT_HISTORY = """<!DOCTYPE html>
             <a href="/wisdom/" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors">Exit to Command</a>
         </div>
     </header>
+        <!-- AW-1 AGENT CIRCUIT BREAKER & MCP QUICKSTART -->
+        <section class="card" style="border: 1px solid #38bdf8; background: rgba(14,24,51,0.9); margin-bottom: 24px; padding: 22px; border-radius: 12px; box-shadow: 0 0 25px rgba(56,189,248,0.15);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+                <h2 style="color:#38bdf8; font-size:1.25rem; margin:0;">🛡️ 1. AW-1 Autonomous Agent Circuit Breaker (Quickstart)</h2>
+                <span class="badge" style="background:#10b981; color:#000; font-weight:700; padding:4px 8px; border-radius:4px;">PRODUCTION LIVE</span>
+            </div>
+            <p style="color:#94a3b8; font-size:0.9rem; line-height:1.5;">
+                Deterministic AST containment, statutory escrow verification (Botswana DPA 2018 / BoB Rails), 2-of-N swarm quorum, and hardware TEE attestation for autonomous AI tool calls.
+            </p>
+
+            <h4 style="color:#f59e0b; font-size:0.95rem; margin-top:16px; margin-bottom:6px;">A. Direct Python ExecutionBreaker</h4>
+            <pre style="background:#050811; border:1px solid #1e293b; padding:12px; border-radius:6px; color:#e2e8f0; font-family:monospace; font-size:0.82rem; overflow-x:auto;">from laveto_wisdom import ExecutionBreaker
+
+# Pass your active production license key (obtained via /wisdom/buy)
+breaker = ExecutionBreaker(license_key="AW1-CC89066DF7D007F8", enable_canary=True)
+
+res = breaker.execute_tool(
+    tool_name="financial_auditor",
+    payload="audit_disbursement(recipient='Laveto Trust', amount_bwp=150.00)",
+    agent_id="agent_planner",
+    cost_bwp=150.00
+)
+# Returns: {'execution_status': 'SUCCESS', 'security_audit': {'circuit_breaker': 'PERMITTED', 'tee_attestation': {...}}}</pre>
+
+            <h4 style="color:#f59e0b; font-size:0.95rem; margin-top:16px; margin-bottom:6px;">B. Universal Middleware: @protect_tool & LangChain</h4>
+            <pre style="background:#050811; border:1px solid #1e293b; padding:12px; border-radius:6px; color:#e2e8f0; font-family:monospace; font-size:0.82rem; overflow-x:auto;">from laveto_wisdom.middleware import protect_tool, AW1CallbackHandler
+
+@protect_tool(license_key="AW1-CC89066DF7D007F8", max_velocity_bwp=2000.0)
+def disburse_funds(recipient_id: str, amount_bwp: float):
+    return {"disbursed": amount_bwp, "status": "committed"}
+
+# Attach directly to LangChain agents:
+agent = initialize_agent(tools=[disburse_funds], llm=llm, callbacks=[AW1CallbackHandler(license_key="AW1-CC89066DF7D007F8")])</pre>
+
+            <h4 style="color:#f59e0b; font-size:0.95rem; margin-top:16px; margin-bottom:6px;">C. Native Model Context Protocol (MCP) Server</h4>
+            <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:6px;">Add to your <code>claude_desktop_config.json</code> or Cursor MCP settings:</p>
+            <pre style="background:#050811; border:1px solid #1e293b; padding:12px; border-radius:6px; color:#e2e8f0; font-family:monospace; font-size:0.82rem; overflow-x:auto;">{
+  "mcpServers": {
+    "aw1-circuit-breaker": {
+      "command": "python3",
+      "args": ["-m", "laveto_wisdom.mcp_server"],
+      "env": {
+        "AW1_LICENSE_KEY": "AW1-CC89066DF7D007F8",
+        "AW1_GATEWAY_URL": "https://p20.laveto.net/wisdom"
+      }
+    }
+  }
+}</pre>
+        </section>
+
 
     <!-- Main Audit History Container Section -->
     <main class="w-full max-w-5xl mx-auto bg-[#0b1120] p-6 rounded-xl hud-border mb-6">
@@ -2668,7 +2718,7 @@ HTML_OFFRAMP = r"""<!DOCTYPE html>
             <div class="space-y-4 bg-gray-900/50 p-6 rounded-xl border border-gray-800">
                 <div>
                     <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Downline Node CSV / Number List (Format: Number, AWT):</label>
-                    
+
             <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #1E293B; border-radius: 8px; padding: 12px 16px; margin-bottom: 14px;">
                 <div style="font-size: 0.82rem; font-weight: 700; color: #F1F5F9; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
                     <span style="display: flex; align-items: center; gap: 6px;">⚖️ Select Statutory Audit Lenses (Scope Filter)</span>
@@ -6436,7 +6486,7 @@ def wuc_extraction_dashboard():
         permit = bool(data.get('permit_active', True))
 
         result = WUCExtractionComplianceEngine.audit_extraction(volume, cap, permit)
-        
+
     # Trigger asynchronous circuit-breaker alert if client configured a webhook
     if hasattr(g, 'api_client_id'):
         trigger_circuit_breaker_webhook(g.api_client_id, result)
@@ -12787,7 +12837,7 @@ def generate_enterprise_key():
         "unmasked_secret_warning": full_key
     }), 201
 
-    # =====================================================================
+# =====================================================================
 # 📖 B2B API DEVELOPER DOCUMENTATION (/wisdom/docs)
 # =====================================================================
 
@@ -12796,7 +12846,7 @@ HTML_DOCS = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laveto Wisdom // B2B API Developer Documentation</title>
+    <title>Laveto Wisdom // AW-1 B2B Developer Documentation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -12827,24 +12877,122 @@ HTML_DOCS = """<!DOCTYPE html>
         <div class="flex items-center space-x-3 mb-3 md:mb-0">
             <div class="h-3 w-3 bg-sky-400 rounded-full animate-pulse"></div>
             <div>
-                <h1 class="text-lg font-bold text-sky-400 tracking-wider hud-glow">📖 B2B API DEVELOPER DOCUMENTATION</h1>
+                <h1 class="text-lg font-bold text-sky-400 tracking-wider hud-glow">📖 AW-1 RUNTIME GUARD &amp; B2B DEVELOPER DOCS</h1>
                 <p class="text-xs text-slate-400">Route: <span class="text-slate-200">/wisdom/docs</span> &bull; Base Production URL: <span class="text-sky-300 font-semibold font-mono">https://p20.laveto.net/wisdom/api/v1</span></p>
             </div>
         </div>
-        <div class="flex items-center space-x-3 text-xs font-mono">
+        <div class="flex items-center space-x-2.5 text-xs font-mono flex-wrap gap-y-2">
+            <a href="/wisdom/buy" class="px-3 py-1.5 bg-[#03080e] hover:bg-amber-950/60 text-amber-300 border border-amber-600 rounded-lg transition-colors font-bold shadow-lg shadow-amber-950/30">🔑 Provision Key (Live)</a>
+            <a href="/wisdom/api/telemetry" target="_blank" class="px-3 py-1.5 bg-[#03080e] hover:bg-sky-950/60 text-sky-300 border border-sky-600 rounded-lg transition-colors font-bold">📡 Live Telemetry</a>
             <a href="/wisdom/api-console" class="px-3 py-1.5 bg-[#03080e] hover:bg-slate-800 text-sky-300 border border-sky-800/60 rounded-lg transition-colors">⚡ API Console</a>
-            <a href="/wisdom/onboard" class="px-3 py-1.5 bg-[#03080e] hover:bg-slate-800 text-amber-300 border border-amber-800/60 rounded-lg transition-colors">🔑 Provision Key</a>
-            <a href="/wisdom/whitepaper" class="px-3 py-1.5 bg-[#03080e] hover:bg-slate-800 text-sky-300 border border-sky-800/60 rounded-lg transition-colors font-mono">📜 Whitepaper</a>
+            <a href="/wisdom/whitepaper" class="px-3 py-1.5 bg-[#03080e] hover:bg-slate-800 text-slate-300 border border-slate-700/60 rounded-lg transition-colors font-mono">📜 Whitepaper</a>
             <a href="/wisdom/" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors font-mono">&larr; Assurance Console</a>
         </div>
     </header>
 
     <main class="w-full max-w-7xl mx-auto space-y-6 mb-8 text-xs font-mono">
 
-        <!-- 1. Protocol Architecture & Overview -->
+        <!-- 1. AW-1 Autonomous AI Agent Circuit Breaker (Quickstart) -->
+        <section class="bg-[#07131e] p-5 rounded-xl hud-border space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h2 class="text-sm font-bold text-sky-300 tracking-wide uppercase">1. AW-1 Autonomous AI Agent Circuit Breaker (Quickstart)</h2>
+                <span class="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-700 font-bold">PRODUCTION LIVE &bull; 5-TIER STANDARD</span>
+            </div>
+            <p class="text-slate-400 font-sans text-xs leading-relaxed">
+                The <strong>AW-1 Sovereign Runtime Guard</strong> provides deterministic AST containment, fiduciary escrow velocity checks (Botswana DPA 2018 / BoB Rails), 2-of-N multi-agent swarm quorum, and hardware-attested Trusted Execution Environment (TEE) cryptographic proofs for autonomous AI agent tool calls.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="p-3 bg-[#03080e] rounded-lg border border-slate-800">
+                    <span class="text-sky-400 font-bold block mb-1">Tier 1: AST Canary Honeypots</span>
+                    <span class="text-slate-500 font-sans text-[11px]">Traps polyglot shell escapes, malicious eval, and token injection attempts before execution passes to the host kernel.</span>
+                </div>
+                <div class="p-3 bg-[#03080e] rounded-lg border border-slate-800">
+                    <span class="text-amber-400 font-bold block mb-1">Tier 2: Statutory &amp; Fiduciary Lens</span>
+                    <span class="text-slate-500 font-sans text-[11px]">Enforces non-custodial Bank of Botswana 1-to-1 trust limits, citizen ownership thresholds (&ge;51%), and strict velocity caps.</span>
+                </div>
+                <div class="p-3 bg-[#03080e] rounded-lg border border-slate-800">
+                    <span class="text-purple-400 font-bold block mb-1">Tier 3-5: Quorum &amp; Hardware TEE</span>
+                    <span class="text-slate-500 font-sans text-[11px]">Multi-agent HMAC consensus, in-memory grammar hot-patching, and AWS Nitro / AMD SEV-SNP enclave PCR0 measurement attestations.</span>
+                </div>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-amber-300 font-bold text-xs uppercase">A. Python Quickstart: Direct ExecutionBreaker</span>
+                    <span class="text-[10px] text-slate-500">Zero-Overhead Deterministic Gate</span>
+                </div>
+                <pre class="p-3 bg-[#020509] rounded border border-slate-800 text-sky-300 overflow-x-auto leading-relaxed">from laveto_wisdom import ExecutionBreaker
+
+# Initialize breaker using your active production license key (provisioned via /wisdom/buy)
+breaker = ExecutionBreaker(
+    license_key="AW1-CC89066DF7D007F8",
+    enable_canary=True
+)
+
+# Gate tool call deterministically before irreversible execution occurs
+res = breaker.execute_tool(
+    tool_name="financial_auditor",
+    payload="audit_disbursement(recipient='Laveto Trust', amount_bwp=150.00)",
+    agent_id="agent_planner",
+    cost_bwp=150.00
+)
+
+# Verification Output:
+# res['execution_status'] == 'SUCCESS'
+# res['security_audit']['circuit_breaker'] == 'PERMITTED'
+# res['security_audit']['tee_attestation']['attestation_id'] == 'b8cce61062bbf762fedd050c'
+# res['security_audit']['tee_attestation']['pcr_measurements']['PCR0_CODE'] == '58ebeefd65d546a7...'</pre>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-amber-300 font-bold text-xs uppercase">B. Universal Middleware: @protect_tool Decorator &amp; LangChain</span>
+                    <span class="text-[10px] text-slate-500">Drop-In Interceptor</span>
+                </div>
+                <pre class="p-3 bg-[#020509] rounded border border-slate-800 text-emerald-400 overflow-x-auto leading-relaxed">from laveto_wisdom.middleware import protect_tool, AW1CallbackHandler
+
+# 1. Protect any native Python function or custom agent tool
+@protect_tool(license_key="AW1-CC89066DF7D007F8", max_velocity_bwp=2000.0)
+def disburse_funds(recipient_id: str, amount_bwp: float):
+    # Tool only executes if AST sanity, statutory escrow, and TEE checks pass
+    return {"disbursed": amount_bwp, "status": "committed"}
+
+# 2. Attach to LangChain Agent Executors
+agent = initialize_agent(
+    tools=[disburse_funds],
+    llm=llm,
+    callbacks=[AW1CallbackHandler(license_key="AW1-CC89066DF7D007F8")]
+)</pre>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-amber-300 font-bold text-xs uppercase">C. Model Context Protocol (MCP) Server Setup</span>
+                    <span class="text-[10px] text-slate-500">Claude Desktop &bull; Cursor &bull; stdio JSON-RPC</span>
+                </div>
+                <p class="text-slate-400 font-sans text-xs">
+                    AW-1 includes a native Model Context Protocol (MCP) server. Add the following block to your <code class="text-sky-300">claude_desktop_config.json</code> or Cursor MCP settings:
+                </p>
+                <pre class="p-3 bg-[#020509] rounded border border-slate-800 text-purple-300 overflow-x-auto leading-relaxed">{
+  "mcpServers": {
+    "aw1-circuit-breaker": {
+      "command": "python3",
+      "args": ["-m", "laveto_wisdom.mcp_server"],
+      "env": {
+        "AW1_LICENSE_KEY": "AW1-CC89066DF7D007F8",
+        "AW1_GATEWAY_URL": "https://p20.laveto.net/wisdom"
+      }
+    }
+  }
+}</pre>
+            </div>
+        </section>
+
+        <!-- 2. Protocol Architecture & Overview -->
         <section class="bg-[#07131e] p-5 rounded-xl hud-border space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">1. Protocol Architecture &amp; Out-of-Band Assurance</h2>
+                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">2. Macro Protocol Architecture &amp; Out-of-Band Assurance</h2>
                 <span class="text-[10px] bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800">REST &bull; JSON &bull; HMAC-SHA256</span>
             </div>
             <p class="text-slate-400 leading-relaxed font-sans text-xs">
@@ -12866,14 +13014,14 @@ HTML_DOCS = """<!DOCTYPE html>
             </div>
         </section>
 
-        <!-- 2. Authentication & Rate-Limiting Specs -->
+        <!-- 3. Authentication & Rate-Limiting Specs -->
         <section class="bg-[#07131e] p-5 rounded-xl hud-border space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">2. Authentication &amp; Sliding Window Rate Limiting</h2>
-                <span class="text-[10px] bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-800">Header: X-Laveto-Key</span>
+                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">3. Authentication &amp; Sliding Window Rate Limiting</h2>
+                <span class="text-[10px] bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-800">Header: X-Laveto-Key &bull; License: AW1-XXXX</span>
             </div>
             <p class="text-slate-400 font-sans text-xs">
-                All production requests require a valid cryptographic API key passed in the <code class="text-sky-300">X-Laveto-Key</code> HTTP header. Rate limits are computed on a sliding 60-second window backed by client quota tables in the core registry.
+                Production requests require a valid cryptographic API key passed in the <code class="text-sky-300">X-Laveto-Key</code> HTTP header or an active license key passed to the Python SDK. Rate limits are computed on a sliding 60-second window backed by client quota tables in the core database registry.
             </p>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -12888,7 +13036,7 @@ HTML_DOCS = """<!DOCTYPE html>
                         <tr>
                             <td class="py-2.5 font-bold text-slate-100"><code>X-Laveto-Key</code></td>
                             <td>Request Header</td>
-                            <td>Assigned enterprise token (e.g. <code>lvt-sec-wisdom-live-2026</code>).</td>
+                            <td>Assigned enterprise token or license key (e.g. <code>AW1-CC89066DF7D007F8</code>).</td>
                         </tr>
                         <tr>
                             <td class="py-2.5 font-bold text-slate-100"><code>X-RateLimit-Remaining-Quota</code></td>
@@ -12903,18 +13051,18 @@ HTML_DOCS = """<!DOCTYPE html>
                         <tr>
                             <td class="py-2.5 font-bold text-rose-400"><code>HTTP 403 Forbidden</code></td>
                             <td>Error Code</td>
-                            <td>Monthly allocated quota exhausted or inactive key status.</td>
+                            <td>Monthly allocated quota exhausted or inactive license key status.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- 3. Core Endpoint Specifications (Audit & PoUC) -->
+        <!-- 4. Core Endpoint Specifications (Audit, PoUC, Telemetry) -->
         <section class="bg-[#07131e] p-5 rounded-xl hud-border space-y-4">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">3. Primary Endpoint Reference</h2>
-                <span class="text-[10px] text-slate-500">2 Core Contracts</span>
+                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">4. Primary Endpoint Reference</h2>
+                <span class="text-[10px] text-slate-500">3 Core Production Contracts</span>
             </div>
 
             <!-- Endpoint A: /wisdom/api/v1/audit -->
@@ -12982,12 +13130,24 @@ HTML_DOCS = """<!DOCTYPE html>
                     </div>
                 </div>
             </div>
+
+            <!-- Endpoint C: /wisdom/api/telemetry -->
+            <div class="p-4 bg-[#03080e] rounded-lg border border-slate-800 space-y-2">
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] bg-sky-950 text-sky-400 border border-sky-800 font-bold">GET</span>
+                    <code class="text-slate-200 font-bold text-xs">/wisdom/api/telemetry</code>
+                    <span class="text-slate-500 text-[11px]">&bull; Real-Time Public Verification Ledger &amp; Enclave PCR0 Hashes</span>
+                </div>
+                <p class="text-slate-400 font-sans text-xs">
+                    Exposes cryptographic proof feeds across active license counts, 2-of-N quorum consensus events, statutory clearance audits, and hardware TEE attestation records.
+                </p>
+            </div>
         </section>
 
-        <!-- 4. Interactive Code Snippets (cURL, Python, Node.js) -->
+        <!-- 5. Interactive Code Snippets (cURL, Python SDK, Node.js) -->
         <section class="bg-[#07131e] p-5 rounded-xl hud-border space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">4. Integration Code Snippets</h2>
+                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">5. Integration Code Snippets</h2>
                 <div class="flex gap-2">
                     <button onclick="switchCodeTab('curl')" id="tab-curl" class="px-2.5 py-1 bg-sky-950 text-sky-300 border border-sky-800 rounded font-bold">cURL</button>
                     <button onclick="switchCodeTab('python')" id="tab-python" class="px-2.5 py-1 bg-slate-900 text-slate-400 hover:text-white rounded">Python (SDK)</button>
@@ -12998,7 +13158,7 @@ HTML_DOCS = """<!DOCTYPE html>
             <div id="code-curl" class="space-y-1">
                 <pre class="p-3 bg-[#03080e] rounded border border-slate-800 text-slate-200 overflow-x-auto leading-relaxed">curl -i -s -X POST https://p20.laveto.net/wisdom/api/v1/audit \\
   -H "Content-Type: application/json" \\
-  -H "X-Laveto-Key: lvt-sec-wisdom-live-2026" \\
+  -H "X-Laveto-Key: AW1-CC89066DF7D007F8" \\
   -d '{
     "proposal": "Apply for P18M CEDA facility to establish an integrated dairy herd and pasteurization facility in Lobatse SEZA with verified fodder contracts."
   }'</pre>
@@ -13007,10 +13167,10 @@ HTML_DOCS = """<!DOCTYPE html>
             <div id="code-python" class="space-y-1 hidden">
                 <pre class="p-3 bg-[#03080e] rounded border border-slate-800 text-emerald-400 overflow-x-auto leading-relaxed">from laveto_sdk import LavetoWisdomClient
 
-# Zero-dependency client library using standard urllib
+# Zero-dependency client library using Python's standard urllib
 client = LavetoWisdomClient(
     base_url="https://p20.laveto.net/wisdom",
-    api_key="lvt-sec-wisdom-live-2026"
+    api_key="AW1-CC89066DF7D007F8"
 )
 
 # Executes Decision Assurance audit (automatically triggers 20% AWT Buyback-and-Burn)
@@ -13028,7 +13188,7 @@ print("Tokens Permanently Burned:", response["buyback_and_burn_receipt"]["awt_bu
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    "X-Laveto-Key": "lvt-sec-wisdom-live-2026"
+    "X-Laveto-Key": "AW1-CC89066DF7D007F8"
   },
   body: JSON.stringify({
     proposal: "Tender P45M for domestic sunflower crushing plant in Pandamatenga SEZA with 50% CEE citizen subcontracting."
@@ -13039,10 +13199,10 @@ console.log("Verdict:", dossier.posture, "| Wisdom Quotient:", dossier.wisdom_qu
             </div>
         </section>
 
-        <!-- 5. Botswana Empirical & Statutory Benchmarks -->
+        <!-- 6. Botswana Empirical & Statutory Benchmarks -->
         <section class="bg-[#07131e] p-5 rounded-xl hud-border space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">5. Botswana Ground-Truth Statutory Benchmarks (NDP 12)</h2>
+                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">6. Botswana Ground-Truth Statutory Benchmarks (NDP 12)</h2>
                 <span class="text-[10px] text-emerald-400 font-mono font-bold">Hardcoded Regulatory Constraints</span>
             </div>
             <p class="text-slate-400 font-sans text-xs">
@@ -13092,7 +13252,7 @@ console.log("Verdict:", dossier.posture, "| Wisdom Quotient:", dossier.wisdom_qu
 
     <!-- Footer -->
     <footer class="w-full max-w-7xl mx-auto py-4 border-t border-slate-800 text-center text-xs text-slate-500 font-mono">
-        Laveto Wisdom (AW-1) &bull; Sovereign Decision Assurance Architecture &bull; Republic of Botswana
+        Laveto Wisdom (AW-1) &bull; Sovereign Decision Assurance Architecture &bull; Republic of Botswana &bull; p20.laveto.net
     </footer>
 
     <script>
@@ -13622,7 +13782,7 @@ HTML_TOKENOMICS_DASHBOARD = r"""<!DOCTYPE html>
             const res = await fetch('/wisdom/api/v1/aw/tokenomics/summary');
             if (!res.ok) return;
             const data = await res.json();
-            
+
             // Format numbers helper
             const fmt = (num, decimals = 2) => Number(num || 0).toLocaleString(undefined, {
                 minimumFractionDigits: decimals,
@@ -15339,12 +15499,12 @@ def download_audit_term_sheet(audit_id):
         row = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (audit_id,)).fetchone()
     finally:
         conn.close()
-        
+
     if not row:
         audit_dict = {"audit_id": audit_id, "posture": "CALIBRATE", "wisdom_quotient": 0.85}
     else:
         audit_dict = dict(row)
-        
+
     from .pdf_generator import generate_term_sheet_pdf
     pdf_bytes = generate_term_sheet_pdf(audit_dict)
     return send_file(
@@ -15455,7 +15615,7 @@ HOST 2: To clear the audit gate, the proponent must accept the 8-clause Autonomo
             currentUtterance = new SpeechSynthesisUtterance(text);
             currentUtterance.rate = 1.0;
             currentUtterance.pitch = 1.0;
-            
+
             var btn = document.getElementById('play-btn');
             btn.innerText = '🔊 Playing...';
             btn.disabled = true;
@@ -15498,7 +15658,7 @@ def execute_audit_settlement(audit_id):
     tier = data.get("tier", "SME_ASSURANCE")
     carrier = data.get("carrier", "ORANGE_MONEY")
     carrier_tx = data.get("carrier_tx_id", f"OM-{int(time.time())}")
-    
+
     receipt = record_settlement(audit_id, tier, carrier, carrier_tx)
     return jsonify({
         "status": "SUCCESS",
@@ -15587,7 +15747,7 @@ def view_builders_guild():
 def download_comparative_variance_pdf():
     from flask import Response
     from .pdf_generator import generate_comparative_variance_pdf
-    
+
     variant_a = {
         "proposal_text": "P18.5M Pandamatenga irrigation setup with unmetered groundwater and foreign management.",
         "posture": "HALT",
@@ -15600,7 +15760,7 @@ def download_comparative_variance_pdf():
         "wisdom_quotient": 0.82,
         "uncomfortable_truth": "All statutory covenants satisfied; aquifer draw safely bounded within seasonal recharge ceilings."
     }
-    
+
     pdf_bytes = generate_comparative_variance_pdf(variant_a, variant_b)
     return Response(pdf_bytes, mimetype="application/pdf", headers={
         "Content-Disposition": "attachment; filename=Laveto_Wisdom_Comparative_Variance_Report.pdf"
@@ -15614,11 +15774,11 @@ def view_specific_pair_diff(parent_id, child_id):
     parent = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (parent_id,)).fetchone()
     child = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (child_id,)).fetchone()
     conn.close()
-    
+
     pairs = []
     if parent and child:
         pairs.append({"parent": dict(parent), "child": dict(child)})
-    
+
     return render_template_string(HTML_DIFF, pairs=pairs, user_role=get_current_user_role())
 
 
@@ -15630,11 +15790,11 @@ def view_specific_pair_diff(parent_id, child_id):
 def api_formulate_dossier():
     from flask import request, jsonify
     from .dossier_formulator import extract_text_from_file, formulate_statutory_dilemma
-    
+
     file = request.files.get("file")
     if not file or not file.filename:
         return jsonify({"status": "error", "message": "No file uploaded"}), 400
-        
+
     try:
         content_bytes = file.read()
         extracted_text = extract_text_from_file(file.filename, content_bytes)
@@ -15673,7 +15833,7 @@ def api_whatif_export_pdf():
     import io
     from flask import request, send_file
     from .dossier_pdf_generator import generate_dossier_pdf_stream
-    
+
     if request.method == "POST":
         data = request.get_json() or {}
     else:
@@ -15742,7 +15902,7 @@ def citizen_portal():
     <div class="card">
         <h2>🛡 What the Citizen Portal Does for You</h2>
         <p>Under Botswana's <strong>Economic Inclusion Act 2021</strong>, state tenders, SEZA anchor investments, and CEDA-funded facilities must legally guarantee citizen equity, local subcontracting quotas, and job preservation. This portal allows local entrepreneurs and communities to verify compliance.</p>
-        
+
         <div class="grid">
             <div class="feature-box">
                 <h3>📊 50% CEE Verification</h3>
@@ -15807,7 +15967,9 @@ API_DOCS_HTML = """<!DOCTYPE html>
 
 @wisdom_bp.route('/docs', methods=['GET'])
 def render_live_api_docs():
-    return render_template_string(API_DOCS_HTML)
+    resp = make_response(render_template_string(API_DOCS_HTML))
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return resp
 
 
 
@@ -15852,16 +16014,16 @@ def lemon_checkout_redirect():
 def get_security_telemetry():
     import sqlite3
     from flask import jsonify
-    
+
     conn = sqlite3.connect('/home/LavetoLab/lvt_database.db')
     c = conn.cursor()
-    
+
     threats = c.execute("SELECT dossier_id, timestamp, tool_name, threat_vector, status FROM adversary_threat_logs ORDER BY timestamp DESC LIMIT 5").fetchall()
     quorum = c.execute("SELECT quorum_id, timestamp, tool_name, signers, status FROM quorum_audit_ledger ORDER BY timestamp DESC LIMIT 5").fetchall()
     statutory = c.execute("SELECT statutory_id, timestamp, agent_id, statute_code, decision FROM statutory_audit_ledger ORDER BY timestamp DESC LIMIT 5").fetchall()
     rules = c.execute("SELECT rule_id, rule_name, threat_pattern, status FROM synthesized_ast_rules ORDER BY created_at DESC LIMIT 5").fetchall()
     tee_records = c.execute("SELECT attestation_id, timestamp, enclave_type, pcr0, signature_hex, verification_status FROM tee_attestation_records ORDER BY timestamp DESC LIMIT 5").fetchall()
-    
+
     conn.close()
     return jsonify({
         "status": "online",
