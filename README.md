@@ -1,5 +1,31 @@
 # AW-1 Circuit Breaker
 
+[![PyPI version](https://img.shields.io/pypi/v/aw1-circuit-breaker.svg?color=blue)](https://pypi.org/project/aw1-circuit-breaker/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Latency](https://img.shields.io/badge/AST%20Evaluation-%3C0.2ms-brightgreen.svg)]()
+
+> Deterministic sub-0.2ms AST security circuit breaker for autonomous AI agents, tool dispatch pipelines, and MCP servers.
+
+---
+
+## ⚡ 10-Second Test Drive (Zero-Install)
+
+Test the circuit breaker live in your terminal right now without installing anything:
+
+```bash
+uvx aw1-circuit-breaker --demo
+```
+
+Or verify an arbitrary snippet:
+
+```bash
+uvx aw1-circuit-breaker verify "subprocess.run(['rm', '-rf', '/'])"
+```
+
+---
+
+# AW-1 Circuit Breaker
+
 [![Glama Score](https://glama.ai/mcp/servers/MvikManners/aw1-circuit-breaker/badges/score.svg)](https://glama.ai/mcp/servers/MvikManners/aw1-circuit-breaker)
 
 Deterministic AST deconstruction and runtime circuit breaker preventing rogue shell escapes, dynamic eval(), and covert lateral socket egress in autonomous LLM tool calls.
