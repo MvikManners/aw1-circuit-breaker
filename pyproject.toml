@@ -5,17 +5,25 @@ build-backend = "hatchling.build"
 [project]
 name = "aw1-circuit-breaker"
 version = "0.1.1"
-description = "Deterministic AST security circuit breaker and containment middleware for MCP agent tools"
+description = "Deterministic sub-0.2ms AST execution circuit breaker for autonomous agents and MCP servers."
 readme = "README.md"
-authors = [{ name = "Mvik Manners" }]
-license = { text = "Apache-2.0" }
-dependencies = [
-    "mcp>=1.0.0,<2.0.0",
-]
 requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Mvik Manners" }
+]
+classifiers = [
+    "Topic :: Security",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License"
+]
+dependencies = [
+    "mcp>=1.0.0"
+]
 
 [project.scripts]
-aw1-circuit-breaker = "mcp_server:main"
+aw1 = "aw1.cli:main"
+aw1-circuit-breaker = "aw1.cli:main"
 
 [tool.hatch.build.targets.wheel]
-only-include = ["mcp_server.py"]
+packages = ["aw1"]
