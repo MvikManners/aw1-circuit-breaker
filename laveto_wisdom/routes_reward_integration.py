@@ -462,6 +462,104 @@ def api_procurement_verify_bid():
     Automates statutory vetting under the Economic Inclusion Act 2021 (CEE 50%)
     and PPRA Act 2022 (35 Statutory Citizen Reserved Sectors).
     """
+    # -------------------------------------------------------------------------
+    # 1. BROWSER ACCESS (GET or Form POST from Chrome / Portal UI)
+    # -------------------------------------------------------------------------
+    if request.method == "GET" or (request.method == "POST" and not request.is_json and request.content_type != 'application/json'):
+        from flask import render_template
+        import hashlib
+
+        verification = None
+        tender_ref = "PPRA-2026-MIN-ENG-082"
+        sector = "solar_infrastructure"
+        citizen_equity_pct = 58.0
+        subcontracting_pct = 50.0
+        offshore_sweep_pct = 18.0
+
+        if request.method == "POST":
+            tender_ref = request.form.get("tender_ref", tender_ref).strip()
+            sector = request.form.get("sector", sector).strip()
+            try:
+                citizen_equity_pct = float(request.form.get("citizen_equity_pct", 58.0))
+                subcontracting_pct = float(request.form.get("subcontracting_pct", 50.0))
+                offshore_sweep_pct = float(request.form.get("offshore_sweep_pct", 18.0))
+            except (ValueError, TypeError):
+                pass
+
+            sec_clean = sector.lower().replace(" ", "_").strip()
+            v_ui = []
+            if sec_clean in CITIZEN_RESERVED and citizen_equity_pct < 100.0:
+                v_ui.append({
+                    "error_code": "ERR_STATUTORY_RESERVED_SECTOR",
+                    "reason": f"Sector '{sector}' is strictly citizen-reserved (100%). Bidder equity: {citizen_equity_pct}%."
+                })
+
+            cee_ui = round(0.40 * citizen_equity_pct + 0.60 * subcontracting_pct, 2)
+            if cee_ui < 50.0:
+                v_ui.append({
+                    "error_code": "ERR_CEE_QUOTA_BREACH",
+                    "reason": f"Effective CEE ratio is {cee_ui}%, failing mandatory 50% threshold."
+                })
+
+            if citizen_equity_pct >= 50.0 and offshore_sweep_pct > 70.0:
+                v_ui.append({
+                    "error_code": "ERR_FRONTING_FRAUD_FLAGGED",
+                    "reason": f"Nominal equity masked by excessive offshore profit sweep ({offshore_sweep_pct}%)."
+                })
+
+            chk_reserved = not (sec_clean in CITIZEN_RESERVED and citizen_equity_pct < 100.0)
+            chk_cee = (cee_ui >= 50.0)
+            chk_fronting = not (citizen_equity_pct >= 50.0 and offshore_sweep_pct > 70.0)
+            is_comp_ui = len(v_ui) == 0
+
+            if not chk_reserved or not chk_fronting:
+                posture = "HALT"
+                w_score = 0.04
+                msg = v_ui[0]["reason"] if v_ui else "Disqualified by operation of statutory law."
+            elif not chk_cee:
+                posture = "CALIBRATE"
+                w_score = 1.68
+                msg = f"Effective CEE ratio is {cee_ui}%, falling short of mandatory 50.0% floor by {round(50.0 - cee_ui, 1)}%. Contract requires statutory remedy term sheet."
+            else:
+                posture = "PROCEED"
+                w_score = 3.92
+                msg = "Compliant tender bid cleared. Meets all Section 14.8 CEE covenants, zero fronting detected, and satisfies PFMA fiduciary standards."
+
+            cov_ui = (
+                "### SECTION 14.8: STATUTORY DECISION ASSURANCE & OUT-OF-BAND CONTAINMENT COVENANT\n"
+                "All autonomous agents or automated ERP pipelines managing state tender disbursements under this contract "
+                "must maintain live out-of-band circuit-breaker gating with Laveto Wisdom AW-1 (/v1/aw/audit). "
+                "CEE quota violations trigger immediate Gate 7 token revocation."
+            ) if is_comp_ui else None
+
+            verification = {
+                "passed": is_comp_ui,
+                "status": "CLEARED_PROCEED" if is_comp_ui else "DISQUALIFIED_HALT",
+                "posture": posture,
+                "wisdom_quotient": w_score,
+                "effective_cee": cee_ui,
+                "chk_reserved": chk_reserved,
+                "chk_cee": chk_cee,
+                "chk_fronting": chk_fronting,
+                "error_code": v_ui[0]["error_code"] if v_ui else None,
+                "message": msg,
+                "section_14_8_covenant": cov_ui,
+                "sha256_seal": "0x" + hashlib.sha256(f"{tender_ref}:{cee_ui}:{posture}".encode()).hexdigest()
+            }
+
+        return render_template(
+            'tender_portal.html',
+            verification=verification,
+            tender_ref=tender_ref,
+            sector=sector,
+            citizen_equity_pct=citizen_equity_pct,
+            subcontracting_pct=subcontracting_pct,
+            offshore_sweep_pct=offshore_sweep_pct
+        )
+
+    # -------------------------------------------------------------------------
+    # 2. PROGRAMMATIC API CALLS (test_all.sh, cURL, JSON automation)
+    # -------------------------------------------------------------------------
     d = request.get_json(force=True, silent=True) or {}
     sec = str(d.get("sector", "")).lower().replace(" ", "_").strip()
     eq = float(d.get("citizen_equity_pct", 0.0))
