@@ -36,3 +36,34 @@ logs/
 build/
 dist/
 *.egg-info/
+# Authentication & Credentials
+.git-credentials
+*.key
+*.pem
+google_key.json
+
+# Environment & Databases
+*.db
+*.sqlite3
+lvt_backend/
+snapshots/
+scratch/
+artifacts/
+
+# System & Cache
+.local/
+.viminfo
+__pycache__/
+*.pyc
+*.pyo
+
+# Generated PDFs & Export Dossiers
+*.pdf
+
+# Shell & Database Credentials
+.bash_history
+.my.cnf
+.gitconfig
+*.env
+*.env.*
+*.log
