@@ -1,3 +1,14 @@
+# aw1-breaker (v2.0.1)
+
+[![HOL Verified](https://img.shields.io/badge/HOL-Source_Verified-10B981?style=for-the-badge&logo=shield)](https://hol.org/blog/stopping-rogue-agents-inside-the-ast-breaker)
+[![PyPI](https://img.shields.io/pypi/v/aw1-breaker?color=blue&style=for-the-badge)](https://pypi.org/project/aw1-breaker/)
+[![Zero Dependencies](https://img.shields.io/badge/Runtime_Dependencies-Zero_(Standard_Lib)-blueviolet?style=for-the-badge)](#)
+
+> **Featured on Hashgraph Online (HOL):** Read the independent source-level teardown: [*What aw1-breaker 2.0.0 checks before a tool call*](https://hol.org/blog/stopping-rogue-agents-inside-the-ast-breaker).
+
+`aw1-breaker` is a zero-dependency Python security circuit breaker that intercepts autonomous AI agent tool calls in sub-millisecond execution loops using Abstract Syntax Tree (AST) decompilation, per-actor rolling velocity monitors, and cryptographically signed HMAC execution tokens.
+
+
 # AW-1 Circuit Breaker
 
 [![PyPI version](https://img.shields.io/pypi/v/aw1-circuit-breaker.svg?color=blue)](https://pypi.org/project/aw1-circuit-breaker/)
