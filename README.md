@@ -124,3 +124,9 @@ except CircuitBreakerException as blocked:
 ## License
 
 Licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0). See [LICENSE](LICENSE) for details.
+
+
+## 🌐 Production Cloud API & Quota Upgrades
+- **Developer Sandbox**: 10,000 requests (Free via code HOL-BREAKER-2026)
+- **Pro Team ($49/mo)**: 250,000 requests, hosted token minting [Upgrade to Pro](https://laveto.lemonsqueezy.com)
+- **Enterprise ($499/mo)**: Dedicated node & statutory dossiers [Contact](https://p20.laveto.net/wisdom/tender-portal)
