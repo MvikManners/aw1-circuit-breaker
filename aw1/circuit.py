@@ -1,4 +1,4 @@
-import os, hmac, hashlib, time, secrets
+import os, base64, hmac, hashlib, time, secrets
 AW1_SECRET_KEY = os.environ.get("AW1_BREAKER_SECRET", "aw1-sovereign-circuit-breaker-key-2026").encode("utf-8")
 import time
 import secrets
@@ -51,7 +51,15 @@ class ExecutionBreaker:
         start_time = time.perf_counter()
         
         # Layer 0: Decompile AST Primitives
-        primitives, raw_unpacked = self.unpacker.decompile(payload)
+        # Layer 0: Decode base64 payload prefix if present
+        scan_payload = payload
+        if isinstance(scan_payload, str) and scan_payload.startswith("base64:"):
+            try:
+                scan_payload = base64.b64decode(scan_payload[7:]).decode("utf-8", errors="ignore")
+            except Exception:
+                pass
+
+        primitives, raw_unpacked = self.unpacker.decompile(scan_payload)
         
         # Check for AST-level injection or dangerous execution primitives
         blocked_primitives = [p for p in primitives if p in self.DANGEROUS_PRIMITIVES]
