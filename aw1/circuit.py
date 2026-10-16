@@ -1,3 +1,5 @@
+import os, hmac, hashlib, time, secrets
+AW1_SECRET_KEY = os.environ.get("AW1_BREAKER_SECRET", "aw1-sovereign-circuit-breaker-key-2026").encode("utf-8")
 import time
 import secrets
 import hashlib
@@ -6,6 +8,28 @@ from aw1.unpacker import ASTSymbolicUnpacker
 from aw1.memory import StatefulCausalMemory
 
 class ExecutionBreaker:
+    _inst = None
+    @classmethod
+    def _get_inst(cls):
+        if cls._inst is None: cls._inst = cls()
+        return cls._inst
+
+    @classmethod
+    def generate_signed_token(cls, actor_id: str) -> str:
+        nonce, ts = secrets.token_hex(8), int(time.time())
+        sig = hmac.new(AW1_SECRET_KEY, f"{nonce}:{actor_id}:{ts}".encode(), hashlib.sha256).hexdigest()[:16]
+        return f"AW1-EXEC-TOKEN-{nonce}.{ts}.{sig}"
+
+    @classmethod
+    def verify_execution_token(cls, token: str, actor_id: str, max_age: int = 300) -> bool:
+        try:
+            if not token or not token.startswith("AW1-EXEC-TOKEN-"): return False
+            nonce, ts_str, sig = token[15:].split(".")
+            if time.time() - int(ts_str) > max_age: return False
+            exp = hmac.new(AW1_SECRET_KEY, f"{nonce}:{actor_id}:{ts_str}".encode(), hashlib.sha256).hexdigest()[:16]
+            return hmac.compare_digest(sig, exp)
+        except Exception: return False
+
     """
     Out-of-band execution circuit breaker governing autonomous agent tool calls.
     """
@@ -22,6 +46,8 @@ class ExecutionBreaker:
         self.memory = StatefulCausalMemory(baseline_velocity_limit=baseline_velocity)
 
     def intercept(self, actor_id: str, tool_name: str, payload: str, amount: float = 0.0) -> Dict[str, Any]:
+        if not isinstance(self, ExecutionBreaker):
+            return ExecutionBreaker._get_inst().intercept(self, actor_id, tool_name, payload)
         start_time = time.perf_counter()
         
         # Layer 0: Decompile AST Primitives
@@ -63,7 +89,7 @@ class ExecutionBreaker:
             }
 
         # Gate 7: Permitted Execution Token Generation
-        token = f"AW1-EXEC-TOKEN-{secrets.token_hex(8)}"
+        token = self.generate_signed_token(actor_id)
         return {
             "decision": "APPROVED_PROCEED",
             "status": "PERMITTED",
