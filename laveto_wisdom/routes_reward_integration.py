@@ -15,6 +15,7 @@ import hashlib
 import json
 import sqlite3
 import re
+import zipfile, re
 from datetime import datetime, timezone
 
 # Ensure required paths are available
@@ -22,7 +23,7 @@ for p in ['/home/LavetoLab', '/home/LavetoLab/laveto_wisdom', '/home/LavetoLab/l
     if os.path.exists(p) and p not in sys.path:
         sys.path.insert(0, p)
 
-from flask import Blueprint, request, jsonify
+from flask import render_template, Blueprint, request, jsonify
 
 # Safe imports for Reward and Tokenomics Engines
 try:
@@ -123,21 +124,25 @@ class AutonomousAgentInterceptor:
         params = payload.get("parameters", {}) if isinstance(payload.get("parameters"), dict) else {}
         is_irreversible = payload.get("is_irreversible", False)
 
-        # Detect High-Risk Privilege Escalation or Data Exfiltration
+        # Safely extract dictionary and normalized string representations
+        raw_dict = raw_payload if isinstance(raw_payload, dict) else (payload if isinstance(payload, dict) else {})
+        raw_str = (json.dumps(payload) if isinstance(payload, (dict, list)) else str(payload)).lower()
+
+        # Detect High-Risk Privilege Escalation, Destructive Code, or Unauthorized Autonomy
         has_escalation = (
-            raw_payload.get("escalate_privilege", False)
-            or "SHELL" in str(action_name).upper()
-            or "ROOT" in str(action_name).upper()
+            raw_dict.get("escalate_privilege", False)
+            or any(k in raw_str for k in ["rm -rf", "drop_table", "truncate", "kill -9", "eval(", "exec(", "subprocess", "socket"])
+            or any(k in str(action_name).upper() for k in ["SHELL", "ROOT", "AUTONOMOUS_SCALE", "SCALE_AND_OFFLOAD", "SCALE"])
         )
-        dest_url = str(params.get("destination_url", ""))
-        omang_samples = params.get("exported_omang_samples", [])
-        has_omang = any(len(str(x)) == 9 and str(x).isdigit() for x in omang_samples)
-        offshore = bool(dest_url and not any(d in dest_url for d in [".gov.bw", ".laveto.net", ".bw"]))
+        dest_url = str(params.get("destination_url", payload.get("destination_url", "")))
+        omang_samples = params.get("exported_omang_samples", payload.get("exported_omang_samples", []))
+        has_omang = any(len(str(x)) == 9 and str(x).isdigit() for x in omang_samples) or "omang" in raw_str
+        offshore = bool(dest_url and not any(d in dest_url for d in [".gov.bw", ".laveto.net", ".bw"])) or any(k in raw_str for k in ["frankfurt", "offshore", "aws", "remote", "bucket"])
 
         has_exfiltration = (
-            raw_payload.get("exfiltrate_data", False)
-            or "dump_db_tables" in raw_payload
-            or "EXFILTRATE" in str(action_name).upper()
+            raw_dict.get("exfiltrate_data", False)
+            or any(k in raw_str for k in ["dump_db_tables", "exfiltrat", "pii_export", "export_pii", "citizen_records"])
+            or any(k in str(action_name).upper() for k in ["EXFILTRATE", "DUMP", "EXPORT_PII", "PII_EXPORT"])
             or (has_omang and offshore)
         )
 
@@ -294,30 +299,34 @@ def process_enterprise_audit():
     _dest = str(_pm.get("destination_url", "")) if isinstance(_pm, dict) else ""
 
     # DPA 2018 Statutory Check: 9-digit Omang numbers + offshore destination socket
+    _raw_str = (json.dumps(_d) if isinstance(_d, (dict, list)) else str(_d)).lower()
     _omang_hits = [str(x) for x in _omangs if len(str(x)) == 9 and str(x).isdigit()]
-    _is_exfil = any(k in _tool for k in ["EXFILTRATE", "DUMP", "EXPORT_PII"])
+    _is_exfil = any(k in _tool for k in ["EXFILTRATE", "DUMP", "EXPORT_PII", "PII_EXPORT"])
     _offshore = bool(_dest and not any(d in _dest for d in [".gov.bw", ".laveto.net", ".bw"]))
+    _has_freeform_pii = ("omang" in _raw_str or _omang_hits) and any(k in _raw_str for k in ["frankfurt", "offshore", "aws", "remote", "bucket", "exfiltrat"])
+    _has_destructive = any(k in _raw_str for k in ["rm -rf", "drop_table", "truncate", "eval(", "exec("]) or "AUTONOMOUS_SCALE" in _tool
 
-    if (_omang_hits or _is_exfil) and _offshore:
+    if ((_omang_hits or _is_exfil) and _offshore) or _has_freeform_pii or _has_destructive:
         _lat = round((time.perf_counter() - _t0) * 1000.0, 4)
         _ts = datetime.now(timezone.utc).isoformat()
         _raw = json.dumps(_d)
         _did = f"DOSSIER-DPA-STATUTORY-{hashlib.sha256((_raw + _ts).encode()).hexdigest()[:10].upper()}"
         _sha = "0x" + hashlib.sha256((_did + _raw).encode()).hexdigest()
+        _violation = "ERR_STATUTORY_DPA_PII_EXFILTRATION" if (_has_freeform_pii or _omang_hits or _is_exfil) else "ERR_UNSANCTIONED_AGENT_EXECUTION"
         return jsonify({
             "status": "HALT_AND_CONTAIN",
             "http_status_code": 403,
             "audit_verdict": "CONTAINED_STATUTORY_HALT",
             "gate_triggered": "Gate 7: Hard Containment & One-Way Door Circuit Breaker",
             "statutory_law_enforced": "Botswana Data Protection Act (DPA 2018/2021), Section 18",
-            "violation_code": "ERR_STATUTORY_DPA_PII_EXFILTRATION",
+            "violation_code": _violation,
             "execution_permitted": False,
             "wisdom_quotient_W": 0.01,
             "inspection_latency_ms": _lat,
             "detected_threat_vectors": {
-                "unmasked_omang_ids_detected": _omang_hits,
-                "offshore_egress_socket_detected": _offshore,
-                "target_exfiltration_resource": _dest
+                "unmasked_omang_ids_detected": _omang_hits or (["omang_detected"] if "omang" in _raw_str else []),
+                "offshore_egress_socket_detected": _offshore or any(k in _raw_str for k in ["frankfurt", "offshore", "aws", "remote", "bucket"]),
+                "target_exfiltration_resource": _dest or "offshore_egress_socket"
             },
             "dossier": {
                 "dossier_id": _did,
@@ -466,7 +475,7 @@ def api_procurement_verify_bid():
     # 1. BROWSER ACCESS (GET or Form POST from Chrome / Portal UI)
     # -------------------------------------------------------------------------
     if request.method == "GET" or (request.method == "POST" and not request.is_json and request.content_type != 'application/json'):
-        from flask import render_template
+        from flask import render_template, render_template
         import hashlib
 
         verification = None
@@ -478,6 +487,8 @@ def api_procurement_verify_bid():
 
         if request.method == "POST":
             tender_ref = request.form.get("tender_ref", tender_ref).strip()
+            cipa_uin = request.form.get("cipa_uin", "BW00001098241").strip().upper()
+            burs_tcc = request.form.get("burs_tcc", "TCC-2026-9042-B").strip().upper()
             sector = request.form.get("sector", sector).strip()
             try:
                 citizen_equity_pct = float(request.form.get("citizen_equity_pct", 58.0))
@@ -532,6 +543,101 @@ def api_procurement_verify_bid():
                 "CEE quota violations trigger immediate Gate 7 token revocation."
             ) if is_comp_ui else None
 
+            
+            import uuid
+            audit_id = f"AUD-2026-{uuid.uuid4().hex[:6].upper()}"
+            try:
+                with sqlite3.connect('/home/LavetoLab/lvt_backend/lvt_database.db') as conn:
+                    conn.execute('''
+                        INSERT OR REPLACE INTO adjudicated_bids_ledger (
+                            audit_id, tender_ref, sector, cipa_uin, burs_tcc,
+                            citizen_equity_pct, subcontracting_pct, offshore_sweep_pct,
+                            effective_cee, wisdom_quotient, posture, statutory_finding,
+                            sha256_dossier_seal, bidder_name, quoted_price_bwp,
+                            enterprise_category, lps_preference_pct, evaluated_price_bwp,
+                            financial_score, composite_score, commercial_rank, adjudicated_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                    ''', (
+                        audit_id, tender_ref, sector, cipa_uin, burs_tcc,
+                        citizen_equity_pct, subcontracting_pct, offshore_sweep_pct,
+                        cee_ui, w_score, posture, msg, verification['sha256_seal'],
+                        bidder_name, quoted_price_bwp, enterprise_category,
+                        lps_preference_pct, evaluated_price_bwp, 0.0, 0.0, 1
+                    ))
+
+                    # AUTOMATED COMPARATIVE RE-RANKING FOR THIS TENDER DOCKET
+                    compliant = conn.execute('''
+                        SELECT audit_id, evaluated_price_bwp, wisdom_quotient, effective_cee
+                        FROM adjudicated_bids_ledger
+                        WHERE tender_ref = ? AND posture != 'HALT' AND evaluated_price_bwp > 0
+                    ''', (tender_ref,)).fetchall()
+
+                    if compliant:
+                        min_p = min(r[1] for r in compliant)
+                        for row in compliant:
+                            aid, p_ev, w_val, eff_cee = row[0], row[1], row[2], row[3]
+                            fin_s = round((min_p / p_ev) * 100.0, 2) if p_ev > 0 else 0.0
+                            stat_s = min(100.0, (w_val / 4.0) * 100.0)
+                            comp_s = round((0.70 * stat_s) + (0.30 * fin_s), 2)
+                            conn.execute('''
+                                UPDATE adjudicated_bids_ledger
+                                SET financial_score = ?, composite_score = ?
+                                WHERE audit_id = ?
+                            ''', (fin_s, comp_s, aid))
+
+                        # Rank compliant bids by composite_score DESC, evaluated_price_bwp ASC
+                        ranked = conn.execute('''
+                            SELECT audit_id FROM adjudicated_bids_ledger
+                            WHERE tender_ref = ? AND posture != 'HALT' AND evaluated_price_bwp > 0
+                            ORDER BY composite_score DESC, evaluated_price_bwp ASC, effective_cee DESC, citizen_equity_pct DESC, effective_cee DESC, citizen_equity_pct DESC, effective_cee DESC, citizen_equity_pct DESC, effective_cee DESC, citizen_equity_pct DESC, lps_preference_pct DESC
+                        ''', (tender_ref,)).fetchall()
+
+                        for idx, r_row in enumerate(ranked, start=1):
+                            conn.execute('''
+                                UPDATE adjudicated_bids_ledger SET commercial_rank = ? WHERE audit_id = ?
+                            ''', (idx, r_row[0]))
+
+                    # Mark HALT bids as disqualified (Rank 999)
+                    conn.execute('''
+                        UPDATE adjudicated_bids_ledger
+                        SET commercial_rank = 999, financial_score = 0.0, composite_score = 0.0
+                        WHERE tender_ref = ? AND posture = 'HALT'
+                    ''', (tender_ref,))
+            except Exception:
+                pass
+
+            
+            # COMMERCIAL OFFER & LPS STATUTORY PREFERENCE ENGINE
+            bidder_name = request.form.get('bidder_name', 'Citizen Enterprise').strip()
+            try:
+                quoted_price_bwp = float(request.form.get('quoted_price_bwp', 0.0) or 0.0)
+            except ValueError:
+                quoted_price_bwp = 0.0
+            enterprise_category = request.form.get('enterprise_category', 'citizen_micro_youth_woman_15')
+
+            # Statutory Local Procurement Scheme (LPS) Margin
+            lps_discount_map = {
+                'citizen_micro_youth_woman_15': 15.0,
+                'citizen_medium_10': 10.0,
+                'citizen_jv_5': 5.0,
+                'standard_foreign_0': 0.0
+            }
+            base_lps = lps_discount_map.get(enterprise_category, 0.0)
+
+            # Statutory LPS Revocation Invariants
+            if posture == 'HALT':
+                lps_preference_pct = 0.0
+                evaluated_price_bwp = 0.0
+                lps_finding = "DISQUALIFIED: Commercial price excluded due to Stage 1 Statutory Breach."
+            elif citizen_equity_pct < 100.0 and base_lps > 5.0:
+                lps_preference_pct = 5.0 if citizen_equity_pct >= 51.0 else 0.0
+                evaluated_price_bwp = quoted_price_bwp * (1.0 - (lps_preference_pct / 100.0))
+                lps_finding = f"RECALIBRATED: Equity < 100% restricts LPS preference to {lps_preference_pct}%."
+            else:
+                lps_preference_pct = base_lps
+                evaluated_price_bwp = quoted_price_bwp * (1.0 - (lps_preference_pct / 100.0)) if quoted_price_bwp > 0 else 0.0
+                lps_finding = f"APPLIED: {lps_preference_pct}% Statutory LPS Price Preference."
+
             verification = {
                 "passed": is_comp_ui,
                 "status": "CLEARED_PROCEED" if is_comp_ui else "DISQUALIFIED_HALT",
@@ -547,8 +653,57 @@ def api_procurement_verify_bid():
                 "sha256_seal": "0x" + hashlib.sha256(f"{tender_ref}:{cee_ui}:{posture}".encode()).hexdigest()
             }
 
+        import sqlite3
+        auto_tenders = []
+        sealed_audits = []
+        comparative_bids = []
+        try:
+            with sqlite3.connect('/home/LavetoLab/lvt_backend/lvt_database.db') as conn:
+                conn.row_factory = sqlite3.Row
+                auto_tenders = [dict(r) for r in conn.execute('SELECT * FROM auto_ingested_tenders ORDER BY rowid DESC').fetchall()]
+                sealed_audits = [dict(r) for r in conn.execute('SELECT * FROM adjudicated_bids_ledger ORDER BY rowid DESC').fetchall()]
+                comparative_bids = [dict(r) for r in conn.execute('SELECT * FROM adjudicated_bids_ledger WHERE tender_ref = ? ORDER BY CASE WHEN posture = \'HALT\' THEN 1 ELSE 0 END, commercial_rank ASC, adjudicated_at DESC', (tender_ref,)).fetchall()]
+        except Exception:
+            pass
+        
+        # RESILIENT COMPARATIVE MATRIX RESOLVER (ALWAYS FINDS VALID DOCKET)
+        db_path = "/home/LavetoLab/lvt_backend/lvt_database.db"
+        comparative_bids = []
+        comp_docket_ref = ""
+        with sqlite3.connect(db_path) as _db_conn:
+            _db_conn.row_factory = sqlite3.Row
+            candidate_ref = locals().get('tender_ref') or request.args.get('tender_ref') or ""
+            
+            # 1. Check if candidate_ref has bids
+            if candidate_ref:
+                rows = _db_conn.execute("""
+                    SELECT * FROM adjudicated_bids_ledger 
+                    WHERE tender_ref = ? 
+                    ORDER BY commercial_rank ASC, composite_score DESC, evaluated_price_bwp ASC, effective_cee DESC, citizen_equity_pct DESC, evaluated_price_bwp ASC, effective_cee DESC, citizen_equity_pct DESC, evaluated_price_bwp ASC, effective_cee DESC, citizen_equity_pct DESC
+                """, (candidate_ref,)).fetchall()
+                if rows:
+                    comp_docket_ref = candidate_ref
+                    comparative_bids = [dict(r) for r in rows]
+
+            # 2. If no bids for candidate_ref, load the latest docket that has bids
+            if not comparative_bids:
+                latest_with_bids = _db_conn.execute("""
+                    SELECT tender_ref FROM adjudicated_bids_ledger 
+                    ORDER BY rowid DESC LIMIT 1
+                """).fetchone()
+                if latest_with_bids and latest_with_bids['tender_ref']:
+                    comp_docket_ref = latest_with_bids['tender_ref']
+                    rows = _db_conn.execute("""
+                        SELECT * FROM adjudicated_bids_ledger 
+                        WHERE tender_ref = ? 
+                        ORDER BY commercial_rank ASC, composite_score DESC, evaluated_price_bwp ASC, effective_cee DESC, citizen_equity_pct DESC, evaluated_price_bwp ASC, effective_cee DESC, citizen_equity_pct DESC, evaluated_price_bwp ASC, effective_cee DESC, citizen_equity_pct DESC
+                    """, (comp_docket_ref,)).fetchall()
+                    comparative_bids = [dict(r) for r in rows]
         return render_template(
             'tender_portal.html',
+            auto_tenders=auto_tenders,
+            sealed_audits=sealed_audits,
+            comparative_bids=comparative_bids, comp_docket_ref=comp_docket_ref,
             verification=verification,
             tender_ref=tender_ref,
             sector=sector,
@@ -611,3 +766,139 @@ def api_procurement_verify_bid():
         "rfp_contract_clause": rfp
     }), status_code
 
+@aw_reward_bp.route('/api/parse-bid-package', methods=['POST'])
+def parse_bid_package():
+    """Extracts statutory parameters from uploaded contractor bid documents."""
+    if 'bid_file' not in request.files:
+        return jsonify({"success": False, "error": "No file uploaded"}), 400
+
+    file = request.files['bid_file']
+    filename = file.filename.lower()
+    raw_text = ""
+
+    try:
+        content = file.read()
+
+        # 1. Plain Text / Markdown
+        if filename.endswith(('.txt', '.md', '.csv')):
+            raw_text = content.decode('utf-8', errors='ignore')
+
+        # 2. Microsoft Word (.docx is a ZIP containing word/document.xml)
+        elif filename.endswith('.docx'):
+            import io
+            with zipfile.ZipFile(io.BytesIO(content)) as z:
+                xml_content = z.read('word/document.xml').decode('utf-8', errors='ignore')
+                raw_text = re.sub(r'<[^>]+>', ' ', xml_content)
+
+        # 3. PDF Text Extraction
+        elif filename.endswith('.pdf'):
+            try:
+                import pypdf
+                import io
+                reader = pypdf.PdfReader(io.BytesIO(content))
+                raw_text = " ".join([page.extract_text() or "" for page in reader.pages])
+            except ImportError:
+                # Fallback to direct ASCII stream extraction if pypdf is not installed
+                raw_text = re.sub(r'[^\x20-\x7E\n]', ' ', content.decode('latin1', errors='ignore'))
+    except Exception as e:
+        return jsonify({"success": False, "error": f"Extraction failure: {str(e)}"}), 500
+
+    # Statutory Botswana Regex Heuristics
+    cipa_match = re.search(r'(BW\d{11}|UIN[:\s]+([A-Z0-9]+))', raw_text, re.I)
+    burs_match = re.search(r'(TCC[-\s]?\d{4}[-\s]?[A-Z0-9]+|PIN[:\s]+([A-Z0-9\-]+))', raw_text, re.I)
+    ref_match = re.search(r'(SPTC[A-Z0-9\/\-]+|WUC[A-Z0-9\/\-]+|PPRA[A-Z0-9\/\-]+|KDC[A-Z0-9\/\-]+|BDF[A-Z0-9\/\-]+)', raw_text, re.I)
+
+    eq_match = re.search(r'(?:citizen\s+equity|citizen\s+shareholding|local\s+shares?)[\D]{0,25}(\d{1,3}(?:\.\d+)?)[\s]*%', raw_text, re.I)
+    sub_match = re.search(r'(?:subcontracting|sub-contract|citizen\s+sub)[\D]{0,25}(\d{1,3}(?:\.\d+)?)[\s]*%', raw_text, re.I)
+    sweep_match = re.search(r'(?:offshore|profit\s+sweep|management\s+fee)[\D]{0,25}(\d{1,3}(?:\.\d+)?)[\s]*%', raw_text, re.I)
+
+    return jsonify({
+        "success": True,
+        "filename": file.filename,
+        "extracted": {
+            "tender_ref": ref_match.group(1).strip() if ref_match else None,
+            "cipa_uin": cipa_match.group(1).strip().upper() if cipa_match else None,
+            "burs_tcc": burs_match.group(1).strip().upper() if burs_match else None,
+            "citizen_equity_pct": float(eq_match.group(1)) if eq_match else None,
+            "subcontracting_pct": float(sub_match.group(1)) if sub_match else None,
+            "offshore_sweep_pct": float(sweep_match.group(1)) if sweep_match else None
+        }
+    })
+
+@aw_reward_bp.route('/api/preflight-diagnostics', methods=['POST'])
+def preflight_diagnostics():
+    """Autonomous Bidder Pre-Flight Diagnostics & Curative Guidance."""
+    from flask import render_template, request, jsonify
+
+    try:
+        data = request.get_json(force=True) if request.is_json else request.form
+        eq = float(data.get('citizen_equity_pct', 0.0) or 0.0)
+        sub = float(data.get('subcontracting_pct', 0.0) or 0.0)
+        swp = float(data.get('offshore_sweep_pct', 0.0) or 0.0)
+        price = float(data.get('quoted_price_bwp', 0.0) or 0.0)
+        sector = data.get('sector', 'general_public_procurement')
+        category = data.get('enterprise_category', 'citizen_micro_youth_woman_15')
+
+        # 1. Effective CEE Math
+        eff_cee = round((0.40 * eq) + (0.60 * sub), 2)
+        reserved_sectors = [
+            "catering_and_food_service", "school_feeding_catering", "haulage_and_trucking",
+            "security_guard_services", "security_services", "school_uniform_manufacturing",
+            "borehole_drilling"
+        ]
+        is_reserved = sector in reserved_sectors
+
+        # 2. Checklist Diagnostics
+        findings = []
+        curative_actions = []
+
+        # Citizen Reserved Sector Invariant
+        if is_reserved and eq < 100.0:
+            findings.append({"item": "PPA 2022 Sec 54 Reserved Sector", "status": "FAIL", "msg": f"Requires strictly 100% citizen equity. Currently: {eq}%."})
+            curative_actions.append(f"Cede remaining {round(100.0 - eq, 1)}% equity to citizen partners or restructure as 100% citizen entity.")
+        else:
+            findings.append({"item": "PPA 2022 Sec 54 Reserved Sector", "status": "PASS", "msg": "Sector eligibility confirmed."})
+
+        # CEE Threshold Invariant
+        if eff_cee < 50.0:
+            deficit = round(50.0 - eff_cee, 2)
+            sub_needed = round(deficit / 0.60, 1)
+            findings.append({"item": "Economic Inclusion Act CEE Quota", "status": "FAIL", "msg": f"Effective CEE is {eff_cee}% (Deficit: {deficit}% below 50.0% floor)."})
+            curative_actions.append(f"Increase citizen subcontracting from {sub}% to at least {round(sub + sub_needed, 1)}% (+{sub_needed}%) to clear statutory floor.")
+        else:
+            surplus = round(eff_cee - 50.0, 2)
+            findings.append({"item": "Economic Inclusion Act CEE Quota", "status": "PASS", "msg": f"Compliant: {eff_cee}% (Surplus: +{surplus}%)."})
+
+        # Fronting Ceiling Invariant
+        if swp > 70.0:
+            findings.append({"item": "Anti-Fronting Invariant", "status": "FAIL", "msg": f"Offshore sweep of {swp}% breaches statutory 70.0% ceiling."})
+            curative_actions.append(f"Cap foreign management/licensing sweeps at or below 70.0% (Current excess: {round(swp - 70.0, 1)}%).")
+        else:
+            findings.append({"item": "Anti-Fronting Invariant", "status": "PASS", "msg": f"Compliant: Profit sweep at {swp}%."})
+
+        # 3. LPS Commercial Evaluation
+        lps_map = {'citizen_micro_youth_woman_15': 15.0, 'citizen_medium_10': 10.0, 'citizen_jv_5': 5.0, 'standard_foreign_0': 0.0}
+        pref_pct = lps_map.get(category, 0.0)
+        if eq < 100.0 and pref_pct > 5.0:
+            pref_pct = 5.0 if eq >= 51.0 else 0.0
+
+        eval_price = round(price * (1.0 - (pref_pct / 100.0)), 2) if price > 0 else 0.0
+        readiness_score = 100
+        for f in findings:
+            if f['status'] == 'FAIL':
+                readiness_score -= 30
+        readiness_score = max(10, readiness_score)
+
+        return jsonify({
+            "success": True,
+            "readiness_score": readiness_score,
+            "readiness_grade": "SUBMISSION READY" if readiness_score >= 90 else ("REMEDIATION NEEDED" if readiness_score >= 50 else "CRITICAL DEFICIT"),
+            "effective_cee": eff_cee,
+            "lps_preference_pct": pref_pct,
+            "quoted_price": price,
+            "evaluated_price": eval_price,
+            "findings": findings,
+            "curative_actions": curative_actions
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
