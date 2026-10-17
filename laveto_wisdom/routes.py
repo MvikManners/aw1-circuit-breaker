@@ -2341,11 +2341,13 @@ HTML_AUDIT_HISTORY = """<!DOCTYPE html>
 </html>"""
 
 # ---------------------------------------------------------------------
-# 1. UI Page Route: /wisdom/history
+# 1. UI Page Route: /wisdom/history (Dual HTML & JSON Support)
 # ---------------------------------------------------------------------
 @wisdom_bp.route("/history", methods=["GET"])
 def sovereign_audit_history_view():
-    from flask import render_template_string
+    from flask import render_template_string, request
+    if request.args.get("format") == "json" or request.headers.get("Accept") == "application/json":
+        return api_audit_history_feed()
     return render_template_string(HTML_AUDIT_HISTORY)
 
 # ---------------------------------------------------------------------
@@ -2360,16 +2362,24 @@ def api_audit_history_feed():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        rows = cur.execute("SELECT audit_id, final_posture, wisdom_quotient, created_at FROM wisdom_audits ORDER BY id DESC LIMIT 50").fetchall()
+        rows = cur.execute("SELECT * FROM wisdom_audits ORDER BY id DESC LIMIT 50").fetchall()
         conn.close()
 
         audits_data = []
         for r in rows:
+            keys = r.keys()
+            created = r["created_at"] if "created_at" in keys else datetime.now(timezone.utc).isoformat()
+            posture = r["final_posture"] if "final_posture" in keys else "PROCEED"
+            prop = r["proposal_text"] if "proposal_text" in keys else (r["proposal"] if "proposal" in keys else "")
             audits_data.append({
-                "audit_id": r["audit_id"] if "audit_id" in r.keys() else "UNKNOWN",
-                "timestamp": r["created_at"] if "created_at" in r.keys() else datetime.now(timezone.utc).isoformat(),
-                "status": r["final_posture"] if "final_posture" in r.keys() else "PROCEED",
-                "wisdom_quotient": r["wisdom_quotient"] if "wisdom_quotient" in r.keys() else 0.0
+                "audit_id": r["audit_id"] if "audit_id" in keys else "UNKNOWN",
+                "timestamp": created,
+                "created_at": created,
+                "status": posture,
+                "final_posture": posture,
+                "posture": posture,
+                "proposal_text": prop,
+                "wisdom_quotient": r["wisdom_quotient"] if "wisdom_quotient" in keys else 0.0
             })
 
         if not audits_data:
