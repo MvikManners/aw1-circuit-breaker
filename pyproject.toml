@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aw1-circuit-breaker"
-version = "0.1.2"
+version = "0.2.0"
 description = "Deterministic sub-0.2ms AST execution circuit breaker for autonomous agents and MCP servers."
 readme = "README.md"
 requires-python = ">=3.10"

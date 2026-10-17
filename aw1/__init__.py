@@ -19,7 +19,7 @@ from aw1.trust_reconciliation import TrustAccountReconciliationEngine
 # Backwards compatibility alias
 MCPContractGuard = AW1MCPInterceptor
 
-__version__ = '0.2.0'
+
 
 def wrap_agent_tool(breaker: ExecutionBreaker, actor: str = 'agent_worker'):
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -64,3 +64,17 @@ __all__ = [
 
 # Public API Canonical Alias
 ASTCircuitBreaker = ExecutionBreaker
+
+
+# --- AW-1 v0.2.0 Enterprise Extensions ---
+from aw1.models import Verdict
+from aw1.policy import PolicyConfig
+from aw1.adapters import protect_tool
+
+__version__ = "0.2.0"
+
+# Extend __all__ if present
+try:
+    __all__ = list(__all__) + ["Verdict", "PolicyConfig", "protect_tool"]
+except NameError:
+    __all__ = ["ASTCircuitBreaker", "ExecutionBreaker", "Verdict", "PolicyConfig", "protect_tool"]
