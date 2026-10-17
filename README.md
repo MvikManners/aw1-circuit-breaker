@@ -123,10 +123,18 @@ except CircuitBreakerException as blocked:
 
 ---
 
+---
+
 ## 🌐 Production Cloud API & Quota Upgrades
-- **Developer Sandbox**: 10,000 requests (Free via code HOL-BREAKER-2026)
-- **Pro Team ($49/mo)**: 250,000 requests, hosted token minting [Upgrade to Pro](https://laveto.lemonsqueezy.com)
-- **Enterprise ($499/mo)**: Dedicated node & statutory dossiers [Contact](https://p20.laveto.net/wisdom/tender-portal)
+
+Deploying autonomous agents in production? Route your tool dispatch loops through our hosted API gateway with sub-0.2ms deterministic AST inspection:
+
+| Plan | Pricing (USD / BWP) | Quota & Features | Access / Checkout |
+| :--- | :--- | :--- | :--- |
+| **Developer Sandbox** | Free | 10,000 requests, HMAC token minting | Code `HOL-BREAKER-2026` |
+| **Developer Pro** | $49 / BWP 650 /mo | 100,000 audit requests, 1 license key, offline HMAC validation | [Upgrade to Pro](https://laveto-wisdom.lemonsqueezy.com/checkout) |
+| **Team / Startup** | $199 / BWP 2,650 /mo | 1,000,000 audit requests, 5 seat keys, Redis state sync | [Upgrade to Team](https://laveto-wisdom.lemonsqueezy.com/checkout) |
+| **Enterprise Dedicated** | $990 / BWP 13,200 /mo | Unlimited seats, dedicated gateway tenant, custom statutory lenses | [Enterprise Desk](https://p20.laveto.net/wisdom/tender-portal) |
 
 ---
 
