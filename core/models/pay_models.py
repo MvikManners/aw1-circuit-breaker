@@ -151,6 +151,8 @@ class PaymentTransaction(db.Model):
     is_escrow = db.Column(db.Boolean, default=False)
     escrow_status = db.Column(db.String(32), default='NONE')
     escrow_pin = db.Column(db.String(8), nullable=True)
+    is_settled = db.Column(db.Boolean, default=False)
+    settlement_ref = db.Column(db.String(64), nullable=True)
 
     created_at = db.Column(db.DateTime, default=get_naive_utc)
     updated_at = db.Column(db.DateTime, default=get_naive_utc, onupdate=get_naive_utc)
