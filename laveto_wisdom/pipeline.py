@@ -198,13 +198,13 @@ Conduct a rigorous 5-Pass Decision Assurance Audit and return a valid JSON objec
     try:
         if hasattr(client, "models"):
             resp = client.models.generate_content(
-                model="gemini-2.5-flash",
+                model="gemini-1.5-flash",
                 contents=prompt,
                 config={"response_mime_type": "application/json"}
             )
             raw_response = resp.text
         else:
-            m = client.GenerativeModel("gemini-2.5-flash")
+            m = client.GenerativeModel("gemini-1.5-flash")
             resp = m.generate_content(prompt)
             raw_response = resp.text
 
@@ -348,10 +348,10 @@ If the counter-offer completely cures every breach, explain how posture shifts t
 """
     try:
         if hasattr(client, "models"):
-            res = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+            res = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
             return res.text
         else:
-            m = client.GenerativeModel("gemini-2.5-flash")
+            m = client.GenerativeModel("gemini-1.5-flash")
             return m.generate_content(prompt).text
     except Exception as ex:
         return f"Statutory Evaluation Engine active. Regarding your inquiry: Covenants must satisfy statutory CEE quotas (50% local subcontracting) and closed-loop environmental baselines before a PROCEED posture can be sanctioned."

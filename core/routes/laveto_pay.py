@@ -475,10 +475,12 @@ def whatsapp_webhook_handler():
 @laveto_pay_bp.route('/pay/', methods=['GET'])
 def laveto_pay_landing():
     merchants = Merchant.query.filter_by(is_active=True).all() if hasattr(Merchant, 'is_active') else Merchant.query.all()
+    if not merchants and Merchant:
+        merchants = Merchant.query.all()
     return render_template('pay/index.html', merchants=merchants)
-
-
 @laveto_pay_bp.route('/pay/login', methods=['GET', 'POST'])
+@laveto_pay_bp.route('/pay/merchant/login', methods=['GET', 'POST'])
+@laveto_pay_bp.route('/merchant/login', methods=['GET', 'POST'])
 def merchant_login():
     if request.method == 'POST':
         identifier = request.form.get('username') or request.form.get('email') or request.form.get('phone')
@@ -494,9 +496,9 @@ def merchant_login():
             session['merchant_id'] = merchant.id
             return redirect(url_for('laveto_pay.merchant_dashboard', merchant_slug=merchant.username))
 
-        return render_template('pay/merchant_login.html', error='Invalid credentials. Please verify your login details.')
+        return render_template('pay/login.html', error='Invalid credentials. Please verify your login details.')
 
-    return render_template('pay/merchant_login.html')
+    return render_template('pay/login.html')
 
 # =========================================================================
 # 🏛️ ADMIN / MERCHANT ONBOARDING CONSOLE
@@ -1790,13 +1792,85 @@ def merchant_live_feed(merchant_slug):
 # ==========================================
 @laveto_pay_bp.route('/vendors', methods=['GET'])
 def list_vendors_by_village():
+    from flask import render_template_string
     village_code = request.args.get('village', '').strip()
-    vendors = Merchant.query.filter_by(is_verified=True).all()
-    return render_template(
-    'pay/agent_toolkit_card.html',
-    village_code=village_code,
-    vendors=vendors
-)
+    query = Merchant.query.filter_by(is_verified=True)
+    if village_code:
+        query = query.filter(Merchant.what3words_address.ilike(f"%{village_code}%"))
+    vendors = query.all()
+
+    if request.args.get('format') == 'json':
+        return jsonify({
+            'status': 'success',
+            'count': len(vendors),
+            'vendors': [{
+                'id': v.id,
+                'business_name': v.business_name,
+                'business_type': v.business_type,
+                'phone': v.phone_number,
+                'what3words': v.what3words_address,
+                'settlement_provider': v.settlement_provider
+            } for v in vendors]
+        }), 200
+
+    html_card = '''<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laveto Pay — Verified Merchant & Agent Directory</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root { --bg: #030712; --card-bg: #0f172a; --border: #1e293b; --accent: #10b981; --text: #f8fafc; --muted: #94a3b8; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Space Grotesk',sans-serif; background:var(--bg); color:var(--text); padding:2rem 1.5rem; line-height:1.5; }
+.container { max-width:960px; margin:0 auto; }
+.header { border-bottom:1px solid var(--border); padding-bottom:1.5rem; margin-bottom:2rem; }
+.badge { font-family:'JetBrains Mono',monospace; font-size:0.75rem; color:var(--accent); background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); padding:0.25rem 0.6rem; border-radius:4px; }
+h1 { font-size:1.75rem; font-weight:700; margin-top:0.75rem; }
+p.sub { color:var(--muted); font-size:0.95rem; margin-top:0.35rem; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1.25rem; }
+.vendor-card { background:var(--card-bg); border:1px solid var(--border); border-radius:10px; padding:1.25rem; display:flex; flex-direction:column; justify-content:space-between; }
+.vendor-name { font-weight:700; font-size:1.1rem; color:#fff; }
+.vendor-type { font-size:0.8rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--accent); margin-top:0.2rem; }
+.vendor-meta { font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--muted); margin-top:1rem; border-top:1px solid var(--border); padding-top:0.75rem; }
+.w3w { color:#38bdf8; font-weight:600; }
+.empty { text-align:center; padding:3rem; border:1px dashed var(--border); border-radius:8px; color:var(--muted); }
+.nav-link { display:inline-block; margin-top:1.5rem; color:var(--accent); text-decoration:none; font-size:0.9rem; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <span class="badge">LAVETO PAY // DOMESTIC CLEARING ENGINE</span>
+    <h1>Verified Merchants & Agent Toolkit</h1>
+    <p class="sub">Active Point-of-Sale Nodes & Sovereign Liquidity Outlets across Botswana</p>
+  </div>
+  {% if vendors %}
+  <div class="grid">
+    {% for v in vendors %}
+    <div class="vendor-card">
+      <div>
+        <div class="vendor-name">{{ v.business_name or 'Independent Merchant' }}</div>
+        <div class="vendor-type">{{ v.business_type or 'Retail Point' }}</div>
+      </div>
+      <div class="vendor-meta">
+        <div><strong>W3W:</strong> <span class="w3w">{{ v.what3words_address or '///unanchored.location' }}</span></div>
+        <div><strong>Provider:</strong> {{ v.settlement_provider or 'Telco Clearing' }}</div>
+        <div><strong>Status:</strong> Verified 🟢</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">No verified merchants currently found for this catchment zone.</div>
+  {% endif %}
+  <div><a class="nav-link" href="/pay">&larr; Return to Laveto Pay Portal</a></div>
+</div>
+</body>
+</html>'''
+
+    return render_template_string(html_card, village_code=village_code, vendors=vendors)
 
 
 @laveto_pay_bp.route('/api/w3w/gps-to-words', methods=['POST'])
@@ -2024,3 +2098,24 @@ def merchant_till(merchant_slug):
         sponsored_ad=sponsored_ad,
         PLATFORM_FEE_RATE=globals().get('PLATFORM_FEE_RATE', 0.015)
     )
+# ==========================================
+
+# ====================================================
+# 🎨 LAVETO MERCHANT FLYER GENERATOR STUDIO
+# ====================================================
+@laveto_pay_bp.route('/pay/flyer', defaults={'username': 'zarurunner'}, methods=['GET'])
+@laveto_pay_bp.route('/pay/flyer/<username>', methods=['GET'])
+@laveto_pay_bp.route('/pay/merchant/<username>/flyer', methods=['GET'])
+def flyer_generator(username):
+    from core.models import Merchant
+    merchant = Merchant.query.filter_by(username=username).first()
+    if not merchant:
+        merchant = Merchant.query.first()
+    return render_template('pay/flyer_generator.html', merchant=merchant)
+
+
+# ====================================================
+# 🏛️ LAVETO PAY // AW-1 MERCHANT CLEARING PORTAL HOOK
+# ====================================================
+from core.routes.aw1_pay_portal import register_aw1_pay_portal
+register_aw1_pay_portal(laveto_pay_bp)
