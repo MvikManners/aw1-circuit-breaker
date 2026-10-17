@@ -182,14 +182,9 @@ fi
 echo "[+] Target Wheel: $LATEST_WHEEL"
 "$ENV_DIR/bin/pip" install --force-reinstall --no-deps "$LATEST_WHEEL" > /dev/null 2>&1
 
-# Copy test script to /tmp to strictly avoid local repo sys.path shadowing
-cp /home/LavetoLab/tests/cleanroom_audit.py /tmp/aw1_audit_runner.py
-
-# Execute hermetic test runner with unpolluted PYTHONPATH
-env -u PYTHONPATH "$ENV_DIR/bin/python3" /tmp/aw1_audit_runner.py
+# Execute hermetic test runner with -P (no CWD or script dir in sys.path)
+env -u PYTHONPATH "$ENV_DIR/bin/python3" -P /home/LavetoLab/tests/cleanroom_audit.py
 AW1_AUDIT_EXIT=$?
-
-rm -f /tmp/aw1_audit_runner.py
 
 if [ $AW1_AUDIT_EXIT -ne 0 ]; then
     echo "❌ AW-1 Clean-Room Audit failed with exit code $AW1_AUDIT_EXIT"
