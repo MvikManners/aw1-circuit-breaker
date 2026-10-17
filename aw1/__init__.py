@@ -44,6 +44,7 @@ def wrap_agent_tool(breaker: ExecutionBreaker, actor: str = 'agent_worker'):
     return decorator
 
 __all__ = [
+    'ASTCircuitBreaker',
     'ExecutionBreaker',
     'ASTSymbolicUnpacker',
     'StatefulCausalMemory',
@@ -59,3 +60,7 @@ __all__ = [
     'StatutoryStandard',
     'TrustAccountReconciliationEngine',
 ]
+
+
+# Public API Canonical Alias
+ASTCircuitBreaker = ExecutionBreaker

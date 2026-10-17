@@ -26,4 +26,9 @@ aw1 = "aw1.cli:main"
 aw1-circuit-breaker = "aw1.cli:main"
 
 [tool.hatch.build.targets.wheel]
+exclude = [
+    "aw1/api_routes.py",
+    "aw1/loan_gateway.py",
+]
 packages = ["aw1"]
+
