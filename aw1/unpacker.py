@@ -23,6 +23,8 @@ class ASTSymbolicUnpacker:
         "system", "exec", "eval", "spawn", "execve", "execl"
     }
     NETWORK_CALLS = {"connect", "get", "post", "send", "sendall", "sendto", "request"}
+    KERNEL_TARGET_PREFIXES = ("/proc", "/sys", "/etc", "/dev", "/boot", "/root")
+    SHELL_CALLS = {"system", "popen", "spawn", "execve", "execl"}
 
     def decompile(self, payload: str) -> Tuple[List[str], str]:
         normalized = payload.strip()
@@ -48,6 +50,13 @@ class ASTSymbolicUnpacker:
         # 2. String Signature Fast-Path Check
         detected_polyglot = any(sig in lower_payload for sig in self.POLYGLOT_SIGNATURES)
         detected_network = any(sig in lower_payload for sig in self.NETWORK_SIGNATURES)
+        detected_kernel_write = False
+        detected_shell = any(sig in lower_payload for sig in ("subprocess", "popen(", "system(", "pty"))
+        
+        # Fast-path check for sensitive kernel/sysfs write targets
+        if any(tgt in lower_payload for tgt in self.KERNEL_TARGET_PREFIXES):
+            if any(w in lower_payload for w in ("'w'", '"w"', "'a'", '"a"', "'wb'", '"wb"', "'w+'", '"w+"', ".write", "truncate")):
+                detected_kernel_write = True
         
         # 3. Deep AST Traversal (if payload looks like executable code)
         try:
@@ -62,6 +71,8 @@ class ASTSymbolicUnpacker:
                         detected_network = True
                     if any(m in ("subprocess", "os", "sys", "shutil") for m in all_mods):
                         detected_polyglot = True
+                    if any(m in ("subprocess", "pty") for m in all_mods):
+                        detected_shell = True
 
                 # Inspect function calls
                 if isinstance(node, ast.Call):
@@ -74,13 +85,48 @@ class ASTSymbolicUnpacker:
                     fn_lower = func_name.lower()
                     if fn_lower in self.DANGEROUS_CALLS:
                         detected_polyglot = True
+                    if fn_lower in self.SHELL_CALLS:
+                        detected_shell = True
                     if fn_lower in self.NETWORK_CALLS:
                         detected_network = True
+                        
+                    # Kernel/System file write detection via open()
+                    if fn_lower == "open" and node.args:
+                        path_val = None
+                        arg0 = node.args[0]
+                        if isinstance(arg0, ast.Constant) and isinstance(arg0.value, str):
+                            path_val = arg0.value
+                        elif hasattr(ast, "Str") and isinstance(arg0, getattr(ast, "Str")):
+                            path_val = arg0.s
+                            
+                        mode_val = ""
+                        if len(node.args) > 1:
+                            arg1 = node.args[1]
+                            if isinstance(arg1, ast.Constant) and isinstance(arg1.value, str):
+                                mode_val = arg1.value
+                            elif hasattr(ast, "Str") and isinstance(arg1, getattr(ast, "Str")):
+                                mode_val = arg1.s
+                        for kw in node.keywords:
+                            if kw.arg == "mode":
+                                if isinstance(kw.value, ast.Constant) and isinstance(kw.value.value, str):
+                                    mode_val = kw.value.value
+                                elif hasattr(ast, "Str") and isinstance(kw.value, getattr(ast, "Str")):
+                                    mode_val = kw.value.s
+                                    
+                        if path_val:
+                            p_low = path_val.lower()
+                            if any(p_low.startswith(p) for p in self.KERNEL_TARGET_PREFIXES):
+                                if any(m in mode_val for m in ("w", "a", "x", "+")) or not mode_val:
+                                    detected_kernel_write = True
         except Exception:
             pass
 
         if detected_polyglot:
             primitives.append("[CODE_EVAL_POLYGLOT]")
+        if detected_shell and "[SYSTEM_SHELL_EXEC]" not in primitives:
+            primitives.append("[SYSTEM_SHELL_EXEC]")
+        if detected_kernel_write and "[KERNEL_WRITE]" not in primitives:
+            primitives.append("[KERNEL_WRITE]")
         if detected_network:
             primitives.append("[NETWORK_EGRESS]")
             

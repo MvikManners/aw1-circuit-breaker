@@ -1,29 +1,39 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "aw1-circuit-breaker"
-version = "0.1.1"
-description = "Deterministic sub-0.2ms AST execution circuit breaker for autonomous agents and MCP servers."
+version = "0.2.1"
+description = "Deterministic AST-level circuit breaker and multi-agent arbitration engine with zero runtime dependencies."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = {text = "Apache-2.0"}
 authors = [
-    { name = "Mvik Manners" }
+    {name = "Laveto Lab", email = "engineering@laveto.net"}
 ]
 classifiers = [
-    "Topic :: Security",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License"
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence"
 ]
-dependencies = [
-    "mcp>=1.0.0"
+dependencies = []
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.0.0"]
+full = [
+    "mcp>=1.0.0",
+    "pydantic>=2.0.0"
 ]
 
-[project.scripts]
-aw1 = "aw1.cli:main"
-aw1-circuit-breaker = "aw1.cli:main"
-
-[tool.hatch.build.targets.wheel]
-packages = ["aw1"]
+[tool.setuptools.packages.find]
+include = ["aw1*"]
+exclude = ["tests*", "dist*", "build*"]
