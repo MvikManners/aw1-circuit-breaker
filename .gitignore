@@ -1,80 +1,61 @@
+# === System & Shell User Files ===
+.bashrc
+.bash_profile
+.bash_history
+.lesshst
+.viminfo
+.config/
+.local/
+
+# === Production Secrets, Keystores & Environment ===
+google_key.json
+credentials.json
+.git-credentials
+*.key
+*.pem
+*.pfx
+*.secret
+.env
+*.env
+*.env.*
+
+# === Databases & Wal Files ===
 *.db
 *.sqlite3
 *.db-journal
 *.db-wal
+*.db-shm
 lvt_database.db
-backups/
-*.tar.gz
-*.log
-tokenomics_debug.log
-.env
-build/
-dist/
-*.egg-info/
-__pycache__/
-*.pyc
-# Credentials & Keys
-credentials.json
-google_key.json
-*.pem
-*.key
+lvt_backend/
 
-# Backups & Archives
-*.zip
-*.bak*
-
-# Python & Caches
-.cache/
-__pycache__/
-*.pyc
-
-# Local Logs
+# === Logs & Runtime Buffers ===
 *.log
 logs/
-
-# Local Build Artifacts
-build/
-dist/
-*.egg-info/
-# Authentication & Credentials
-.git-credentials
-*.key
-*.pem
-google_key.json
-
-# Environment & Databases
-*.db
-*.sqlite3
-lvt_backend/
-snapshots/
+cleanup.log
+out/
+archive/
 scratch/
 artifacts/
+snapshots/
 
-# System & Cache
-.local/
-.viminfo
+# === Python Caches & Build Artifacts ===
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
+*.egg-info/
+build/
+dist/
+.cache/
 
-# Generated PDFs & Export Dossiers
-*.pdf
-
-# Shell & Database Credentials
-.bash_history
-.my.cnf
-.gitconfig
-*.env
-*.env.*
-*.log
-
-# Ephemeral patch and migration artifacts
+# === Ephemeral Patches & Sample Data ===
 patch_*.py
 fix_*.py
 deploy_*.py
 sync_*.py
 run_block*.py
-*.pre_*
 *.bak*
 *.orig
-*.db-shm
+*.pre_*
+sample_tender_bid.txt
+sample_*.txt
+*.pdf
