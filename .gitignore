@@ -59,3 +59,32 @@ run_block*.py
 sample_tender_bid.txt
 sample_*.txt
 *.pdf
+
+# === System Archives & Full Snapshots ===
+*.tar.gz
+*.zip
+backups/
+backup_extracted/
+extracted_backup/
+pay_release_extracted/
+
+# === Server & Database Access Credentials ===
+.my.cnf
+.gitconfig
+
+# === Symlinks & Root Mirror Mirrors ===
+aw1/aw1
+aw1_pure_public/
+awesome-mcp-servers/
+
+# === Scratch Simulation & Diagnostic Scripts ===
+verify_*.py
+test_*.py
+tests/
+run_*.py
+run_*.sh
+setup_*.sh
+simulate_*.py
+sanitize_*.py
+calibrate_*.py
+build_*.py
