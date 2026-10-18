@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aw1-circuit-breaker"
-version = "1.0.0"
+version = "1.0.1"
 description = "Deterministic AST-level circuit breaker and multi-agent arbitration engine with zero runtime dependencies."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -36,3 +36,7 @@ full = [
 [tool.setuptools.packages.find]
 include = ["aw1*"]
 exclude = ["tests*", "dist*", "build*"]
+
+[project.scripts]
+aw1-circuit-breaker = "aw1.cli:main"
+aw1 = "aw1.cli:main"
