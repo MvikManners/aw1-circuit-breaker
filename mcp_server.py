@@ -4,22 +4,13 @@ AW-1 Deterministic AST Circuit Breaker — Model Context Protocol (MCP) Server.
 Provides real-time AST safety deconstruction, threat containment, and policy enforcement
 for autonomous agent tool execution.
 """
-import sys
 from typing import Dict, Any, List, Optional
 from mcp.server.fastmcp import FastMCP
+from aw1 import ASTCircuitBreaker
 
 # Initialize FastMCP Server
 mcp = FastMCP("aw1-circuit-breaker")
-
-# Lazy-loaded singleton breaker
-_breaker = None
-
-def get_breaker():
-    global _breaker
-    if _breaker is None:
-        from aw1 import ASTCircuitBreaker
-        _breaker = ASTCircuitBreaker()
-    return _breaker
+cb = ASTCircuitBreaker()
 
 @mcp.tool()
 def intercept_tool_call(
@@ -41,7 +32,6 @@ def intercept_tool_call(
         authorization status, cryptographic execution token (if permitted), risk score,
         and detected AST primitives.
     """
-    cb = get_breaker()
     verdict = cb.intercept(actor_id=actor_id, tool_name=tool_name, payload=payload)
     return {
         "status": verdict.status,
@@ -68,7 +58,6 @@ def analyze_code_ast(
     Returns:
         Dictionary containing detected execution primitives, security classification, and containment recommendations.
     """
-    cb = get_breaker()
     verdict = cb.intercept(actor_id="ast-analyzer", tool_name=environment, payload=code)
     return {
         "environment": environment,
