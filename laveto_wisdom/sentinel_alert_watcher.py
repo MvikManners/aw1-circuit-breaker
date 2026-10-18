@@ -22,7 +22,7 @@ def save_seen_events(seen: set):
 def dispatch_incident_alert(event: dict):
     """
     Dispatches immediate alert when an agent triggers Gate containment.
-    Can be hooked into Slack, Discord, PagerDuty, or webhook dispatcher.
+    Sends output to stdout and pushes to Discord/Slack if SENTINEL_WEBHOOK_URL is set.
     """
     evt_id = event.get("id")
     actor = event.get("actor")
@@ -43,6 +43,32 @@ def dispatch_incident_alert(event: dict):
         f"Status      : FAIL_CLOSED (Execution Thwarted)"
     )
     print(alert_box)
+
+    webhook_url = os.getenv("SENTINEL_WEBHOOK_URL", "").strip()
+    if webhook_url:
+        try:
+            # Unified payload compatible with Slack ('text') and Discord ('content')
+            payload_data = json.dumps({
+                "text": alert_box,
+                "content": alert_box,
+                "username": "AW-1 Sentinel Guard"
+            }).encode("utf-8")
+
+            req = urllib.request.Request(
+                webhook_url,
+                data=payload_data,
+                headers={
+                    "Content-Type": "application/json",
+                    "User-Agent": "AW1-Sentinel-Webhook/1.0"
+                }
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                if resp.status in (200, 204):
+                    print(f"📡 Webhook alert successfully dispatched to endpoint (HTTP {resp.status})")
+                else:
+                    print(f"⚠️ Webhook response non-standard: HTTP {resp.status}")
+        except Exception as e:
+            print(f"⚠️ Failed to push webhook alert: {e}")
 
 def poll_telemetry_ledger():
     seen_events = load_seen_events()
