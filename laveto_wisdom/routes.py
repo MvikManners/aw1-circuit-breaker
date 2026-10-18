@@ -486,6 +486,10 @@ from .lemonsqueezy_webhook import lemon_webhook_bp
 # Register the Lemon Squeezy payment webhook blueprint
 wisdom_bp.register_blueprint(lemon_webhook_bp)
 
+# Mount Sovereign Value Bridge Hub
+from .bridge_hub import register_bridge
+register_bridge(wisdom_bp)
+
 # --- Telegram Alert Helper ---
 def send_telegram_alert(message):
     """Sends a push notification or alert to your private Telegram chat/channel."""
@@ -657,7 +661,7 @@ except Exception:
             self.circulating_supply += payout
             return {"node": node_address, "task_id": task_id, "net_awt_minted": payout}
 
-DB_PATH = "/home/LavetoLab/lvt_backend/lvt_database.db"
+DB_PATH = os.getenv("LAVETO_DB_PATH", "/home/LavetoLab/lvt_backend/lvt_database.db")
 
 # Mount Gate 7 Out-of-Band Interceptor Blueprint
 try:
@@ -15117,7 +15121,7 @@ def architect_required(f):
 def view_security_monitor():
     import os
     from flask import render_template_string
-    hud_file = "/home/LavetoLab/laveto_wisdom/templates/swarm_hud.html"
+    hud_file = os.getenv("SWARM_HUD_PATH", os.path.join(os.path.dirname(__file__), "templates", "swarm_hud.html"))
     if os.path.exists(hud_file):
         with open(hud_file, "r", encoding="utf-8") as f:
             return render_template_string(f.read())
@@ -15153,9 +15157,6 @@ def commercial_partner_portal():
 # AW-1 STATUTORY COMPLIANCE & 1-TO-1 TRUST AUDIT ENDPOINTS
 # =====================================================================
 import sys
-if '/home/LavetoLab/aw1-breaker' not in sys.path:
-    sys.path.insert(0, '/home/LavetoLab/aw1-breaker')
-
 try:
     from aw1.trust_reconciliation import TrustAccountReconciliationEngine
     from aw1.sandbox_profile import InstitutionalPilotSuite
@@ -15220,7 +15221,7 @@ def verify_statutory_seal(seal_hash):
     issuance timestamp, and regulatory clearance status.
     """
     seal_hash = seal_hash.strip().lower()
-    log_file = '/home/LavetoLab/aw1-breaker/compliance_audit.log'
+    log_file = os.getenv('AW1_AUDIT_LOG_PATH', '/home/LavetoLab/logs/compliance_audit.log')
     matched_entry = None
 
     if os.path.exists(log_file):

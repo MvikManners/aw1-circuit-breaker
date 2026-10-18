@@ -1,0 +1,32 @@
+[Unit]
+Description=AW-1 Autonomous AI Circuit Breaker & Laveto Wisdom Gateway
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=LavetoLab
+Group=registered_users
+WorkingDirectory=/home/LavetoLab
+Environment="PATH=/home/LavetoLab/.local/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+Environment="LAVETO_DB_PATH=/home/LavetoLab/lvt_backend/lvt_database.db"
+
+# Execution with hardened Gunicorn configuration
+ExecStart=/usr/local/bin/gunicorn --config /home/LavetoLab/gunicorn.conf.py "core:create_app()"
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=15
+Restart=always
+RestartSec=3
+
+# Linux Kernel Hardening & Sandbox Invariants
+LimitNOFILE=65536
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/home/LavetoLab/lvt_backend /home/LavetoLab/logs
+
+[Install]
+WantedBy=multi-user.target

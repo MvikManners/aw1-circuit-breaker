@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 # Bridge aw1-breaker path if not in site-packages
-for p in ['/home/LavetoLab/aw1-breaker', '/home/LavetoLab']:
+for p in ['/home/LavetoLab']:
     if p not in sys.path and Path(p).exists():
         sys.path.insert(0, p)
 

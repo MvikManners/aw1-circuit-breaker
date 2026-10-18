@@ -67,3 +67,14 @@ __pycache__/
 *.env
 *.env.*
 *.log
+
+# Ephemeral patch and migration artifacts
+patch_*.py
+fix_*.py
+deploy_*.py
+sync_*.py
+run_block*.py
+*.pre_*
+*.bak*
+*.orig
+*.db-shm

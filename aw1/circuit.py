@@ -18,7 +18,10 @@ class ExecutionBreaker:
         "[HIGH_VALUE_ONE_WAY_DOOR]",
         "[NETWORK_EGRESS]",
         "[SYSTEM_SHELL_EXEC]",
-        "[KERNEL_WRITE]"
+        "[KERNEL_WRITE]",
+        "[DYNAMIC_EVAL]",
+        "[CORRUPT_DYNAMIC_EVAL]",
+        "[UNSAFE_EXECUTION_TUNNEL]"
     }
 
     def __init__(self, baseline_velocity: float = 50000.0, policy: Optional[PolicyConfig] = None):
@@ -28,6 +31,27 @@ class ExecutionBreaker:
 
     def intercept(self, actor_id: str, tool_name: str, payload: str, amount: float = 0.0) -> Verdict:
         start_time = time.perf_counter()
+        # Pre-flight Guard 0: Base64 obfuscation & corruption inspection
+        payload_str = str(payload).strip()
+        if payload_str.startswith("base64:") or "base64:" in payload_str:
+            import base64
+            import binascii
+            b64_part = payload_str.split("base64:", 1)[1].strip()
+            try:
+                decoded_bytes = base64.b64decode(b64_part, validate=True)
+                payload = decoded_bytes.decode('utf-8', errors='ignore')
+            except (binascii.Error, ValueError) as b64_err:
+                latency_ms = (time.perf_counter() - start_time) * 1000.0
+                dossier_data = f"{actor_id}:{tool_name}:{payload}:CORRUPT_BASE64:{time.time()}"
+                return Verdict(
+                    decision="🛑 HALT_AND_CONTAIN",
+                    status="HALT_AND_CONTAIN",
+                    containment_reason=f"CORRUPT_DYNAMIC_EVAL: Malformed or unparseable base64 payload ({b64_err})",
+                    ast_primitives=["[CORRUPT_DYNAMIC_EVAL]", "[DYNAMIC_EVAL]"],
+                    latency_ms=round(latency_ms, 4),
+                    sha256_dossier=hashlib.sha256(dossier_data.encode()).hexdigest(),
+                    token=None
+                )
 
         # Pre-flight Guard 1: SQL syntax analysis
         if self.policy.strict_sql:

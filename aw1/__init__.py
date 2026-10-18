@@ -71,7 +71,7 @@ from aw1.models import Verdict
 from aw1.policy import PolicyConfig
 from aw1.adapters import protect_tool
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 # Extend __all__ if present
 try:

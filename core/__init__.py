@@ -62,7 +62,7 @@ def create_app(config_class=Config):
     dotenv_path = '/home/LavetoLab/.env'
     if os.path.exists(dotenv_path):
         load_dotenv(dotenv_path, override=True)
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/home/LavetoLab/google_key.json"
+    os.environ.setdefault("GOOGLE_APPLICATION_CREDENTIALS", "/home/LavetoLab/google_key.json")
 
     root_templates = os.path.join(basedir, 'templates')
     core_templates = os.path.join(basedir, 'core', 'templates')
@@ -284,14 +284,17 @@ def create_app(config_class=Config):
                 try:
                     db.session.rollback()
                 except Exception:
-                    db.engine.dispose()
+                    pass
             db.session.remove()
         except Exception:
             try:
                 db.engine.dispose()
             except Exception:
                 pass
-            db.session.remove()
+            try:
+                db.session.remove()
+            except Exception:
+                pass
 
     @app.route('/login')
     def root_login():
@@ -462,3 +465,4 @@ def create_app(config_class=Config):
 
     app.register_blueprint(partner_bp)
     return app
+from core.causal_memory import causal_memory, CausalMemoryTier
