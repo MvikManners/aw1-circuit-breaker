@@ -179,3 +179,56 @@ curl -X POST [https://p20.laveto.net/wisdom/api/v1/intercept](https://p20.laveto
 ## License
 
 Licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0). See [LICENSE](LICENSE) for details.
+
+
+---
+
+## 🌐 Cloud REST API Gateway
+
+The AW-1 Circuit Breaker provides a production-grade HTTP interception gateway for microservices, browser frontends, and autonomous agent platforms.
+
+* **Endpoint:** `POST [https://p20.laveto.net/wisdom/api/v1/intercept](https://p20.laveto.net/wisdom/api/v1/intercept)`
+* **CORS:** Enabled (`Access-Control-Allow-Origin: *`)
+* **Arbitration Engine Latency:** `< 0.80 ms`
+
+### Request Payload
+
+```json
+{
+  "actor_id": "agent-alpha-01",
+  "tool_name": "sql_query",
+  "payload": "SELECT id, balance FROM accounts WHERE user_id = 42;"
+}
+```
+
+### Response Schema
+
+#### 1. Permitted Execution (Token Minted)
+```json
+{
+  "status": "PERMITTED",
+  "verdict": "PASS",
+  "permitted": true,
+  "actor_id": "agent-alpha-01",
+  "tool_name": "sql_query",
+  "token": "aw1_sec_tok_46d16a28e303dffd",
+  "reason": "Policy evaluation completed: execution safe",
+  "latency_ms": 0.762,
+  "circuit_breaker": "AW-1 Sovereign Execution Arbitrator"
+}
+```
+
+#### 2. Threat Contained (Fail-Closed)
+```json
+{
+  "status": "HALT_AND_CONTAIN",
+  "verdict": "FAIL_CLOSED",
+  "permitted": false,
+  "actor_id": "agent-alpha-01",
+  "tool_name": "bash",
+  "token": null,
+  "reason": "AST Circuit Breaker containment triggered",
+  "latency_ms": 0.201,
+  "circuit_breaker": "AW-1 Sovereign Execution Arbitrator"
+}
+```
