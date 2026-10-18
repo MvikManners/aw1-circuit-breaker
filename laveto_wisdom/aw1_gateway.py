@@ -135,6 +135,26 @@ def handle_intercept():
         breaker_status = "HALT_AND_CONTAIN"
         breaker_reason = f"AST Engine Containment Alert: {str(e)}"
 
+        # --- PHASE 6: ONE-WAY DOOR MULTI-SIG COUNCIL INTERLOCK ---
+    is_one_way_door = "HIGH_VALUE_ONE_WAY_DOOR" in str(breaker_reason)
+    multisig_approved = False
+    approvers = []
+
+    if is_one_way_door:
+        approval_header = request.headers.get("X-AW1-MultiSig-Approval")
+        if approval_header:
+            try:
+                from laveto_wisdom.aw1_multisig import verify_multisig_approval
+                approval_payload = json.loads(approval_header)
+                multisig_approved, ms_reason, approvers = verify_multisig_approval(
+                    approval_payload, actor_id, tool_name, payload
+                )
+                if multisig_approved:
+                    breaker_status = "PERMITTED"
+                    breaker_reason = f"Execution elevated via Multi-Sig Quorum: {', '.join(approvers)}"
+            except Exception as e:
+                multisig_approved = False
+
     if is_mutation:
         status = "HALT_AND_CONTAIN"
         permitted = False
