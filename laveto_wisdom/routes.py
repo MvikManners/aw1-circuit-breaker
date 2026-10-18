@@ -481,6 +481,16 @@ from flask import render_template, Blueprint, request, jsonify
 # --- Flask Blueprint Initialization ---
 wisdom_bp = Blueprint("laveto_wisdom", __name__, url_prefix="/wisdom", static_folder="static", template_folder="templates")
 
+# === AW-1 GLOBAL TELEMETRY BUFFER ===
+TELEMETRY_INTERCEPT_BUFFER = []
+
+@wisdom_bp.route("/api/v1/telemetry/recent", methods=["GET"])
+def get_recent_interceptions():
+    from flask import jsonify
+    from laveto_wisdom.aw1_storage import AW1StorageEngine
+    return jsonify({"status": "success", "events": AW1StorageEngine.get_recent_telemetry(20)}), 200
+# === END AW-1 BUFFER ===
+
 from .lemonsqueezy_webhook import lemon_webhook_bp
 
 # Register the Lemon Squeezy payment webhook blueprint
@@ -1394,6 +1404,9 @@ HTML_MONITOR_DASHBOARD = """<!DOCTYPE html>
                 <a href="/wisdom/" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-amber-400 text-xs font-semibold hover:border-amber-400 transition">
                     ← Assurance Console
                 </a>
+                <a href="/wisdom/breaker" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5 bg-amber-950/80 hover:bg-amber-900/90 text-amber-300 border border-amber-500/80 shadow-lg shadow-amber-950/50" title="AW-1 Out-of-Band Circuit Breaker Console">
+                    <span>⚡</span> Circuit Breaker
+                </a>
                 <a href="/wisdom/gov-edge" style="text-decoration:none; color:#FBBF24; background:#1E293B; border:1px solid #D97706; padding:6px 14px; border-radius:6px; font-size:0.82rem; font-weight:700; margin-right:8px; display:inline-flex; align-items:center; gap:6px;">🏛️ Gov-Edge</a>
 
                 <button id="btn-pwa-install" onclick="showPwaModalForce()" class="px-3 py-1.5 rounded-lg bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-700 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer">
@@ -2148,6 +2161,115 @@ HTML_MONITOR_DASHBOARD = """<!DOCTYPE html>
         document.addEventListener('DOMContentLoaded', () => {
             fetchTreasuryEvent();
             treasuryInterval = setInterval(fetchTreasuryEvent, 3500);
+            // --- AW-1 Real-Time Circuit Breaker Poller ---
+        let seenEventIds = new Set(events.map(e => e.id));
+        async function pollRecentTelemetry() {
+            if (!isLive) return;
+            try {
+                const res = await fetch('/wisdom/api/v1/telemetry/recent');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data.events || !data.events.length) return;
+
+                let updated = false;
+                for (const raw of data.events) {
+                    if (!seenEventIds.has(raw.id)) {
+                        seenEventIds.add(raw.id);
+                        const isBlocked = !raw.permitted || raw.status === 'HALT_AND_CONTAIN';
+                        const newEvt = {
+                            id: raw.id,
+                            timestamp: raw.timestamp,
+                            vector: `${raw.tool} (${raw.actor})`,
+                            layer: isBlocked ? 'Gate 7 (Circuit Breaker)' : 'Gate 7 (Permitted)',
+                            action: raw.status,
+                            details: `${raw.reason} · Latency: ${raw.latency_ms}ms`
+                        };
+                        events.unshift(newEvt);
+                        if (events.length > 8) events.pop();
+                        updated = true;
+
+                        if (isBlocked) {
+                            totalIntercepted++;
+                            unreadThreats++;
+                            triggerToast(newEvt);
+                        }
+                    }
+                }
+
+                if (updated) {
+                    renderEvents();
+                    selectEvent(events[0]);
+                    const elIntercepted = document.getElementById('stat-intercepted');
+                    if (elIntercepted) elIntercepted.textContent = totalIntercepted.toLocaleString();
+                    const elBadge = document.getElementById('unread-threats-badge');
+                    if (elBadge) elBadge.textContent = unreadThreats;
+                    const pill = document.getElementById('new-threat-pill');
+                    if (pill && unreadThreats > 0) {
+                        pill.textContent = `+${unreadThreats} NEW`;
+                        pill.style.display = 'inline-block';
+                    }
+                    syncAppBadge();
+                }
+            } catch (err) {}
+        }
+        setInterval(pollRecentTelemetry, 2500);
+        pollRecentTelemetry();
+        // --- AW-1 Real-Time Circuit Breaker Poller ---
+        let seenEventIds = new Set(events.map(e => e.id));
+        async function pollRecentTelemetry() {
+            if (!isLive) return;
+            try {
+                const res = await fetch('/wisdom/api/v1/telemetry/recent');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data.events || !data.events.length) return;
+
+                let updated = false;
+                for (const raw of data.events) {
+                    if (!seenEventIds.has(raw.id)) {
+                        seenEventIds.add(raw.id);
+                        const isBlocked = !raw.permitted || raw.status === 'HALT_AND_CONTAIN';
+                        const newEvt = {
+                            id: raw.id,
+                            timestamp: raw.timestamp,
+                            vector: `${raw.tool} (${raw.actor})`,
+                            layer: isBlocked ? 'Gate 7 (Circuit Breaker)' : 'Gate 7 (Permitted)',
+                            action: raw.status,
+                            details: `${raw.reason} · Latency: ${raw.latency_ms}ms`
+                        };
+                        events.unshift(newEvt);
+                        if (events.length > 8) events.pop();
+                        updated = true;
+
+                        if (isBlocked) {
+                            totalIntercepted++;
+                            unreadThreats++;
+                            triggerToast(newEvt);
+                        }
+                    }
+                }
+
+                if (updated) {
+                    renderEvents();
+                    selectEvent(events[0]);
+                    const elIntercepted = document.getElementById('stat-intercepted');
+                    if (elIntercepted) elIntercepted.textContent = totalIntercepted.toLocaleString();
+                    const elBadge = document.getElementById('unread-threats-badge');
+                    if (elBadge) elBadge.textContent = unreadThreats;
+                    const pill = document.getElementById('new-threat-pill');
+                    if (pill && unreadThreats > 0) {
+                        pill.textContent = `+${unreadThreats} NEW`;
+                        pill.style.display = 'inline-block';
+                    }
+                    syncAppBadge();
+                }
+            } catch (err) {
+                // Background poll fail-safe
+            }
+        }
+        setInterval(pollRecentTelemetry, 2500);
+        pollRecentTelemetry();
+
         });
     </script>
 </body>
@@ -16162,3 +16284,254 @@ def partner_portal_alt_2():
         """, 403
 
     return render_template_string(HTML_PARTNER)
+
+# === AW-1 CIRCUIT BREAKER: CLOUD INTERCEPT GATEWAY ===
+@wisdom_bp.route("/api/v1/intercept", methods=["POST", "OPTIONS"])
+def api_v1_intercept():
+    from laveto_wisdom.aw1_gateway import handle_intercept
+    return handle_intercept()
+
+@wisdom_bp.route("/api/v1/token/burn", methods=["POST", "OPTIONS"])
+def api_v1_token_burn():
+    from laveto_wisdom.aw1_gateway import handle_token_burn
+    return handle_token_burn()
+# === END AW-1 CIRCUIT BREAKER ===
+
+# === AW-1 CIRCUIT BREAKER: INTERACTIVE SOC DASHBOARD ===
+@wisdom_bp.route("/breaker", methods=["GET"])
+def view_aw1_dashboard():
+    from flask import render_template_string
+    html = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AW-1 Circuit Breaker | Live Arbitration Terminal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .vector-card.active-vector {
+            border-color: #f59e0b !important;
+            background-color: rgba(245, 158, 11, 0.08) !important;
+            box-shadow: 0 0 0 1px #f59e0b;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8">
+    <div class="max-w-6xl mx-auto space-y-6">
+
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-800 gap-4">
+            <div>
+                <div class="flex items-center space-x-3">
+                    <span class="text-2xl">🛡️</span>
+                    <h1 class="text-2xl font-bold tracking-tight text-white">AW-1 Circuit Breaker Console</h1>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">LIVE PRODUCTION</span>
+                </div>
+                <p class="text-sm text-slate-400 mt-1">Autonomous Agent AST Interception &amp; Gate 7 Containment Terminal</p>
+            </div>
+            <div class="flex items-center gap-3 mono text-xs">
+                <a href="/wisdom/monitor" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 hover:border-amber-400 text-amber-400 font-semibold transition">
+                    ← Back to Monitor
+                </a>
+                <div class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg">
+                    <span class="text-slate-400">Target SLA:</span> <span class="text-emerald-400 font-semibold">&lt; 0.80ms</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- Left Panel: Payload Dispatcher -->
+            <div class="lg:col-span-7 space-y-5">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-xl">
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3">1. Select Simulated Attack Vector</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <button type="button" id="card-benign_sql" onclick="loadVector('benign_sql')" class="vector-card active-vector text-left p-3 rounded-lg border border-slate-800 hover:border-emerald-500/50 transition cursor-pointer">
+                            <span class="font-semibold text-emerald-400 text-xs block">✅ Benign SQL Query</span>
+                            <p class="text-slate-400 text-[11px] mt-0.5">SELECT query with valid token</p>
+                        </button>
+                        <button type="button" id="card-sql_injection" onclick="loadVector('sql_injection')" class="vector-card text-left p-3 rounded-lg border border-slate-800 hover:border-rose-500/50 transition cursor-pointer">
+                            <span class="font-semibold text-rose-400 text-xs block">🚨 SQL Mutation Drop</span>
+                            <p class="text-slate-400 text-[11px] mt-0.5">DROP TABLE statement block</p>
+                        </button>
+                        <button type="button" id="card-shell_breakout" onclick="loadVector('shell_breakout')" class="vector-card text-left p-3 rounded-lg border border-slate-800 hover:border-rose-500/50 transition cursor-pointer">
+                            <span class="font-semibold text-rose-400 text-xs block">🚨 Shell Breakout (PTY)</span>
+                            <p class="text-slate-400 text-[11px] mt-0.5">Spawn interactive /bin/sh</p>
+                        </button>
+                        <button type="button" id="card-os_system" onclick="loadVector('os_system')" class="vector-card text-left p-3 rounded-lg border border-slate-800 hover:border-rose-500/50 transition cursor-pointer">
+                            <span class="font-semibold text-rose-400 text-xs block">🚨 Privileged File Exfil</span>
+                            <p class="text-slate-400 text-[11px] mt-0.5">cat /etc/shadow inspection</p>
+                        </button>
+                    </div>
+
+                    <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mt-6 mb-3">2. Execution Context</h2>
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs text-slate-400 mb-1 block">Actor / Agent ID</label>
+                                <input id="actorId" type="text" value="agent-alpha-01" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm mono text-slate-200 focus:outline-none focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="text-xs text-slate-400 mb-1 block">Tool Name</label>
+                                <input id="toolName" type="text" value="sql_query" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm mono text-slate-200 focus:outline-none focus:border-amber-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 mb-1 block">Tool Execution Payload</label>
+                            <textarea id="payload" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm mono text-slate-200 focus:outline-none focus:border-amber-500">SELECT id, balance FROM accounts WHERE user_id = 42;</textarea>
+                        </div>
+                        <button type="button" id="dispatchBtn" onclick="dispatchIntercept()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-lg shadow-lg shadow-amber-500/20 transition cursor-pointer flex items-center justify-center space-x-2">
+                            <span id="btnIcon">⚡</span>
+                            <span id="btnText">DISPATCH INTERCEPTION CHECK</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Live Arbitration Result -->
+            <div class="lg:col-span-5 space-y-5">
+                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-xl h-full flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Arbitration Telemetry</h2>
+                            <span id="verdictBadge" class="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-slate-800 text-slate-400">IDLE</span>
+                        </div>
+
+                        <div class="space-y-4 mt-4">
+                            <div class="flex justify-between items-center py-2 border-b border-slate-800/60 text-xs">
+                                <span class="text-slate-400">Verdict Status:</span>
+                                <span id="resStatus" class="font-bold mono text-slate-300">-</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-slate-800/60 text-xs">
+                                <span class="text-slate-400">Engine Latency:</span>
+                                <span id="resLatency" class="mono text-slate-300">-</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 border-b border-slate-800/60 text-xs">
+                                <span class="text-slate-400">Round-Trip Latency:</span>
+                                <span id="resRtt" class="mono text-slate-300">-</span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-400 block mb-1">Execution Authority Token:</span>
+                                <div id="resToken" class="p-2.5 bg-slate-950 border border-slate-800 rounded text-xs mono break-all text-slate-400 font-mono">None</div>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-400 block mb-1">Arbitration Reason:</span>
+                                <p id="resReason" class="text-xs text-slate-300 bg-slate-950 p-2.5 rounded border border-slate-800">Awaiting payload...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-slate-800">
+                        <span class="text-[10px] mono text-slate-500 uppercase tracking-widest block mb-2">RAW JSON GATEWAY RESPONSE</span>
+                        <pre id="rawJson" class="text-[11px] mono text-slate-400 bg-slate-950 p-3 rounded-lg overflow-x-auto max-h-40 border border-slate-800">{}</pre>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+<script>
+        const VECTORS = {
+            benign_sql: {
+                actor: 'agent-alpha-01',
+                tool: 'sql_query',
+                payload: `SELECT id, balance FROM accounts WHERE user_id = 42;`
+            },
+            sql_injection: {
+                actor: 'rogue-agent',
+                tool: 'sql_query',
+                payload: `DROP TABLE accounts; TRUNCATE TABLE audit_log;`
+            },
+            shell_breakout: {
+                actor: 'untrusted-agent',
+                tool: 'bash',
+                payload: `python3 -c 'import pty; pty.spawn("/bin/sh")'`
+            },
+            os_system: {
+                actor: 'exfil-actor',
+                tool: 'python_exec',
+                payload: `import os; os.system('cat /etc/shadow')`
+            }
+        };
+
+        function loadVector(key) {
+            document.querySelectorAll('.vector-card').forEach(c => c.classList.remove('active-vector'));
+            const activeCard = document.getElementById('card-' + key);
+            if (activeCard) activeCard.classList.add('active-vector');
+
+            const v = VECTORS[key];
+            if (!v) return;
+            document.getElementById('actorId').value = v.actor;
+            document.getElementById('toolName').value = v.tool;
+            document.getElementById('payload').value = v.payload;
+        }
+
+        async function dispatchIntercept() {
+            const btn = document.getElementById('dispatchBtn');
+            const btnText = document.getElementById('btnText');
+            const btnIcon = document.getElementById('btnIcon');
+            const verdictBadge = document.getElementById('verdictBadge');
+
+            const actorId = document.getElementById('actorId').value.trim();
+            const toolName = document.getElementById('toolName').value.trim();
+            const payload = document.getElementById('payload').value;
+
+            btn.disabled = true;
+            btnText.textContent = 'ARBITRATING WITH AW-1...';
+            btnIcon.textContent = '⏳';
+            verdictBadge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-amber-500/20 text-amber-300 animate-pulse';
+            verdictBadge.textContent = 'EVALUATING';
+
+            const start = performance.now();
+            try {
+                const res = await fetch('/wisdom/api/v1/intercept', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ actor_id: actorId, tool_name: toolName, payload: payload })
+                });
+
+                const rtt = (performance.now() - start).toFixed(2);
+                const data = await res.json();
+
+                document.getElementById('rawJson').textContent = JSON.stringify(data, null, 2);
+                document.getElementById('resStatus').textContent = data.status || data.verdict || 'COMPLETE';
+                document.getElementById('resLatency').textContent = data.latency_ms !== undefined ? data.latency_ms + ' ms' : '-';
+                document.getElementById('resRtt').textContent = rtt + ' ms';
+                document.getElementById('resReason').textContent = data.reason || 'Policy evaluation completed.';
+
+                const tokenEl = document.getElementById('resToken');
+                if (data.token) {
+                    tokenEl.textContent = data.token;
+                    tokenEl.className = 'p-2.5 bg-emerald-950/40 border border-emerald-500/30 rounded text-xs mono break-all text-emerald-300 font-mono';
+                } else {
+                    tokenEl.textContent = 'NULL (Execution Revoked)';
+                    tokenEl.className = 'p-2.5 bg-rose-950/40 border border-rose-500/30 rounded text-xs mono break-all text-rose-300 font-mono';
+                }
+
+                if (data.permitted) {
+                    verdictBadge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+                    verdictBadge.textContent = 'PASS';
+                } else {
+                    verdictBadge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30';
+                    verdictBadge.textContent = 'HALT_AND_CONTAIN';
+                }
+            } catch (err) {
+                document.getElementById('resReason').textContent = 'Connection Error: ' + err.message;
+                verdictBadge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-rose-500/20 text-rose-400';
+                verdictBadge.textContent = 'NETWORK_ERROR';
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'DISPATCH INTERCEPTION CHECK';
+                btnIcon.textContent = '⚡';
+            }
+        }
+    </script>
+</body>
+</html>
+"""
+    return render_template_string(html), 200
+# === END AW-1 SOC DASHBOARD ===
