@@ -130,7 +130,7 @@ def handle_intercept():
         v_status = getattr(v_obj, "status", None) or getattr(v_obj, "verdict", None)
         if v_status in ("HALT_AND_CONTAIN", "FAIL_CLOSED", "CONTAINED", "TRIPPED"):
             breaker_status = "HALT_AND_CONTAIN"
-            breaker_reason = getattr(v_obj, "reason", "AST Circuit Breaker containment triggered")
+            breaker_reason = getattr(v_obj, "containment_reason", None) or getattr(v_obj, "reason", None) or "AST Circuit Breaker containment triggered"
     except Exception as e:
         breaker_status = "HALT_AND_CONTAIN"
         breaker_reason = f"AST Engine Containment Alert: {str(e)}"
