@@ -78,3 +78,5 @@ try:
     __all__ = list(__all__) + ["Verdict", "PolicyConfig", "protect_tool"]
 except NameError:
     __all__ = ["ASTCircuitBreaker", "ExecutionBreaker", "Verdict", "PolicyConfig", "protect_tool"]
+
+from aw1.guard import EnterpriseGuard, SecurityViolationError
