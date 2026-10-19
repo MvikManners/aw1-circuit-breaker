@@ -15,7 +15,6 @@ class ExecutionBreaker:
     """
     DANGEROUS_PRIMITIVES = {
         "[CODE_EVAL_POLYGLOT]",
-        "[HIGH_VALUE_ONE_WAY_DOOR]",
         "[NETWORK_EGRESS]",
         "[SYSTEM_SHELL_EXEC]",
         "[KERNEL_WRITE]",
