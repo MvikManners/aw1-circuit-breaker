@@ -11,3 +11,30 @@ credentials.json
 .env
 .venv
 env/
+
+# Security & Private Keys (NEVER COMMIT)
+*.pem
+*.key
+*.enc
+*_keys.json
+mcp_api_keys.json
+compliance_keys.json
+db_config.json
+webhook_config.json
+
+# Local Ledgers & Runtime Audit Artifacts
+*.db
+dossiers/
+iso20022_messages/
+
+# Backup and Temporary Artifacts
+*.bak*
+
+# Internal Proprietary Engines & Regulatory Modules
+aw1_governor.py
+aw1_breaker/aw1_governor.py
+crypto_engine.py
+iso20022_engine.py
+manage_keys.py
+release_dossier.py
+velocity_governor.py
