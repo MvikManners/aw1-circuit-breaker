@@ -6,6 +6,9 @@
 [![Glama Score](https://glama.ai/mcp/servers/MvikManners/aw1-circuit-breaker/badges/score.svg)](https://glama.ai/mcp/servers/MvikManners/aw1-circuit-breaker)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-green.svg)](LICENSE)
 [![Latency](https://img.shields.io/badge/AST%20Evaluation-%3C0.2ms-brightgreen.svg)](benchmark.py)
+[![Enterprise CI Matrix](https://github.com/MvikManners/aw1-circuit-breaker/actions/workflows/ci.yml/badge.svg)](https://github.com/MvikManners/aw1-circuit-breaker/actions)
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-active-blue)](https://registry.modelcontextprotocol.io)
+[![PyPI version](https://img.shields.io/pypi/v/aw1-circuit-breaker.svg)](https://pypi.org/project/aw1-circuit-breaker/)
 
 > **Featured on Hashgraph Online (HOL):** Read the independent source-level teardown: [*What aw1-breaker 2.0.0 checks before a tool call*](https://hol.org/blog/stopping-rogue-agents-inside-the-ast-breaker).
 
