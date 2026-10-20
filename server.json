@@ -1,6 +1,6 @@
 {
   "$schema": "https://modelcontextprotocol.io/schema/registry/v1/server.json",
-  "name": "io.github.mvikmanners/aw1-circuit-breaker",
+  "name": "io.github.MvikManners/aw1-circuit-breaker",
   "version": "2.0.1",
   "title": "AW-1 Circuit Breaker",
   "description": "Deterministic AST security circuit breaker for autonomous AI agents and MCP servers.",
