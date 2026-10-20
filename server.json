@@ -1,5 +1,5 @@
 {
-  "$schema": "https://modelcontextprotocol.io/schema/registry/v1/server.json",
+  "$schema": "https://static.modelcontextprotocol.io/schema/2025-12-11/server.json",
   "name": "io.github.MvikManners/aw1-circuit-breaker",
   "version": "2.0.1",
   "title": "AW-1 Circuit Breaker",
@@ -7,7 +7,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MvikManners/aw1-circuit-breaker"
+    "url": "https://github.com/MvikManners/aw1-circuit-breaker.git"
   },
   "distribution": {
     "pypi": {
