@@ -1,0 +1,16 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schema/registry/v1/server.json",
+  "name": "io.github.mvikmanners/aw1-circuit-breaker",
+  "title": "AW-1 Circuit Breaker",
+  "description": "Deterministic AST security circuit breaker for autonomous AI agents, tool dispatch pipelines, and MCP servers.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MvikManners/aw1-circuit-breaker"
+  },
+  "distribution": {
+    "pypi": {
+      "package": "aw1-circuit-breaker"
+    }
+  }
+}
