@@ -80,3 +80,5 @@ except NameError:
     __all__ = ["ASTCircuitBreaker", "ExecutionBreaker", "Verdict", "PolicyConfig", "protect_tool"]
 
 from aw1.guard import EnterpriseGuard, SecurityViolationError
+
+from aw1.adapters.decorator import guard
