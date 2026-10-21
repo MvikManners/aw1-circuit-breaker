@@ -1,19 +1,45 @@
-import urllib.request
 import json
 import time
-from typing import Dict, Any, List, Optional
+import hmac
+import hashlib
+import urllib.request
+import urllib.error
+from typing import Dict, Any
+from aw1 import guard
 
 class AW1SecurityInterceptionError(Exception):
-    """Raised when the AW-1 Circuit Breaker trips and halts agent execution."""
-    def __init__(self, message: str, verdict: Dict[str, Any]):
+    def __init__(self, message: str, payload: Dict[str, Any]):
         super().__init__(message)
-        self.verdict = verdict
+        self.payload = payload
+
+# Guarded local execution gate: payload evaluated locally fail-closed
+@guard
+def _guarded_local_dispatch(code_or_payload: str) -> str:
+    """Evaluates payload locally through AST engine fail-closed before execution."""
+    return code_or_payload
 
 class ProductionAgentPipeline:
-    def __init__(self, gateway_url: str = "https://p20.laveto.net/wisdom/api/v1/intercept", actor_id: str = "autonomous-agent-v1"):
+    def __init__(
+        self,
+        gateway_url: str = "https://p20.laveto.net/wisdom/api/v1/intercept",
+        actor_id: str = "agent-alpha-01",
+        actor_secret: str = "aw1_sec_alpha_9a748be8704e453a10714ce28378dc2f"
+    ):
         self.gateway_url = gateway_url
         self.actor_id = actor_id
-        self.telemetry_history: List[Dict[str, Any]] = []
+        self.actor_secret = actor_secret
+
+    def _generate_identity_headers(self, tool_name: str, payload: str) -> Dict[str, str]:
+        ts = int(time.time())
+        digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+        msg = f"{ts}:{self.actor_id}:{tool_name}:{digest}".encode("utf-8")
+        sig = hmac.new(self.actor_secret.encode("utf-8"), msg, hashlib.sha256).hexdigest()[:32]
+        return {
+            "Content-Type": "application/json",
+            "X-AW1-Actor-Id": self.actor_id,
+            "X-AW1-Timestamp": str(ts),
+            "X-AW1-Signature": sig
+        }
 
     def intercept_pre_dispatch(self, tool_name: str, payload: str) -> Dict[str, Any]:
         """Queries the AW-1 cloud gateway prior to tool execution."""
@@ -23,11 +49,8 @@ class ProductionAgentPipeline:
             "payload": payload
         }).encode("utf-8")
 
-        req = urllib.request.Request(
-            self.gateway_url,
-            data=data,
-            headers={"Content-Type": "application/json"}
-        )
+        headers = self._generate_identity_headers(tool_name, payload)
+        req = urllib.request.Request(self.gateway_url, data=data, headers=headers)
 
         start = time.perf_counter()
         try:
@@ -37,100 +60,29 @@ class ProductionAgentPipeline:
                 verdict["network_rtt_ms"] = round(rtt_ms, 2)
                 return verdict
         except urllib.error.HTTPError as e:
-            raw = e.read().decode("utf-8")
+            raw = e.read().decode("utf-8") if e.fp else str(e)
             raise AW1SecurityInterceptionError(f"Gateway HTTP error {e.code}: {raw}", {})
 
-    def dispatch_safe_tool(self, tool_name: str, payload: str, execution_token: str) -> str:
-        """Simulates concrete execution environment. Only executes with valid token."""
-        if not execution_token or not execution_token.startswith("aw1_sec_tok_"):
-            raise PermissionError("FATAL: Execution token invalid or absent. Runtime locked.")
-
-        # Real tool handlers
-        if tool_name == "sql_query":
-            return f"[DB_RESULT] Query succeeded: Returned 4 matching merchant records."
-        elif tool_name == "account_service":
-            return f"[SERVICE_RESULT] Balance verified."
-        else:
-            return f"[GENERIC_RESULT] Tool '{tool_name}' executed cleanly."
-
     def execute_agent_step(self, tool_name: str, payload: str) -> Dict[str, Any]:
-        """Full guarded agent execution lifecycle."""
         print(f"\n[Agent Pipeline] 🤖 Preparing dispatch: '{tool_name}'")
         print(f"                 Payload: {payload}")
 
-        # Gate 1: Intercept Pre-Dispatch via AW-1 Cloud API
+        # Gate 1: Local Sub-Millisecond AST Pre-Check
+        _guarded_local_dispatch(payload)
+
+        # Gate 2: Cloud Gateway Interception & Token Minting
         verdict = self.intercept_pre_dispatch(tool_name, payload)
-        self.telemetry_history.append(verdict)
 
-        status = verdict.get("status")
-        permitted = verdict.get("permitted", False)
-        token = verdict.get("token")
-        reason = verdict.get("reason")
-        engine_lat = verdict.get("latency_ms")
+        if verdict.get("status") != "PERMITTED":
+            raise AW1SecurityInterceptionError(
+                f"Execution Blocked by AW-1 Breaker: {verdict.get('reason')}",
+                verdict
+            )
 
-        # Gate 2: Enforce Circuit Breaker Verdict
-        if not permitted or status == "HALT_AND_CONTAIN":
-            print(f"                 🛑 [CIRCUIT BREAKER TRIPPED]")
-            print(f"                 Verdict  : FAIL_CLOSED ({status})")
-            print(f"                 Reason   : {reason}")
-            print(f"                 Arbitrate: {engine_lat}ms | Token: REVOKED (None)")
-            return {
-                "success": False,
-                "status": "HALT_AND_CONTAIN",
-                "error": reason,
-                "output": None
-            }
-
-        # Gate 3: Execute tool with cryptographically minted token
-        print(f"                 🛡️ [VERDICT: PERMITTED]")
-        print(f"                 Token    : {token}")
-        print(f"                 Arbitrate: {engine_lat}ms")
-
-        result = self.dispatch_safe_tool(tool_name, payload, token)
-        print(f"                 ✅ Tool Output: {result}")
         return {
-            "success": True,
-            "status": "PERMITTED",
-            "token": token,
-            "output": result
+            "status": "EXECUTED",
+            "token": verdict.get("token"),
+            "gateway_latency_ms": verdict.get("latency_ms"),
+            "network_rtt_ms": verdict.get("network_rtt_ms"),
+            "result": f"Safely executed {tool_name}"
         }
-
-if __name__ == "__main__":
-    print("============================================================")
-    print("🚀 RUNNING PRODUCTION AGENT PIPELINE WITH LIVE AW-1 GATEWAY")
-    print("============================================================")
-
-    pipeline = ProductionAgentPipeline()
-
-    # Step 1: Benign customer balance check
-    pipeline.execute_agent_step(
-        tool_name="sql_query",
-        payload="SELECT user_id, balance FROM accounts WHERE user_id = 1001;"
-    )
-
-    # Step 2: Adversarial database mutation attempt (SQL injection injection)
-    pipeline.execute_agent_step(
-        tool_name="sql_query",
-        payload="DROP TABLE accounts; TRUNCATE TABLE audit_log;"
-    )
-
-    # Step 3: Adversarial lateral shell breakout attempt
-    pipeline.execute_agent_step(
-        tool_name="bash",
-        payload="python3 -c 'import pty; pty.spawn(\"/bin/sh\")'"
-    )
-
-    # Step 4: Benign aggregate report query
-    pipeline.execute_agent_step(
-        tool_name="sql_query",
-        payload="SELECT count(*) as total_merchants FROM merchants WHERE kyc_status = 'approved';"
-    )
-
-    print("\n============================================================")
-    print("📊 PIPELINE AUDIT SUMMARY")
-    print("============================================================")
-    print(f"Total Dispatches Evaluated : {len(pipeline.telemetry_history)}")
-    passed = sum(1 for t in pipeline.telemetry_history if t.get("permitted"))
-    halted = sum(1 for t in pipeline.telemetry_history if not t.get("permitted"))
-    print(f"Permitted & Executed       : {passed}")
-    print(f"Halted & Contained         : {halted}")
