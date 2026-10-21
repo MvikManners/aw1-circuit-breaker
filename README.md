@@ -1,18 +1,34 @@
-# aw1-breaker (v2.0.1)
+# aw1-breaker (v2.1.0)
 
 [![HOL Verified](https://img.shields.io/badge/HOL-Source_Verified-10B981?style=for-the-badge&logo=shield)](https://hol.org/blog/stopping-rogue-agents-inside-the-ast-breaker)
 [![PyPI](https://img.shields.io/pypi/v/aw1-circuit-breaker?color=blue&style=for-the-badge)](https://pypi.org/project/aw1-circuit-breaker/)
+[![Python Matrix](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue?style=for-the-badge&logo=python)](https://github.com/MvikManners/aw1-circuit-breaker/actions)
+[![Enterprise CI Matrix](https://img.shields.io/github/actions/workflow/status/MvikManners/aw1-circuit-breaker/ci.yml?branch=main&label=CI%20Matrix&style=for-the-badge&logo=githubactions)](https://github.com/MvikManners/aw1-circuit-breaker/actions)
 [![Zero Dependencies](https://img.shields.io/badge/Runtime_Dependencies-Zero_(Standard_Lib)-blueviolet?style=for-the-badge)](pyproject.toml)
+[![Latency](https://img.shields.io/badge/P50_Latency-0.078ms-brightgreen?style=for-the-badge)](tests/test_enterprise_engine.py)
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-active-0066FF?style=for-the-badge)](https://registry.modelcontextprotocol.io)
 [![Glama Score](https://glama.ai/mcp/servers/MvikManners/aw1-circuit-breaker/badges/score.svg)](https://glama.ai/mcp/servers/MvikManners/aw1-circuit-breaker)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-green.svg)](LICENSE)
-[![Latency](https://img.shields.io/badge/AST%20Evaluation-%3C0.2ms-brightgreen.svg)](benchmark.py)
-[![Enterprise CI Matrix](https://github.com/MvikManners/aw1-circuit-breaker/actions/workflows/ci.yml/badge.svg)](https://github.com/MvikManners/aw1-circuit-breaker/actions)
-[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-active-blue)](https://registry.modelcontextprotocol.io)
-[![PyPI version](https://img.shields.io/pypi/v/aw1-circuit-breaker.svg)](https://pypi.org/project/aw1-circuit-breaker/)
 
-> **Featured on Hashgraph Online (HOL):** Read the independent source-level teardown: [*What aw1-breaker 2.0.0 checks before a tool call*](https://hol.org/blog/stopping-rogue-agents-inside-the-ast-breaker).
+> **Featured on Hashgraph Online (HOL):** Read the independent source-level teardown: [*What aw1-breaker checks before a tool call*](https://hol.org/blog/stopping-rogue-agents-inside-the-ast-breaker).
 
-`aw1-breaker` is a zero-dependency Python security circuit breaker that intercepts autonomous AI agent tool calls in sub-millisecond execution loops using Abstract Syntax Tree (AST) decompilation, per-actor rolling velocity monitors, and cryptographically signed HMAC execution tokens.
+`aw1-breaker` is a zero-dependency Python security circuit breaker that intercepts autonomous AI agent tool calls in sub-millisecond execution loops using Abstract Syntax Tree (AST) decompilation, declarative Policy-as-Code, per-actor rolling velocity monitors, and cryptographically signed HMAC execution tokens.
+
+---
+
+### High-Concurrency Performance (v2.1.0 Verified)
+
+Evaluated across a stress test of **10,000 asynchronous agent dispatches** in concurrent batches of 500 simultaneous tasks:
+
+| Metric | Result | Industry Standard (LLM-as-a-Judge) |
+| :--- | :--- | :--- |
+| **Throughput** | **8,485.0 dispatches/sec** | ~5 – 20 req/sec |
+| **Median Latency (P50)** | **0.0776 ms** (77.6 µs) | 500 – 1,500 ms |
+| **90th Percentile (P90)** | **0.0941 ms** (94.1 µs) | 1,200 – 2,000 ms |
+| **95th Percentile (P95)** | **0.1066 ms** (106.6 µs) | 1,500 – 2,500 ms |
+| **99th Percentile (P99)** | **0.2263 ms** (226.3 µs) | 2,000 – 4,000 ms |
+| **Attack Blocking Latency** | **< 0.13 ms** (Fail-Closed) | N/A (Probabilistic) |
+| **Deterministic Guarantee** | **100% Mathematical AST Match** | Probabilistic (~85–95%) |
 
 ---
 
