@@ -1,3 +1,4 @@
+import os
 #!/usr/bin/env python3
 """
 AW-1 Deterministic AST Circuit Breaker — Model Context Protocol (MCP) Server.

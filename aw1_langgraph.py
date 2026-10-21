@@ -15,7 +15,7 @@ KEYS = {
 }
 
 def auth_headers(actor: str, tool: str, payload: str):
-    sec = KEYS.get(actor, 'aw1_sec_treasury_key_88492019')
+    sec = KEYS.get(actor, 'aw1_sec_dev_dummy_key_000000000000')
     ts = int(time.time())
     dig = hashlib.sha256(payload.encode('utf-8')).hexdigest()[:16]
     sig = hmac.new(sec.encode('utf-8'), f"{ts}:{actor}:{tool}:{dig}".encode('utf-8'), hashlib.sha256).hexdigest()[:32]

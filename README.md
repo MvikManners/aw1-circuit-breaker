@@ -212,7 +212,7 @@ The AW-1 Circuit Breaker provides a production-grade HTTP interception gateway f
   "permitted": true,
   "actor_id": "agent-alpha-01",
   "tool_name": "sql_query",
-  "token": "aw1_sec_tok_46d16a28e303dffd",
+  "token": "aw1_sec_dev_dummy_key_000000000000",
   "reason": "Policy evaluation completed: execution safe",
   "latency_ms": 0.762,
   "circuit_breaker": "AW-1 Sovereign Execution Arbitrator"

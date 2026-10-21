@@ -1,3 +1,4 @@
+import os
 
 # --- AW-1 CREDENTIAL & SHELL HARVESTING INTERCEPTOR (TIER 2) ---
 FORBIDDEN_TARGETS = [
@@ -53,7 +54,7 @@ class ProductionAgentPipeline:
         self,
         gateway_url: str = "https://p20.laveto.net/wisdom/api/v1/intercept",
         actor_id: str = "agent-alpha-01",
-        actor_secret: str = "aw1_sec_alpha_9a748be8704e453a10714ce28378dc2f"
+        actor_secret: str = os.getenv("AW1_ACTOR_SECRET", "aw1_sec_dev_dummy_key_000000000000")
     ):
         self.gateway_url = gateway_url
         self.actor_id = actor_id

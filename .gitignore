@@ -38,3 +38,24 @@ iso20022_engine.py
 manage_keys.py
 release_dossier.py
 velocity_governor.py
+# Secrets and environment files
+.env
+*.env
+*secret*
+*credentials*
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Local IDE and Client configs
+.vscode/
+.cursor/
+*.mjs
+# Environment and secrets
+# Python bytecode & caches
+# Local IDE & bridge configs
+.idea/
+hcs_worker.log

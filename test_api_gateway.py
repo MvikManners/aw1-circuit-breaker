@@ -1,3 +1,4 @@
+import os
 import urllib.request
 import json
 import time
@@ -6,7 +7,7 @@ import hashlib
 
 API_URL = "https://p20.laveto.net/wisdom/api/v1/intercept"
 ACTOR_ID = "agent-alpha-01"
-SECRET = "aw1_sec_alpha_9a748be8704e453a10714ce28378dc2f"
+SECRET = os.getenv("AW1_ACTOR_SECRET", "aw1_sec_dev_dummy_key_000000000000")
 
 def call_gateway(tool_name: str, payload: str):
     ts = int(time.time())
