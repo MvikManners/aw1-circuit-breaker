@@ -1,0 +1,5 @@
+nohup: ignoring input
+2026-10-19 18:28:31,985 [INFO] [AW1-HCS] Starting AW-1 Hedera HCS Asynchronous Anchoring Worker...
+2026-10-19 18:28:32,099 [INFO] [AW1-HCS] Enqueued 1 new dossiers for HCS anchoring.
+2026-10-19 18:28:32,110 [INFO] [AW1-HCS] [DRY RUN] Anchored dossier 387985fa442cd4db -> Topic 0.0.YOUR_TOPIC_ID (SimSeq: 512110)
+2026-10-19 18:28:32,172 [INFO] [AW1-HCS] Dossier 387985fa442cd4db anchored successfully (Seq: 512110).

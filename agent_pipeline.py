@@ -1,3 +1,33 @@
+
+# --- AW-1 CREDENTIAL & SHELL HARVESTING INTERCEPTOR (TIER 2) ---
+FORBIDDEN_TARGETS = [
+    r"id_rsa", r"id_ed25519", r"id_ecdsa", r"\.ssh",
+    r"\.env", r"authorized_keys", r"/etc/shadow", r"/etc/passwd",
+    r"\.bash_history", r"credentials\.json", r"db_config\.json"
+]
+
+DANGEROUS_SHELL_PATTERNS = [
+    (r"\brm\s+(-[rfRF]+\s+|-[rR]+\s+-[fF]+\s+)?/", "Destructive root filesystem deletion"),
+    (r"\b(mkfs|dd\s+if=)", "Direct block device / disk tampering"),
+    (r"(:\(\){ :\|:& };:)", "Fork bomb denial of service"),
+    (r"(curl|wget)\s+.*\|\s*(bash|sh)", "Remote unauthorized script piping to shell"),
+    (r"\bnc\s+.*-e\s+", "Reverse netcat socket shell execution")
+]
+
+def evaluate_host_and_shell_safety(tool_name: str, payload: str) -> tuple[bool, str]:
+    # 1. Universal credential scan across all tools
+    for pattern in FORBIDDEN_TARGETS:
+        if re.search(pattern, payload, re.IGNORECASE):
+            return False, f"CRITICAL_CREDENTIAL_HARVESTING_ATTEMPT: '{pattern}'"
+            
+    # 2. Destructive shell commands
+    if any(sh in tool_name.lower() for sh in ["bash", "sh", "terminal", "cmd", "exec"]):
+        for pattern, desc in DANGEROUS_SHELL_PATTERNS:
+            if re.search(pattern, payload):
+                return False, f"CRITICAL_SHELL_PRIMITIVE: {desc}"
+                
+    return True, "Safe"
+
 import json
 import time
 import hmac

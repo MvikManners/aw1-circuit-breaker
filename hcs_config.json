@@ -1,0 +1,11 @@
+{
+  "network": "testnet",
+  "operator_account_id": "0.0.SIMULATED_OPERATOR",
+  "operator_private_key": "SIMULATED_KEY_SANDBOX_MODE_ONLY",
+  "topic_id": "0.0.SIMULATED_SANDBOX_TOPIC",
+  "batch_size": 25,
+  "poll_interval_seconds": 5,
+  "max_retries": 3,
+  "dry_run": true,
+  "mode": "SIMULATED_SANDBOX"
+}
