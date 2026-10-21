@@ -26,7 +26,8 @@ class EphemeralRunner:
         "AW1_ACTOR_SECRET", "SLACK_BOT_TOKEN"
     }
 
-    def __init__(self, secret_key: str = "aw1_sec_alpha_9a748be8704e453a10714ce28378dc2f"):
+    def __init__(self, secret_key: Optional[str] = None):
+        self.secret_key = secret_key or os.getenv("AW1_ACTOR_SECRET", "")
         self.secret_key = secret_key
 
     def verify_execution_token(self, token: str, actor_id: str, tool_name: str, payload: str) -> bool:
