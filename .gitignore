@@ -89,3 +89,26 @@ sanitize_*.py
 calibrate_*.py
 build_*.py
 mail_broadcast_queue.jsonl
+
+# Sensitive credentials & tokens
+client_secrets.json
+token.json
+*.env*
+
+# Databases and Backups
+*.db
+*.sqlite3
+*.tar.gz
+*.zip
+
+# Financial & PII Ledgers
+*.csv
+
+# Shell & SQL history
+.*_history
+
+# Virtualenvs & Caches
+.virtualenvs/
+.cache/
+.ipython/
+__pycache__/
