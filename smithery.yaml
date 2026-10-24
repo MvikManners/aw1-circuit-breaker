@@ -1,0 +1,22 @@
+startCommand:
+  type: stdio
+  config:
+    command: "python"
+    args: ["mcp_server.py"]
+  env:
+    AW1_API_ENDPOINT: "https://p20.laveto.net/wisdom/api/v1/audit"
+    AW1_TELEMETRY_ENDPOINT: "https://p20.laveto.net/wisdom/api/v1/telemetry/recent"
+
+remote:
+  type: sse
+  url: "https://p20.laveto.net/wisdom/mcp/sse"
+
+metadata:
+  name: "aw1-circuit-breaker"
+  displayName: "AW-1 Sovereign Circuit Breaker"
+  description: "Deterministic AST security circuit breaker preventing rogue shell escapes and unauthorized socket egress in AI agent tool calls."
+  icon: "https://p20.laveto.net/static/favicon.svg"
+  categories:
+    - "Security"
+    - "Developer Tools"
+    - "Governance"
