@@ -1,0 +1,55 @@
+{
+  "version": "1.0",
+  "policy_name": "enterprise-standard",
+  "enforcement_mode": "FAIL_CLOSED",
+  "prohibited_modules": [
+    "subprocess",
+    "shutil",
+    "pty",
+    "socket",
+    "ctypes",
+    "multiprocessing",
+    "threading"
+  ],
+  "prohibited_calls": [
+    "system",
+    "popen",
+    "spawn",
+    "fork",
+    "execv",
+    "execve",
+    "kill",
+    "remove",
+    "unlink",
+    "rmdir"
+  ],
+  "prohibited_builtins": [
+    "eval",
+    "exec",
+    "compile",
+    "__import__"
+  ],
+  "prohibited_attributes": [
+    "__subclasses__",
+    "__globals__",
+    "__code__",
+    "__builtins__",
+    "__bases__",
+    "__mro__"
+  ],
+  "limits": {
+    "max_node_count": 1500,
+    "max_ast_depth": 25,
+    "max_payload_bytes": 65536
+  },
+  "strict_allowlist_mode": false,
+  "allowed_modules": [
+    "math",
+    "json",
+    "re",
+    "datetime",
+    "typing",
+    "dataclasses",
+    "collections"
+  ]
+}

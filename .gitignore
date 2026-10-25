@@ -1,0 +1,126 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.csv
+token.json
+credentials.json
+*.zip
+.env
+.venv
+env/
+
+# Security & Private Keys (NEVER COMMIT)
+*.pem
+*.key
+*.enc
+*_keys.json
+mcp_api_keys.json
+compliance_keys.json
+db_config.json
+webhook_config.json
+
+# Local Ledgers & Runtime Audit Artifacts
+*.db
+dossiers/
+iso20022_messages/
+
+# Backup and Temporary Artifacts
+*.bak*
+
+# Internal Proprietary Engines & Regulatory Modules
+aw1_governor.py
+aw1_breaker/aw1_governor.py
+crypto_engine.py
+iso20022_engine.py
+manage_keys.py
+release_dossier.py
+velocity_governor.py
+# Secrets and environment files
+.env
+*.env
+*secret*
+*credentials*
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Local IDE and Client configs
+.vscode/
+.cursor/
+*.mjs
+# Environment and secrets
+# Python bytecode & caches
+# Local IDE & bridge configs
+.idea/
+hcs_worker.log
+
+# Sensitive configs & keys
+hcs_config.json
+*.key
+*.pem
+*.priv
+.env*
+!release_signer_ed25519.pub
+
+# Internal scratch & migration tools
+tools/scratch/
+patch_tsk*.py
+execute_tsk*.py
+inspect_tsk*.py
+
+# Internal operations and server configs
+approve_loan.py
+deposit_repayment.py
+payout_control.py
+ledger*
+member_*
+supplier_*
+sync_*
+drive_handler.py
+forge_key.py
+reset_pass.py
+force_*
+get_token.py
+*.txt
+.profile
+.pythonstartup.py
+.vimrc
+instance/
+mysite/
+migrations/
+laveto_wisdom/
+*.db
+*.sqlite3
+*.env*
+lvt_*
+private/
+
+# Proprietary Business Logic & Sovereign Vault
+aw1/loan_gateway.py
+aw1/regulatory.py
+aw1/trust_reconciliation.py
+aw1/dossier.py
+aw1/memory.py
+*.pdf
+
+# Build & packaging artifacts
+*.egg-info/
+build/
+dist/
+hcs_config*.json
+iso20022_engine.py
+aw1_hcs_worker.py
+tools/scratch/
+*.bak
+generate_manifest.py
+aw1_hcs_worker.py
+
+# Cryptographic Keys & Secrets
+*.key
+*.pem
