@@ -124,3 +124,7 @@ aw1_hcs_worker.py
 # Cryptographic Keys & Secrets
 *.key
 *.pem
+
+# Cryptographic Keys & Secrets
+*.key
+*.pem
