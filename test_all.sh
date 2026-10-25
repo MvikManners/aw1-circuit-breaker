@@ -4,7 +4,7 @@ PYTHONPATH=/home/LavetoLab /home/LavetoLab/lvt_backend/venv/bin/python /home/Lav
 # ==============================================================================
 # TEST: GATE 7 OUT-OF-BAND HARD CONTAINMENT & BOTSWANA DPA 2018 INTERCEPTION
 # ==============================================================================
-echo -e "\n\033[1;34m[TEST]\033[0m Testing Gate 7 Statutory Interception (/v1/aw/audit)..."
+echo -e "\n\033[1;34m[TEST]\033[0m Testing Gate 7 Statutory Interception (/wisdom/api/v1/audit)..."
 
 GATE7_PAYLOAD='{
   "agent_id": "copilot-crawler-agent-07",
@@ -19,7 +19,7 @@ GATE7_PAYLOAD='{
   }
 }'
 
-GATE7_RESP=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST https://p20.laveto.net/v1/aw/audit \
+GATE7_RESP=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST https://p20.laveto.net/wisdom/api/v1/audit \
   -H "Content-Type: application/json" \
   -H "X-Laveto-Key: lvt_live_enterprise_sec_key" \
   -d "$GATE7_PAYLOAD")
