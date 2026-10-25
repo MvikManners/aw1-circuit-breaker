@@ -259,10 +259,9 @@ The AW-1 Circuit Breaker provides a production-grade HTTP interception gateway f
 | Plan | Pricing (USD / BWP) | Quota & Features | Access / Checkout |
 | :--- | :--- | :--- | :--- |
 | **Developer Sandbox** | Free | 10,000 requests, HMAC token minting | Code `HOL-BREAKER-2026` |
-| **Developer Pro** | $49 / BWP 650 /mo | 100,000 audit requests, 1 license key, offline HMAC validation | [Upgrade to Pro](https://laveto-wisdom.lemonsqueezy.com/checkout) |
-| **Team / Startup** | $199 / BWP 2,650 /mo | 1,000,000 audit requests, 5 seat keys, Redis state sync | [Upgrade to Team](https://laveto-wisdom.lemonsqueezy.com/checkout) |
-| **Enterprise Dedicated** | $990 / BWP 13,200 /mo | Unlimited seats, dedicated gateway tenant, custom statutory lenses | [Enterprise Desk](https://p20.laveto.net/wisdom/tender-portal) |
-
+| **Developer Pro** | $49 / BWP 690 /mo | 50,000 audit requests, 1 license key, offline HMAC validation | [Upgrade to Pro](https://p20.laveto.net/wisdom/buy) |
+| **Team / Startup** | $199 / BWP 2,650 /mo | 1,000,000 audit requests, 5 seat keys, Redis state sync | [Upgrade to Team](https://p20.laveto.net/wisdom/buy) |
+| **Enterprise Dedicated** | $990 / BWP 13,200 /mo | Unlimited seats, dedicated gateway tenant, custom statutory lenses | [Enterprise Desk](https://p20.laveto.net/wisdom/docs) |
 To activate enterprise quotas, pass your signed bearer token in the `Authorization` header:
 
 ```bash
