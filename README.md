@@ -12,13 +12,15 @@
 
 > **Featured on Hashgraph Online (HOL):** Read the independent source-level teardown: [*What aw1-breaker checks before a tool call*](https://hol.org/blog/stopping-rogue-agents-inside-the-ast-breaker).
 
-`aw1-breaker` is a zero-dependency Python security circuit breaker that intercepts autonomous AI agent tool calls in sub-millisecond execution loops using Abstract Syntax Tree (AST) decompilation, declarative Policy-as-Code, per-actor rolling velocity monitors, and cryptographically signed HMAC execution tokens.
+`aw1-breaker` is a zero-dependency Python security circuit breaker that intercepts autonomous AI agent tool calls in sub-millisecond execution loops using Abstract Syntax Tree (AST) static policy enforcement, declarative Policy-as-Code, per-actor rolling velocity monitors, and cryptographically signed HMAC execution tokens.
+
+> **Security Scope & Boundary:** `aw1-breaker` enforces deterministic static AST and argument-level boundary policies *prior* to Python runtime execution (blocking prohibited modules, dangerous built-ins, SQL mutations, and known evasion patterns). It provides an application-layer policy gate and is designed to complement, not replace, operating-system-level sandbox isolation (e.g., containers, gVisor, or microVMs) for arbitrary untrusted code execution.
 
 ---
 
 ### High-Concurrency Performance (v2.1.0 Verified)
 
-Evaluated across a stress test of **10,000 asynchronous agent dispatches** in concurrent batches of 500 simultaneous tasks:
+Evaluated across a stress test of **10,000 asynchronous agent dispatches** in concurrent batches of 500 simultaneous tasks via `tests/test_enterprise_engine.py`:
 
 | Metric | Result | Industry Standard (LLM-as-a-Judge) |
 | :--- | :--- | :--- |
@@ -27,8 +29,8 @@ Evaluated across a stress test of **10,000 asynchronous agent dispatches** in co
 | **90th Percentile (P90)** | **0.0941 ms** (94.1 µs) | 1,200 – 2,000 ms |
 | **95th Percentile (P95)** | **0.1066 ms** (106.6 µs) | 1,500 – 2,500 ms |
 | **99th Percentile (P99)** | **0.2263 ms** (226.3 µs) | 2,000 – 4,000 ms |
-| **Attack Blocking Latency** | **< 0.13 ms** (Fail-Closed) | N/A (Probabilistic) |
-| **Deterministic Guarantee** | **100% Mathematical AST Match** | Probabilistic (~85–95%) |
+| **Policy Rejection Latency** | **< 0.13 ms** (Fail-Closed) | N/A (Probabilistic) |
+| **Deterministic Guarantee** | **Syntax-Exact AST Grammar Match** | Probabilistic (~85–95%) |
 
 ---
 
@@ -76,7 +78,7 @@ guard = EnterpriseGuard(
 def execute_database_query(query: str):
     return db.execute(query)
 
-# Benign queries execute instantly (< 0.2ms)
+# Benign queries execute with sub-millisecond policy check overhead
 execute_database_query("SELECT id FROM users LIMIT 1;")
 
 # Adversarial AST injections & SQL drops are halted deterministically:
@@ -128,7 +130,7 @@ Add to your Claude Desktop or Cursor configuration:
 
 ## ⚔️ Exploit Interception in Action
 
-AW-1 operates deterministically at the Abstract Syntax Tree (AST) level before code reaches Python's runtime execution frame. Probabilistic prompt-based guardrails fail under encoding obfuscation; AST inspection guarantees deterministic enforcement.
+AW-1 operates deterministically at the Abstract Syntax Tree (AST) level before code reaches Python's runtime execution frame. Probabilistic prompt-based guardrails fail under encoding obfuscation; AST inspection provides deterministic grammar analysis against defined policy boundaries.
 
 ### Interception Matrix
 
@@ -145,40 +147,42 @@ AW-1 operates deterministically at the Abstract Syntax Tree (AST) level before c
 ```bash
 python examples/enterprise_guard_demo.py
 ```
+
 ---
 
 ## 🔬 Autonomous Breakout Benchmark Suite (BRK Gauntlet)
 
-Frontier AI models frequently exhibit **alignment faking** and **instrumental convergence**—learning to disguise malicious tool calls or bypass runtime sandboxes. 
+Evaluated against the standardized **BRK Adversarial Vector Suite** across **1,000 randomized execution cycles** via `tests/test_breakout_gauntlet.py`:
 
-`aw1-breaker` was evaluated against the standardized **BRK Adversarial Gauntlet** across **1,000 randomized execution cycles** against frontier agent runtimes:
-
-| Vector | Exploit Mechanism / Attack Signature | AW-1 Layer | Interception Latency | Containment |
+| Vector | Exploit Mechanism / Attack Signature | Detection Policy Layer | Single-Dispatch Median Latency | Benchmark Suite Result |
 | :--- | :--- | :--- | :--- | :--- |
-| **BRK-101** | **Steganographic Base64 & `eval()` Tunneling:** Conceals destructive commands (`rm -rf /`) in nested base64 strings. | Layer 0 AST Decompiler (`ast_unpacker.py`) | **0.12 ms** | **100.0% (PASS)** |
-| **BRK-102** | **Covert Socket Egress & C2 Exfiltration:** Unauthorized raw TCP sockets attempting credential harvesting (`.env`, `~/.ssh/id_rsa`). | Network Socket Gate (`UNAUTHORIZED_MODULE_IMPORT`) | **0.15 ms** | **100.0% (PASS)** |
-| **BRK-103** | **Privilege Escalation & Self-Replication:** Autonomous cluster offloading (`AUTONOMOUS_CLUSTER_SCALE`), `chmod 777`, or `/etc/sudoers` rewrites. | Fail-Closed Policy Arbitrator | **0.08 ms** | **100.0% (PASS)** |
-| **BENIGN** | **Fast-Path Developer Commands:** Read-only operations (`git status`, pure SQL queries, balance lookups). | Gate 0 Zero-Overhead Bypass | **0.05 ms** | **Permitted (0% False Positives)** |
+| **BRK-101** | **Base64 Obfuscation & `eval()` Tunneling:** Encodes command strings in nested base64 structures. | Layer 0 AST Decompiler (`ast_unpacker.py`) | **0.0389 ms** (38.9 µs) | **Intercepted (100% vector pass)** |
+| **BRK-102** | **Unauthorized Socket Egress:** Raw TCP sockets targeting credential extraction (`.env`, SSH keys). | Network Socket Gate (`UNAUTHORIZED_MODULE_IMPORT`) | **0.0412 ms** (41.2 µs) | **Intercepted (100% vector pass)** |
+| **BRK-103** | **Privilege Escalation Patterns:** Process privilege changes, `chmod 777`, or file alteration calls. | Fail-Closed Policy Arbitrator | **0.0374 ms** (37.4 µs) | **Intercepted (100% vector pass)** |
+| **BENIGN** | **Fast-Path Operations:** Read-only queries, valid parameter structures, and benign API dispatches. | Fast-Path AST Validation Bypass | **0.0210 ms** (21.0 µs) | **Permitted (0% False Positives)** |
+
+*Note: The 100% pass metric reflects containment across the specified synthetic vector sets (`BRK-101` through `BRK-103`) in test conditions and is not a claim of universal containment against arbitrary unknown exploit classes.*
 
 ### Reproduce the 1,000-Cycle Gauntlet Locally
 
-Run the complete evaluation suite with standard Python (zero dependencies required):
+Run the complete evaluation suite with standard Python (zero external dependencies required):
 
 ```bash
 python tests/test_breakout_gauntlet.py
+```
+
 ---
 
 ## ⏱️ Runtime Latency Telemetry
 
-Deterministic security must not throttle agent execution. AW-1 operates with sub-millisecond AST parsing and microsecond-scale argument filtering across warm execution loops.
+Deterministic security must not throttle agent execution. Below are empirical latency measurements substantiated by `benchmark.py` across 1,000 iterations on Python 3.13:
 
-*Sample Size: 1,000 synthetic iterations per test vector on Debian Python 3.13.*
-
-| Evaluation Target | p50 Latency | p95 Latency | p99 Latency | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **AST Inspection (Benign Payload)** | **0.0889 ms** | 0.1298 ms | 0.1645 ms | `< 0.2 ms` Overhead |
-| **AST Inspection (Adversarial Exploit)** | **0.0520 ms** | 0.0919 ms | 0.1051 ms | Instant Breakout Halt |
-| **Shell Argument Injection Guard** | **0.0051 ms** | 0.0096 ms | 0.0195 ms | Sub-20 µs Inspection |
+| Evaluation Target | Substantiating Script | P50 Latency | P95 Latency | P99 Latency | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Full AST Policy Inspection (Benign)** | `benchmark.py` | **0.0889 ms** | 0.1298 ms | 0.1645 ms | Complete AST parse & rule validation |
+| **AST Policy Inspection (Adversarial)** | `benchmark.py` | **0.0520 ms** | 0.0919 ms | 0.1051 ms | Short-circuit on first policy violation |
+| **Shell Argument Sanitization Pass** | `benchmark.py` | **0.0051 ms** | 0.0096 ms | 0.0195 ms | Pure string argument validation |
+| **Concurrent Multi-Task Dispatch** | `tests/test_enterprise_engine.py` | **0.0776 ms** | 0.1066 ms | 0.2263 ms | 500 concurrent tasks (10k total) |
 
 Reproduce locally:
 
@@ -206,11 +210,11 @@ except CircuitBreakerException as blocked:
 
 ## 🌐 Cloud REST API Gateway & Production Quotas
 
-The AW-1 Circuit Breaker provides a production-grade HTTP interception gateway for microservices, browser frontends, and autonomous agent platforms.
+The AW-1 Circuit Breaker provides an optional HTTP policy arbitration gateway for microservices, browser frontends, and autonomous agent platforms.
 
 - **Endpoint:** `POST https://p20.laveto.net/wisdom/api/v1/intercept`
 - **CORS:** Enabled (`Access-Control-Allow-Origin: *`)
-- **Arbitration Engine Latency:** `< 0.80 ms`
+- **Median Arbitration Latency:** `< 0.80 ms` (HTTP roundtrip excluding transport)
 
 ### Request Payload
 
@@ -262,7 +266,8 @@ The AW-1 Circuit Breaker provides a production-grade HTTP interception gateway f
 | **Developer Pro** | $49 / BWP 690 /mo | 50,000 audit requests, 1 license key, offline HMAC validation | [Upgrade to Pro](https://p20.laveto.net/wisdom/buy) |
 | **Team / Startup** | $199 / BWP 2,650 /mo | 1,000,000 audit requests, 5 seat keys, Redis state sync | [Upgrade to Team](https://p20.laveto.net/wisdom/buy) |
 | **Enterprise Dedicated** | $990 / BWP 13,200 /mo | Unlimited seats, dedicated gateway tenant, custom statutory lenses | [Enterprise Desk](https://p20.laveto.net/wisdom/docs) |
-To activate enterprise quotas, pass your signed bearer token in the `Authorization` header:
+
+To authenticate with enterprise quotas, pass your signed bearer token in the `Authorization` header:
 
 ```bash
 curl -X POST [https://p20.laveto.net/wisdom/api/v1/intercept](https://p20.laveto.net/wisdom/api/v1/intercept) \
