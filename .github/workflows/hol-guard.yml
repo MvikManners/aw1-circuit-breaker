@@ -11,11 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@PASTE_CHECKOUT_SHA_HERE
 
       - name: AI plugin quality gate
-        uses: hashgraph-online/ai-plugin-scanner-action@v1
+        uses: hashgraph-online/ai-plugin-scanner-action@PASTE_SCANNER_SHA_HERE
         with:
           plugin_dir: "."
-          min_score: 75
-          fail_on_severity: critical
+          min_score: 80
+          fail_on_severity: high
