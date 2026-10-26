@@ -8,6 +8,9 @@
   },
   "homepage": "https://github.com/MvikManners/aw1-circuit-breaker",
   "repository": "https://github.com/MvikManners/aw1-circuit-breaker",
+  "websiteURL": "https://github.com/MvikManners/aw1-circuit-breaker",
+  "privacyPolicyURL": "https://github.com/MvikManners/aw1-circuit-breaker/blob/main/PRIVACY.md",
+  "termsOfServiceURL": "https://github.com/MvikManners/aw1-circuit-breaker/blob/main/TERMS.md",
   "license": "Apache-2.0",
   "mcpServers": "./.mcp.json"
 }
