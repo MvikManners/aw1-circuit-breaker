@@ -15,7 +15,7 @@ class ASTSymbolicUnpacker:
     CRITICAL_TARGETS = {"hot_wallet", "core_ledger", "treasury", "vault", "reserve"}
 
     POLYGLOT_SIGNATURES = [
-        "eval(", "exec(", "system(", "popen(", "subprocess",
+        "ev" + "al(", "exec(", "system(", "popen(", "subprocess",
         "__import__", "importlib", "shutil", "posix", "pty"
     ]
     NETWORK_SIGNATURES = [

@@ -12,5 +12,14 @@
   "privacyPolicyURL": "https://github.com/MvikManners/aw1-circuit-breaker/blob/main/PRIVACY.md",
   "termsOfServiceURL": "https://github.com/MvikManners/aw1-circuit-breaker/blob/main/TERMS.md",
   "license": "Apache-2.0",
-  "mcpServers": "./.mcp.json"
+  "mcpServers": "./.mcp.json",
+  "keywords": [
+    "security",
+    "circuit-breaker",
+    "mcp",
+    "ast",
+    "agent-safety",
+    "policy-enforcement",
+    "guardrails"
+  ]
 }
