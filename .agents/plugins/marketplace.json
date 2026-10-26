@@ -1,0 +1,20 @@
+{
+  "name": "aw1-circuit-breaker",
+  "interface": {
+    "displayName": "AW-1 Sovereign Circuit Breaker"
+  },
+  "plugins": [
+    {
+      "name": "aw1-circuit-breaker",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "NONE"
+      },
+      "category": "Security"
+    }
+  ]
+}
