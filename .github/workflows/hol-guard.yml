@@ -1,4 +1,4 @@
-name: HOL Guard Security CI
+name: HOL Plugin Scanner CI
 
 on:
   push:
@@ -7,15 +7,15 @@ on:
     branches: [ main ]
 
 jobs:
-  hol-guard-scan:
+  scan-plugin:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: AI plugin quality gate
+        uses: hashgraph-online/ai-plugin-scanner-action@v1
         with:
-          python-version: '3.12'
-      - name: Install hol-guard
-        run: pip install hol-guard
-      - name: Run HOL Guard Plugin Check
-        run: hol-guard plugin check .
+          plugin_dir: "."
+          min_score: 80
+          fail_on_severity: high
