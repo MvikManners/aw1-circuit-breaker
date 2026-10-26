@@ -1,2 +1,7 @@
-# Generated lockfile for aw1-circuit-breaker
-# Zero runtime dependencies required (pure standard library)
+# aw1-circuit-breaker dependencies
+# Core runtime: Python standard library (ast, hmac, hashlib, json, time)
+# Zero external runtime dependencies required.
+pytest==8.3.3
+iniconfig==2.0.0
+packaging==24.1
+pluggy==1.5.0
