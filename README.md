@@ -4,7 +4,7 @@
 [![HOL Verified](https://img.shields.io/badge/HOL-Source_Verified-10B981?style=for-the-badge&logo=shield)](https://hol.org/blog/stopping-rogue-agents-inside-the-ast-breaker)
 [![PyPI](https://img.shields.io/pypi/v/aw1-circuit-breaker?color=blue&style=for-the-badge)](https://pypi.org/project/aw1-circuit-breaker/)
 [![Python Matrix](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue?style=for-the-badge&logo=python)](https://github.com/MvikManners/aw1-circuit-breaker/actions)
-[![Enterprise CI Matrix](https://img.shields.io/github/actions/workflow/status/MvikManners/aw1-circuit-breaker/ci.yml?branch=main&label=CI%20Matrix&style=for-the-badge&logo=githubactions)](https://github.com/MvikManners/aw1-circuit-breaker/actions)
+[![HOL Scanner CI](https://img.shields.io/github/actions/workflow/status/MvikManners/aw1-circuit-breaker/hol-guard.yml?branch=main&label=HOL%20Scanner%20CI&style=for-the-badge&logo=githubactions)](https://github.com/MvikManners/aw1-circuit-breaker/actions)
 [![Zero Dependencies](https://img.shields.io/badge/Runtime_Dependencies-Zero_(Standard_Lib)-blueviolet?style=for-the-badge)](pyproject.toml)
 [![Latency](https://img.shields.io/badge/P50_Latency-0.078ms-brightgreen?style=for-the-badge)](tests/test_enterprise_engine.py)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-active-0066FF?style=for-the-badge)](https://registry.modelcontextprotocol.io)
