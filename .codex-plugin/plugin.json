@@ -21,5 +21,11 @@
     "agent-safety",
     "policy-enforcement",
     "guardrails"
-  ]
+  ],
+  "interface": {
+    "displayName": "AW-1 Circuit Breaker",
+    "shortDescription": "Deterministic AST-level static policy enforcement for autonomous AI agent tool calls.",
+    "composerIcon": "assets/icon.png"
+  },
+  "composerIcon": "assets/icon.png"
 }
