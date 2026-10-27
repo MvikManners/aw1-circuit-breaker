@@ -1,3 +1,5 @@
+[![HOL Trust Score](https://hol.org/api/plugins/mvikmanners/aw1-circuit-breaker/badge)](https://hol.org/registry/plugins/mvikmanners%2Faw1-circuit-breaker)
+
 # aw1-breaker (v2.1.0)
 [![HOL Guard](https://img.shields.io/endpoint?url=https%3A%2F%2Fhol.org%2Fapi%2Fregistry%2Fbadges%2Fplugin%3Fslug%3Dmvikmanners%252Faw1-circuit-breaker%26metric%3Drelease)](https://hol.org/registry/plugins/mvikmanners%2Faw1-circuit-breaker)
 [![HOL Verified](https://img.shields.io/badge/HOL-Source_Verified-10B981?style=for-the-badge&logo=shield)](https://hol.org/blog/stopping-rogue-agents-inside-the-ast-breaker)
