@@ -1,0 +1,40 @@
+{
+  "manifest": {
+    "manifest_version": "1.0.0",
+    "deployment_event_id": "AW1-DEPLOY-20261019-V201",
+    "timestamp_utc": "2026-10-19T19:12:02Z",
+    "release": {
+      "tag": "v2.0.1",
+      "git_commit": "86a5829b53f62bd38cf21ab49f8ed61e3167fb73",
+      "repo_visibility": "PUBLIC_PERIMETER"
+    },
+    "artifacts": {
+      "README.md": {
+        "sha256": "4e7eeef57d93cf11fa7bc00283c03e218b4b4e9b5bbc68e43dc77eef995e5ed1",
+        "bytes": 7971
+      },
+      "hcs_config.json": {
+        "sha256": "1ddc2c0d770b50b90ea8aad4484ea3fa165a3e3586373bbca09e819b549443bd",
+        "bytes": 256
+      },
+      "ATTESTATION_LIFECYCLE.md": {
+        "sha256": "33310e4a4d8697d837e8e4c9ffe92ee6896415a74793fdcf6e158a8bc2a83516",
+        "bytes": 2701
+      }
+    },
+    "provenance": {
+      "build_runtime": "cpython-3.10-linux",
+      "circuit_breaker_sla": "<500us fail-closed",
+      "data_classification": "ZERO_PII_SYSTEM_SPEC"
+    },
+    "attestation_lifecycle": {
+      "signer_key_id": "AW1-RELEASE-ED25519-KEY-01",
+      "signer_public_key_hex": "11b09a9eb19ab3311056ad20fa48c9b0e2a87281ba6add8a7f779f6061af0430",
+      "supersedes_prior_anchor": null,
+      "lifecycle_status": "ACTIVE"
+    }
+  },
+  "manifest_sha256": "ca882da9aad03bbecb976b877840cf49c11235bf857ad80a8fc0722b442a7e81",
+  "signature_scheme": "ed25519",
+  "signature_b64": "GhG+b0hS5gyoqtvMI5WRTl89rkEuo/3cvaNu3yspyr7O5lnYD/Ckevyl/va2nzKTg+qWvDt9AflefpW7DwUuDg=="
+}

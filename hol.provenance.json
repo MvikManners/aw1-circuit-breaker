@@ -1,0 +1,50 @@
+{
+  "files": [
+    {
+      "path": "claude-code/.claude-plugin/plugin.json",
+      "sha256": "87978c28241ddcbbbfa033d7b25cd3a29d23f1f12769fc203a3c2b1f19d81bd2"
+    },
+    {
+      "path": "claude-code/.mcp.json",
+      "sha256": "d9c69116c3951c4129ed74a2f94006af6c64fdf1541599cfc58c1373a8944f15"
+    },
+    {
+      "path": "codex/.codex-plugin/plugin.json",
+      "sha256": "7b92f3039245ca3e5700da24bf8ce67aac1acb21a1803627b64969e9e6d37bbc"
+    },
+    {
+      "path": "codex/.mcp.json",
+      "sha256": "d9c69116c3951c4129ed74a2f94006af6c64fdf1541599cfc58c1373a8944f15"
+    },
+    {
+      "path": "cursor/.cursor/mcp.json",
+      "sha256": "d9c69116c3951c4129ed74a2f94006af6c64fdf1541599cfc58c1373a8944f15"
+    },
+    {
+      "path": "gemini-cli/gemini-extension.json",
+      "sha256": "f63b970bf90cf4954bf674b9b5469d020e050ad01cfc6cacb456b974c2485963"
+    },
+    {
+      "path": "opencode/opencode.json",
+      "sha256": "c14ae675d090c55484a4a93ac37ab51a41e947295485fc5cc5325ff5d11b4c40"
+    }
+  ],
+  "generator": {
+    "name": "hol-guard plugin-kit",
+    "version": "0.1.0"
+  },
+  "plugin": {
+    "name": "aw1-circuit-breaker",
+    "version": "2.1.1"
+  },
+  "repository": "https://github.com/mvikmanners/aw1-circuit-breaker",
+  "runtimes": [
+    "claude-code",
+    "codex",
+    "gemini-cli",
+    "cursor",
+    "opencode"
+  ],
+  "schema": "hol.plugin-kit.provenance.v1",
+  "source_digest": "sha256:7a47f53abe648a743031ffeed2741ae43e1a39a50ecde539d79a721a4d12430d"
+}

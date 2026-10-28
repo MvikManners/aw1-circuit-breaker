@@ -1,0 +1,13 @@
+{
+  "description": "Deterministic out-of-band execution circuit breaker and AST safety proxy for autonomous AI agent tool calls",
+  "mcpServers": {
+    "aw1-circuit-breaker": {
+      "args": [
+        "aw1-circuit-breaker"
+      ],
+      "command": "uvx"
+    }
+  },
+  "name": "aw1-breaker",
+  "version": "2.1.3"
+}
