@@ -112,3 +112,51 @@ token.json
 .cache/
 .ipython/
 __pycache__/
+# Secrets and Credentials
+.ssh/
+*.pem
+*.key
+*.env
+generate_secrets_engine.py
+
+# Memory & Caches
+dump.rdb
+redis.pid
+redis_spawn.lock
+__pycache__/
+*.pyc
+
+# Backups and Local Dumps
+*.bak*
+*.broken_backup
+recovery_templates_oct02/
+.aw1_alerted_events.json
+# ==============================================================================
+# AW-1 SOVEREIGN MOAT: AIR-GAP EXCLUSIONS (NEVER PUSH TO GITHUB)
+# ==============================================================================
+# 1. Databases & Ledgers
+*.db
+*.db-journal
+*.sqlite*
+lvt_database.db
+lvt_payment_gateway.db
+
+# 2. Sovereign Backend Engines & Secrets
+.env*
+*.env
+laveto_wisdom/
+lvt_backend/
+.env.wisdom
+
+# 3. Logs, Shell Traps & Supervisors
+logs/
+*.log
+scripts/keep_tracker_running.sh
+scripts/aw1_live_sentinel.py
+scripts/track_aw1_global_reach.py
+
+# 4. Cache & Virtual Environments
+__pycache__/
+*.pyc
+venv/
+.venv/
