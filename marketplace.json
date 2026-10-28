@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/hashgraph-online/ai-plugin-scanner-action/main/schemas/marketplace.schema.json",
+  "name": "aw1-circuit-breaker",
+  "version": "2.2.1",
+  "title": "AW-1 Sovereign Agent Circuit Breaker",
+  "description": "Deterministic sub-0.2ms AST security circuit breaker and agent containment engine.",
+  "policy": {
+    "privacy_policy_url": "https://p20.laveto.net/wisdom/security",
+    "terms_of_service_url": "https://p20.laveto.net/wisdom/security",
+    "support_url": "https://github.com/MvikManners/aw1-circuit-breaker/issues"
+  },
+  "author": {
+    "name": "Laveto Wisdom",
+    "url": "https://p20.laveto.net/wisdom"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MvikManners/aw1-circuit-breaker"
+  }
+}

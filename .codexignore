@@ -9,3 +9,16 @@ build/
 *.egg-info/
 .env*
 private_vault/
+tests/
+test/
+**/tests/**
+**/test/**
+benchmarks/
+**/benchmarks/**
+fixtures/
+**/fixtures/**
+examples/
+dist/
+build/
+*.tar.gz
+mcp-publisher
