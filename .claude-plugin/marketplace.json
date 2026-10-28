@@ -1,0 +1,13 @@
+{
+  "name": "aw1-circuit-breaker",
+  "owner": {
+    "name": "MvikManners"
+  },
+  "plugins": [
+    {
+      "name": "aw1-circuit-breaker",
+      "source": "./",
+      "description": "Application-layer AST and argument policy gate for agent tool calls."
+    }
+  ]
+}

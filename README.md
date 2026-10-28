@@ -1,3 +1,23 @@
+<!-- hol-install-block:v2 slug=mvikmanners/aw1-circuit-breaker -->
+Install with [HOL Guard](https://hol.org/guard/docs/plugin-scanner/install-with-hol-guard), which checks the [HOL listing](https://hol.org/registry/plugins/mvikmanners%2Faw1-circuit-breaker) and asks before each runtime:
+
+```sh
+hol-guard plugin install mvikmanners/aw1-circuit-breaker --apply
+```
+
+Get HOL Guard with `pipx install hol-guard` or `uv tool install hol-guard`.
+
+<details>
+<summary>Install with each runtime's own CLI</summary>
+
+| Runtime | Commands |
+| --- | --- |
+| Claude Code | `claude plugin marketplace add mvikmanners/aw1-circuit-breaker`<br>`claude plugin install aw1-circuit-breaker@aw1-circuit-breaker` |
+| Codex | `codex plugin marketplace add mvikmanners/aw1-circuit-breaker`<br>`codex plugin add aw1-circuit-breaker@aw1-circuit-breaker` |
+
+</details>
+<!-- /hol-install-block -->
+
 # AW-1 Circuit Breaker
 
 [![PyPI version](https://img.shields.io/pypi/v/aw1-circuit-breaker.svg?color=blue)](https://pypi.org/project/aw1-circuit-breaker/)
