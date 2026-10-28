@@ -1,0 +1,11 @@
+[scanner]
+profile = "public-marketplace"
+ignore_paths = [
+  "tests/*",
+  "**/tests/*",
+  "benchmarks/*",
+  "**/benchmarks/*",
+  "fixtures/*",
+  "**/fixtures/*",
+  "dist/*"
+]
