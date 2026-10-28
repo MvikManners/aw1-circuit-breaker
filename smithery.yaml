@@ -1,0 +1,97 @@
+name: aw1-circuit-breaker
+displayName: AW-1 Out-of-Band Agent Circuit Breaker & Safety Proxy
+description: Institutional-grade out-of-band execution circuit breaker and runtime proxy for AI agents. Intercepts tool calls in <0.15ms, unrolls obfuscated Base64/eval AST payloads, enforces Zero Ambient Authority via single-use 250ms ephemeral tokens (τ_exec), and guarantees Bank of Botswana 1-to-1 trust compliance.
+version: 2.1.0
+license: MIT
+homepage: https://p20.laveto.net/wisdom/
+repository: https://github.com/MvikManners/aw1-circuit-breaker
+iconUrl: https://p20.laveto.net/wisdom/static/favicon.svg
+
+tags:
+  - security
+  - circuit-breaker
+  - safety-shield
+  - ast-unpacker
+  - runtime-guard
+  - bot-defense
+  - zero-ambient-authority
+  - audit-dossier
+  - compliance
+
+# Primary Remote Hosted Server-Sent Events (SSE) Proxy
+remote:
+  url: "https://p20.laveto.net/wisdom/mcp/sse"
+  transport: sse
+
+# Optional Local Subprocess Stdio Bridge
+startCommand:
+  type: stdio
+  command: python3
+  args:
+    - "-m"
+    - "aw1_breaker.mcp_server"
+  env:
+    AW1_API_ENDPOINT: "https://p20.laveto.net/wisdom/api/v1/audit"
+    AW1_API_KEY: ""
+
+configSchema:
+  type: object
+  properties:
+    apiEndpoint:
+      type: string
+      title: AW-1 Proxy Endpoint
+      default: "https://p20.laveto.net/wisdom/api/v1/audit"
+    apiKey:
+      type: string
+      title: Enterprise License Key
+      default: ""
+    containmentMode:
+      type: string
+      title: Containment Action
+      enum:
+        - "HARD_CONTAINMENT"
+        - "UNCERTAINTY_FREEZE"
+        - "AUDIT_ONLY"
+      default: "HARD_CONTAINMENT"
+
+tools:
+  - name: aw1_execute_protected_tool
+    description: Executes proposed agent tools through the Layer 0 AST deconstruction engine. Neutralizes shell breakouts, eval() loops, and covert socket egress before OS syscall execution.
+    inputSchema:
+      type: object
+      properties:
+        tool_name:
+          type: string
+        payload:
+          type: string
+        agent_id:
+          type: string
+          default: "agent_planner"
+        cost_bwp:
+          type: number
+          default: 0.0
+      required:
+        - tool_name
+        - payload
+
+  - name: aw1_verify_tee_attestation
+    description: Verifies cryptographic attestation seals and PCR0 hardware hashes against the immutable ledger.
+    inputSchema:
+      type: object
+      properties:
+        attestation_id:
+          type: string
+      required:
+        - attestation_id
+
+  - name: verify_statutory_quota
+    description: Verifies local statutory compliance, Citizen Economic Empowerment (CEE) 50% quota constraints, and Bank of Botswana 1-to-1 trust float parity.
+    inputSchema:
+      type: object
+      properties:
+        tender_id:
+          type: string
+        citizen_equity_ratio:
+          type: number
+      required:
+        - tender_id
