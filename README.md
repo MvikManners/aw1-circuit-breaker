@@ -5,6 +5,8 @@
 Install with [HOL Guard](https://hol.org/guard/docs/plugin-scanner/install-with-hol-guard), which checks the [HOL listing](https://hol.org/registry/plugins/mvikmanners%2Faw1-circuit-breaker) and asks before each runtime:
 ```sh
 hol-guard plugin install mvikmanners/aw1-circuit-breaker --apply
+```
+<!-- /hol-install-block -->
 [![HOL Verified](https://img.shields.io/badge/HOL-Source_Verified-10B981?style=for-the-badge&logo=shield)](https://hol.org/blog/stopping-rogue-agents-inside-the-ast-breaker)
 [![PyPI](https://img.shields.io/pypi/v/aw1-circuit-breaker?color=blue&style=for-the-badge)](https://pypi.org/project/aw1-circuit-breaker/)
 [![Python Matrix](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue?style=for-the-badge&logo=python)](https://github.com/MvikManners/aw1-circuit-breaker/actions)
