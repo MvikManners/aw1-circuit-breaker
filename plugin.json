@@ -15,10 +15,5 @@
     "mcp",
     "ast-unpacker",
     "zero-ambient-authority"
-  ],
-  "capabilities": {
-    "tools": true,
-    "resources": false,
-    "prompts": false
-  }
+  ]
 }

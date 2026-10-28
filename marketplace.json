@@ -1,11 +1,16 @@
 {
   "name": "aw1-circuit-breaker",
+  "owner": {
+    "name": "Laveto Wisdom",
+    "url": "https://p20.laveto.net/wisdom"
+  },
   "interface": {
     "displayName": "AW-1 Sovereign Circuit Breaker"
   },
   "plugins": [
     {
       "name": "aw1-circuit-breaker",
+      "description": "Deterministic sub-0.2ms AST security circuit breaker and agent containment engine.",
       "source": {
         "source": "local",
         "path": "./"
