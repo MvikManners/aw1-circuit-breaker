@@ -1,14 +1,14 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.MvikManners/aw1-circuit-breaker",
-  "title": "AW-1 Sovereign Circuit Breaker",
-  "description": "Deterministic sub-0.2ms AST security circuit breaker and agent containment engine.",
-  "version": "2.2.1",
+  "title": "AW-1 Out-of-Band Agent Circuit Breaker & Safety Proxy",
+  "description": "Out-of-band AST circuit breaker enforcing Zero Ambient Authority and agent containment.",
+  "version": "2.1.0",
   "repository": {
     "url": "https://github.com/MvikManners/aw1-circuit-breaker",
     "source": "github"
   },
-  "websiteUrl": "https://p20.laveto.net/wisdom",
+  "homepage": "https://p20.laveto.net/wisdom/",
   "remotes": [
     {
       "type": "sse",
