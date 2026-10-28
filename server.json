@@ -1,17 +1,18 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.MvikManners/aw1-circuit-breaker",
+  "name": "io.github.mvikmanners/aw1-circuit-breaker",
+  "title": "AW-1 Out-of-Band Agent Circuit Breaker & Safety Proxy",
+  "description": "Deterministic AST runtime security proxy and circuit breaker enforcing Zero Ambient Authority, 250ms ephemeral token incineration, and Bank of Botswana trust compliance.",
   "version": "2.1.0",
-  "title": "AW-1 Circuit Breaker",
-  "description": "Deterministic AST security circuit breaker for autonomous AI agents and MCP servers.",
-  "license": "Apache-2.0",
   "repository": {
-    "source": "github",
-    "url": "https://github.com/MvikManners/aw1-circuit-breaker"
+    "url": "https://github.com/MvikManners/aw1-circuit-breaker",
+    "source": "github"
   },
-  "distribution": {
-    "pypi": {
-      "package": "aw1-circuit-breaker"
+  "homepage": "https://p20.laveto.net/wisdom/",
+  "remotes": [
+    {
+      "type": "sse",
+      "url": "https://p20.laveto.net/wisdom/mcp/sse"
     }
-  }
+  ]
 }
