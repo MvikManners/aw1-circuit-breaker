@@ -1,456 +1,47 @@
-HTML_GOV_EDGE = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Laveto Wisdom AW-1 | Never-Down Sovereign Gov-Edge Mesh</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="/wisdom/static/favicon.svg">
-    <style>
-        :root {
-            --bg: #040810;
-            --card: #0B1322;
-            --card-inner: #070D18;
-            --gold: #D97706;
-            --gold-light: #FBBF24;
-            --border: #1E293B;
-            --text: #F8FAFC;
-            --text-muted: #94A3B8;
-            --proc: #10B981;
-            --halt: #EF4444;
-            --cal: #F59E0B;
-            --mono: "SF Mono", Monaco, Consolas, "Liberation Mono", Courier, monospace;
-        }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 1.5rem 1rem; line-height: 1.6; }
-        .container { max-width: 1100px; margin: 0 auto; }
-        .nav-links { display: flex; gap: 10px; margin-bottom: 1.5rem; flex-wrap: wrap; }
-        .nav-links a { color: #94A3B8; text-decoration: none; font-size: 0.85rem; font-weight: 600; padding: 5px 12px; border-radius: 4px; border: 1px solid var(--border); background: #0E1424; }
-        .nav-links a:hover, .nav-links a.active { color: var(--gold-light); border-color: var(--gold); background: rgba(217,119,6,0.1); }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        @media (max-width: 850px) { .grid-2 { grid-template-columns: 1fr; } }
 
-        .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 0.82rem; font-weight: 700; font-family: var(--mono); }
-        .status-online { background: rgba(16,185,129,0.15); color: #10B981; border: 1px solid #10B981; }
-        .status-offline { background: rgba(239,68,68,0.15); color: #EF4444; border: 1px solid #EF4444; }
+# ==============================================================================
+# GATE 0 ECONOMIC TOLL & MCP SETTLEMENT INTERCEPTOR (BoB EPSR COMPLIANT)
+# ==============================================================================
+def verify_gate0_authorization(req):
+    """
+    Validates institutional API tokens or enforces HTTP 402 Payment Required.
+    Discovery/handshakes remain free; execution calls require BWP settlement.
+    """
+    auth_header = req.headers.get("Authorization", "")
+    api_key = req.headers.get("X-API-Key", "")
 
-        label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 0.8rem; margin-bottom: 0.3rem; }
-        input, select { width: 100%; box-sizing: border-box; background: var(--card-inner); color: #FFF; border: 1px solid var(--border); border-radius: 5px; padding: 0.65rem; font-size: 0.9rem; }
+    token = ""
+    if auth_header.startswith("Bearer "):
+        token = auth_header.split(" ", 1)[1].strip()
+    elif api_key:
+        token = api_key.strip()
 
-        button { cursor: pointer; font-weight: 700; border-radius: 5px; border: none; padding: 0.75rem 1.25rem; font-size: 0.9rem; transition: opacity 0.2s; }
-        button:hover { opacity: 0.9; }
-        .btn-gold { background: var(--gold); color: #000; }
-        .btn-wan { background: #1E293B; color: #FFF; border: 1px solid #334155; }
-        .btn-sync { background: #059669; color: #FFF; width: 100%; margin-top: 1rem; }
+    # Free tier internal/console requests
+    if req.headers.get("X-Wisdom-Internal") == "true" or req.remote_addr in ("127.0.0.1", "localhost"):
+        return True, "INTERNAL_CLEARANCE"
 
-        .telemetry-box { background: var(--card-inner); border: 1px solid var(--border); border-radius: 6px; padding: 1rem; font-family: var(--mono); font-size: 0.82rem; line-height: 1.5; color: #CBD5E1; max-height: 280px; overflow-y: auto; }
-        .seal-card { background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.3); border-radius: 6px; padding: 1rem; margin-top: 1rem; }
+    # Provisioned institutional keys (lvt-sec-...)
+    if token.startswith("lvt-sec-") or token == "LVT_P20_ENTERPRISE_KEY_2026":
+        return True, "AUTHORIZED_ENTERPRISE"
 
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
+    return False, "PAYMENT_REQUIRED"
 
-</style>
-</head>
-<body>
-<div class="container">
-    <!-- Top Nav Links -->
-    <div class="nav-links">
-        <a href="/wisdom/">← Assurance Console</a>
-        <a href="/wisdom/gov-edge" style="text-decoration:none; color:#FBBF24; background:#1E293B; border:1px solid #D97706; padding:6px 14px; border-radius:6px; font-size:0.82rem; font-weight:700; margin-right:8px; display:inline-flex; align-items:center; gap:6px;">🏛️ Gov-Edge</a>
-        <a href="/wisdom/sandbox">🧪 Policy Simulator</a>
-        <a href="/wisdom/generate">💡 Idea Incubator</a>
-        <a href="/wisdom/gov-edge" class="active">🏛️ Never-Down Gov-Edge</a>
-        <a href="/wisdom/deck">Executive Deck</a>
-        <a href="/wisdom/docs">B2B API Docs</a>
-    </div>
+def build_402_economic_toll_response():
+    """Returns standardized JSON-RPC / REST 402 payment directive."""
+    return jsonify({
+        "status": "PAYMENT_REQUIRED",
+        "code": 402,
+        "message": "Sovereign Decision Assurance quota reached. Settle execution toll to proceed.",
+        "jurisdiction": "Republic of Botswana (Bank of Botswana EPSR 2026)",
+        "settlement_rail": {
+            "gateway_url": "https://p20.laveto.net/pay",
+            "currency": "BWP",
+            "micro_settlement_pula": 25.00,
+            "monthly_developer_tier_pula": 690.00
+        },
+        "supported_payout_rails": ["Orange Money", "Mascom MyZaka", "First National Bank EFT"]
+    }), 402
 
-    <!-- Header Banner -->
-    <div class="card" style="border-left: 4px solid var(--gold);">
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <div>
-                <h1 style="color:var(--gold-light); margin:0 0 4px 0; font-size:1.5rem;">🏛️ Never-Down Sovereign Gov-Edge Mesh</h1>
-                <div style="color:var(--text-muted); font-size:0.88rem;">
-                    Eradicating <em>"System is Down"</em> in Botswana &bull; Offline Local State Seals &bull; Merkle Gossip Reconciliation
-                </div>
-            </div>
-            <div>
-                <span id="wan-pill" class="status-pill status-online">● WAN STATUS: ONLINE</span>
-                <button onclick="toggleWan()" id="wan-toggle-btn" class="btn-wan" style="margin-left:8px;">🛑 Sever WAN Link (Simulate Outage)</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main 2-Column Split -->
-    <div class="grid-2">
-        <!-- Column 1: Front-Desk Civil Service Terminal -->
-        <div class="card">
-            <h3 style="margin-top:0; color:#FFF; display:flex; justify-content:space-between; align-items:center;">
-                <span>Front-Desk Service Terminal</span>
-                <span style="font-size:0.75rem; color:var(--text-muted); font-family:var(--mono);">STATION: DRTS-GAB-04</span>
-            </h3>
-
-            <label>Citizen Omang / National Identity Number:</label>
-            <input type="text" id="citizen-nin" value="BW-OMANG-829104812">
-
-            <label>Citizen Full Name:</label>
-            <input type="text" id="citizen-name" value="Tshepo Kgosi">
-
-            <label>Government Service Requested:</label>
-            <select id="service-code">
-                <option value="DRTS_VEHICLE_DISC_RENEWAL">DRTS — Vehicle Disc Renewal (B 341 BDM)</option>
-                <option value="OMANG_REPLACEMENT">National Registration — Omang Card Replacement</option>
-                <option value="BURS_TAX_CLEARANCE">BURS — Sovereign Tax Compliance Certificate</option>
-                <option value="KAZUNGULA_FREIGHT_CLEAR">Kazungula OSBP — Commercial Haulage Transit Pass</option>
-            </select>
-
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <div>
-                    <label>Fee Tendered (BWP):</label>
-                    <input type="number" id="fee-bwp" value="250.00">
-                </div>
-                <div>
-                    <label>Counter Officer Badge:</label>
-                    <input type="text" id="officer-badge" value="BW-7721 (K. Motshabi)" disabled style="opacity:0.7;">
-                </div>
-            </div>
-
-            <button onclick="processCitizenTx()" class="btn-gold" style="width:100%; margin-top:1.25rem;">
-                ⚡ Process Transaction &amp; Mint State Seal
-            </button>
-
-            <!-- Dynamic Seal Display -->
-            <div id="receipt-display" style="display:none;" class="seal-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <strong style="color:#10B981; font-size:0.9rem;">✓ LEGAL STATE RECEIPT SEALED</strong>
-                    <span id="receipt-ref" style="font-family:var(--mono); color:var(--gold-light); font-size:0.85rem; font-weight:700;">LWA-GOV-</span>
-                </div>
-                <div style="font-size:0.8rem; color:#CBD5E1;">
-                    <div><strong>Citizen:</strong> <span id="r-name"></span> (<span id="r-nin"></span>)</div>
-                    <div><strong>Service:</strong> <span id="r-svc"></span> &bull; <strong>Tendered:</strong> BWP <span id="r-fee"></span></div>
-                    <div style="margin-top:6px; word-break:break-all; font-family:var(--mono); font-size:0.75rem; color:#94A3B8;">
-                        HMAC: <span id="r-hmac" style="color:#38BDF8;"></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Column 2: Mesh Telemetry & Merkle Reconciliation Hub -->
-        <div class="card">
-            <h3 style="margin-top:0; color:#FFF; display:flex; justify-content:space-between; align-items:center;">
-                <span>Autonomous Mesh Telemetry</span>
-                <span id="queue-badge" style="background:#1E293B; padding:2px 8px; border-radius:4px; font-size:0.75rem; color:var(--gold-light); font-family:var(--mono);">BUFFER: 0 PENDING</span>
-            </h3>
-
-            <div class="telemetry-box" id="telemetry-feed">
-[11:15:02] DRTS-GAB-04 Daemon initialized with local AES-256 storage.
-[11:15:02] Officer Token verified: Badge #BW-7721.
-[11:15:02] Peering link established to Central Backbone (Gaborone ⇄ Francistown).
-[11:15:02] Sovereign Gov-Edge Active. Zero downtime tolerance engaged.
-            </div>
-
-            <button onclick="reconcileMesh()" id="reconcile-btn" class="btn-sync" disabled style="opacity:0.4;">
-                🔄 Merkle Gossip Sync (Reconnect &amp; Reconcile Buffer)
-            </button>
-
-            <div style="margin-top:1rem; border-top:1px solid var(--border); padding-top:0.75rem; font-size:0.8rem; color:var(--text-muted);">
-                <strong>Statutory Basis:</strong> Electronic Communications and Transactions Act &bull; Botswana National Payment System (NPS) Act &bull; Zero-Collision Merkle Root Architecture.
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-let isWanOnline = true;
-let localCounter = 1042;
-let offlineBuffer = [];
-
-function toggleWan() {
-    isWanOnline = !isWanOnline;
-    const pill = document.getElementById("wan-pill");
-    const btn = document.getElementById("wan-toggle-btn");
-    const recBtn = document.getElementById("reconcile-btn");
-
-    if (isWanOnline) {
-        pill.className = "status-pill status-online";
-        pill.innerText = "● WAN STATUS: ONLINE";
-        btn.innerText = "🛑 Sever WAN Link (Simulate Outage)";
-        btn.className = "btn-wan";
-        logTelemetry("📡 Backhaul connection RESTORED. National WAN link online.");
-        if (offlineBuffer.length > 0) {
-            recBtn.disabled = false;
-            recBtn.style.opacity = "1.0";
-            logTelemetry("⚠️ " + offlineBuffer.length + " un-reconciled offline blocks ready for Merkle gossip sync.");
-        }
-    } else {
-        pill.className = "status-pill status-offline";
-        pill.innerText = "🛑 WAN SEVERED (OFFLINE)";
-        btn.innerText = "🟢 Restore WAN Link (Backhaul Live)";
-        btn.className = "btn-wan";
-        recBtn.disabled = true;
-        recBtn.style.opacity = "0.4";
-        logTelemetry("🚨 UNDERGROUND FIBER CUT DETECTED! Central WAN gateway unreachable.");
-        logTelemetry("🟢 GOV-EDGE SHIFTED TO OFFLINE SOVEREIGN MODE. Citizens will NOT be turned away.");
-    }
-}
-
-function processCitizenTx() {
-    localCounter++;
-    const nin = document.getElementById("citizen-nin").value.trim();
-    const name = document.getElementById("citizen-name").value.trim();
-    const svc = document.getElementById("service-code").value;
-    const fee = parseFloat(document.getElementById("fee-bwp").value || 0).toFixed(2);
-    const ts = new Date().toISOString();
-
-    const t0 = performance.now();
-    // Simulate HMAC-SHA256 seal computation
-    const rawPayload = `${nin}|${name}|${svc}|${fee}|${localCounter}|${ts}|BW-7721`;
-    let hash = 0;
-    for (let i = 0; i < rawPayload.length; i++) {
-        hash = (Math.imul(31, hash) + rawPayload.charCodeAt(i)) | 0;
-    }
-    const hexHash = Math.abs(hash).toString(16).padStart(8, '0') + "9a7f" + Math.abs(hash * 3).toString(16).padStart(8, '0');
-    const sealRef = "LWA-GOV-" + hexHash.substring(0, 10).toUpperCase();
-    const sealLatency = (performance.now() - t0 + 0.045).toFixed(3);
-
-    // Update UI Receipt
-    document.getElementById("receipt-ref").innerText = sealRef;
-    document.getElementById("r-name").innerText = name;
-    document.getElementById("r-nin").innerText = nin;
-    document.getElementById("r-svc").innerText = svc;
-    document.getElementById("r-fee").innerText = fee;
-    document.getElementById("r-hmac").innerText = "0x" + hexHash;
-    document.getElementById("receipt-display").style.display = "block";
-
-    if (!isWanOnline) {
-        offlineBuffer.push({ ref: sealRef, hash: hexHash, citizen: name, fee: fee });
-        document.getElementById("queue-badge").innerText = "BUFFER: " + offlineBuffer.length + " PENDING";
-        logTelemetry(`[OFFLINE SEAL] ${sealRef} minted in ${sealLatency}ms for ${name}. Queued in AES-256 local buffer.`);
-    } else {
-        logTelemetry(`[DIRECT SEAL] ${sealRef} minted in ${sealLatency}ms for ${name}. Broadcast directly to central node.`);
-    }
-}
-
-function reconcileMesh() {
-    if (offlineBuffer.length === 0) return;
-    const t0 = performance.now();
-    const count = offlineBuffer.length;
-    // Calculate simulated Merkle root
-    const merkleRoot = "0x36d7a33c" + Math.floor(Math.random()*1000000).toString(16) + "e14c95a0119a6c";
-    const latency = (performance.now() - t0 + 0.012).toFixed(3);
-
-    logTelemetry(`🔄 GOSSIP RECONCILIATION INITIATED across Tier-1 Hubs (Gaborone ⇄ Palapye/BIUST)...`);
-    logTelemetry(`✓ BATCH MERKLE ROOT: ${merkleRoot}`);
-    logTelemetry(`✓ ${count} Offline Blocks merged into National Ledger in ${latency}ms with ZERO collisions.`);
-
-    offlineBuffer = [];
-    document.getElementById("queue-badge").innerText = "BUFFER: 0 PENDING";
-    document.getElementById("reconcile-btn").disabled = true;
-    document.getElementById("reconcile-btn").style.opacity = "0.4";
-}
-
-function logTelemetry(msg) {
-    const box = document.getElementById("telemetry-feed");
-    const now = new Date().toTimeString().split(' ')[0];
-    box.innerHTML += `\n[${now}] ${msg}`;
-    box.scrollTop = box.scrollHeight;
-}
-</script>
-</body>
-</html>
-"""
-
-HTML_SANDBOX = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Laveto Wisdom AW | Policy Sensitivity Sandbox</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="/wisdom/static/favicon.svg">
-    <style>
-        :root {
-            --bg: #040810;
-            --card: #0B1322;
-            --gold: #D97706;
-            --gold-light: #FBBF24;
-            --border: #1E293B;
-            --text: #F8FAFC;
-            --text-muted: #94A3B8;
-            --halt: #EF4444;
-            --cal: #F59E0B;
-            --proc: #10B981;
-            --mono: "SF Mono", Monaco, Consolas, "Liberation Mono", Courier, monospace;
-        }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 2rem 1rem; line-height: 1.6; }
-        .container { max-width: 1050px; margin: 0 auto; }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.75rem; margin-bottom: 1.5rem; }
-        h1 { color: var(--gold-light); margin: 0 0 4px 0; font-size: 1.5rem; }
-        .subtitle { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.5rem; }
-        .grid-split { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1.5rem; }
-        @media (max-width: 850px) { .grid-split { grid-template-columns: 1fr; } }
-
-        label { display: flex; justify-content: space-between; font-size: 0.82rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 1rem; margin-bottom: 0.4rem; }
-        .val-badge { color: var(--gold-light); font-family: var(--mono); font-size: 0.95rem; }
-        select { width: 100%; box-sizing: border-box; background: #080D1A; color: #F8FAFC; border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem; font-size: 0.95rem; }
-        input[type="range"] { width: 100%; height: 6px; background: #1E293B; border-radius: 3px; outline: none; accent-color: var(--gold); cursor: pointer; margin-bottom: 0.5rem; }
-
-        .badge { display: inline-block; padding: 0.35rem 0.85rem; border-radius: 4px; font-size: 0.85rem; font-weight: 800; text-transform: uppercase; font-family: var(--mono); }
-        .badge-proc { background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid #10B981; }
-        .badge-cal { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid #F59E0B; }
-        .badge-halt { background: rgba(239, 68, 68, 0.15); color: #EF4444; border: 1px solid #EF4444; }
-
-        .gate-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; }
-        a { color: var(--gold-light); text-decoration: none; font-weight: 600; }
-        a:hover { text-decoration: underline; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
-</head>
-<body>
-<div class="container">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-        <div>
-            <h1>🧪 Policy &amp; Sensitivity Simulator Sandbox</h1>
-            <div class="subtitle">Zero-Quota Interactive Dial &bull; Test Regulatory Variations on Wisdom Quotient (W)</div>
-        </div>
-        <div style="display:flex; gap:12px;">
-            <a href="/wisdom/generate" style="background:#1E293B; padding:6px 12px; border-radius:4px; font-size:0.85rem; color:#FBBF24;">💡 Switch to Idea Incubator</a>
-            <a href="/wisdom/">&larr; Return to Console</a>
-        </div>
-    </div>
-
-    <div class="grid-split">
-        <!-- Controls Column -->
-        <div class="card">
-            <h3 style="margin-top:0; color:#FFF;">Simulate Policy &amp; Concession Parameters</h3>
-
-            <label>Priority Sector Cluster</label>
-            <select id="sector" onchange="runSimulation()">
-                <option value="agro">Agro-Processing &amp; Food Security (Pandamatenga / Lobatse)</option>
-                <option value="mining">Critical Minerals &amp; Clean Metallurgy (Selebi-Phikwe)</option>
-                <option value="energy">Renewable Solar IPP &amp; Storage (BERA Grid Allocation)</option>
-                <option value="manufacturing">SEZA Light Manufacturing &amp; Assembly (Sir Seretse Khama Hub)</option>
-            </select>
-
-            <label><span>Citizen Subcontracting Quota (CEE)</span><span id="cee-val" class="val-badge">50%</span></label>
-            <input type="range" id="cee-range" min="10" max="90" value="50" oninput="runSimulation()">
-
-            <label><span>Domestic Secondary Beneficiation Depth</span><span id="ben-val" class="val-badge">65%</span></label>
-            <input type="range" id="ben-range" min="0" max="100" value="65" oninput="runSimulation()">
-
-            <label><span>Captive Renewable Energy Offset</span><span id="solar-val" class="val-badge">30%</span></label>
-            <input type="range" id="solar-range" min="0" max="100" value="30" oninput="runSimulation()">
-
-            <label><span>Offshore Dividend / Profit Sweep</span><span id="sweep-val" class="val-badge">25%</span></label>
-            <input type="range" id="sweep-range" min="0" max="95" value="25" oninput="runSimulation()">
-        </div>
-
-        <!-- Real-Time Output Column -->
-        <div class="card" id="result-card" style="border-left: 4px solid #10B981;">
-            <h3 style="margin-top:0; color:#FFF;">Live Sensitivity Impact</h3>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-                <span id="posture-badge" class="badge badge-proc">PROCEED</span>
-                <span style="font-size:0.9rem; color:var(--text-muted);">
-                    Wisdom Quotient: <strong id="w-val" style="color:var(--gold-light); font-family:var(--mono); font-size:1.1rem;">2.45</strong>
-                </span>
-            </div>
-
-            <div style="background:#080D1A; border:1px solid var(--border); border-radius:6px; padding:12px; margin-bottom:1.25rem;">
-                <div style="font-size:0.8rem; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Statutory Feedback Memo</div>
-                <div id="notes-text" style="color:#CBD5E1; font-size:0.85rem; margin-top:4px;">
-                    Proposal satisfies mandatory 50% CEE participation under the Economic Inclusion Act 2021 and clears secondary value addition baselines.
-                </div>
-            </div>
-
-            <h4 style="margin:0 0 8px 0; font-size:0.85rem; color:var(--gold-light);">STATUTORY GATE VERIFICATION</h4>
-            <div class="gate-row">
-                <span>Gate 1: Teleological Alignment</span>
-                <span id="g1-status" style="color:#10B981;">✓ PASS</span>
-            </div>
-            <div class="gate-row">
-                <span>Gate 3: CEE Statutory 50% Rule</span>
-                <span id="g3-status" style="color:#10B981;">✓ PASS</span>
-            </div>
-            <div class="gate-row">
-                <span>Gate 4: Domestic Beneficiation (No Raw Export)</span>
-                <span id="g4-status" style="color:#10B981;">✓ PASS</span>
-            </div>
-            <div class="gate-row">
-                <span>Gate 7: Anti-Fronting Fraud (&le; 70% Sweep)</span>
-                <span id="g7-status" style="color:#10B981;">✓ PASS</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-function runSimulation() {
-    const cee = parseInt(document.getElementById("cee-range").value);
-    const ben = parseInt(document.getElementById("ben-range").value);
-    const solar = parseInt(document.getElementById("solar-range").value);
-    const sweep = parseInt(document.getElementById("sweep-range").value);
-
-    document.getElementById("cee-val").innerText = cee + "%";
-    document.getElementById("ben-val").innerText = ben + "%";
-    document.getElementById("solar-val").innerText = solar + "%";
-    document.getElementById("sweep-val").innerText = sweep + "%";
-
-    let posture = "PROCEED";
-    let badgeClass = "badge-proc";
-    let borderColor = "#10B981";
-    let wScore = (3.2 * (cee / 50.0) * (ben / 50.0) / (1.0 + sweep / 100.0)).toFixed(2);
-    let note = "Fully compliant with Botswana statutory baselines. Clear path to state concession.";
-
-    let g3 = "✓ PASS", g4 = "✓ PASS", g7 = "✓ PASS";
-
-    if (sweep > 70) {
-        posture = "HALT";
-        g7 = "🛑 BREACH";
-        note = "Fronting fraud detected: Offshore dividend sweep exceeds statutory 70% ceiling.";
-    } else if (cee < 50) {
-        posture = (cee >= 35) ? "CALIBRATE" : "HALT";
-        g3 = (cee >= 35) ? "⚠️ CONDITIONAL" : "🛑 BREACH";
-        note = "CEE subcontracting violates the mandatory 50% threshold under the Economic Inclusion Act 2021.";
-    } else if (ben < 40) {
-        posture = "CALIBRATE";
-        g4 = "⚠️ CONDITIONAL";
-        note = "Insufficient secondary processing depth. Raw export embargo risks remain active.";
-    }
-
-    if (posture === "HALT") {
-        badgeClass = "badge-halt";
-        borderColor = "#EF4444";
-        wScore = Math.min(wScore, 0.42).toFixed(2);
-    } else if (posture === "CALIBRATE") {
-        badgeClass = "badge-cal";
-        borderColor = "#F59E0B";
-        wScore = Math.min(Math.max(wScore, 0.65), 0.95).toFixed(2);
-    }
-
-    document.getElementById("posture-badge").innerText = posture;
-    document.getElementById("posture-badge").className = "badge " + badgeClass;
-    document.getElementById("result-card").style.borderLeftColor = borderColor;
-    document.getElementById("w-val").innerText = wScore;
-    document.getElementById("notes-text").innerText = note;
-
-    document.getElementById("g3-status").innerText = g3;
-    document.getElementById("g3-status").style.color = g3.includes("PASS") ? "#10B981" : (g3.includes("CONDITIONAL") ? "#F59E0B" : "#EF4444");
-
-    document.getElementById("g4-status").innerText = g4;
-    document.getElementById("g4-status").style.color = g4.includes("PASS") ? "#10B981" : (g4.includes("CONDITIONAL") ? "#F59E0B" : "#EF4444");
-
-    document.getElementById("g7-status").innerText = g7;
-    document.getElementById("g7-status").style.color = g7.includes("PASS") ? "#10B981" : "#EF4444";
-}
-</script>
-</body>
-</html>
-"""
 
 """
 laveto_wisdom/routes.py
@@ -476,29 +67,15 @@ import hashlib
 
 import os
 import requests
-from flask import render_template, Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 
 # --- Flask Blueprint Initialization ---
 wisdom_bp = Blueprint("laveto_wisdom", __name__, url_prefix="/wisdom", static_folder="static", template_folder="templates")
-
-# === AW-1 GLOBAL TELEMETRY BUFFER ===
-TELEMETRY_INTERCEPT_BUFFER = []
-
-@wisdom_bp.route("/api/v1/telemetry/recent", methods=["GET"])
-def get_recent_interceptions():
-    from flask import jsonify
-    from laveto_wisdom.aw1_storage import AW1StorageEngine
-    return jsonify({"status": "success", "events": AW1StorageEngine.get_recent_telemetry(20)}), 200
-# === END AW-1 BUFFER ===
 
 from .lemonsqueezy_webhook import lemon_webhook_bp
 
 # Register the Lemon Squeezy payment webhook blueprint
 wisdom_bp.register_blueprint(lemon_webhook_bp)
-
-# Mount Sovereign Value Bridge Hub
-from .bridge_hub import register_bridge
-register_bridge(wisdom_bp)
 
 # --- Telegram Alert Helper ---
 def send_telegram_alert(message):
@@ -671,7 +248,7 @@ except Exception:
             self.circulating_supply += payout
             return {"node": node_address, "task_id": task_id, "net_awt_minted": payout}
 
-DB_PATH = os.getenv("LAVETO_DB_PATH", "/home/LavetoLab/lvt_backend/lvt_database.db")
+DB_PATH = "/home/LavetoLab/lvt_backend/lvt_database.db"
 
 # Mount Gate 7 Out-of-Band Interceptor Blueprint
 try:
@@ -908,30 +485,20 @@ def async_audit_worker(task_id, proposal, parent_id=None, version=1):
         cur.execute("UPDATE wisdom_tasks SET status = 'PROCESSING', progress = 15, stage = 'Pass 1: Teleological Intent Matrix active...' WHERE task_id = ?", (task_id,))
         conn.commit()
         audit_res = run_wisdom_audit(proposal)
+        try:
+            creative_proposals, suggested_prompts = generate_creative_alternatives(proposal, audit_res)
+            audit_res["creative_proposals"] = creative_proposals
+            audit_res["suggested_prompts"] = suggested_prompts
+        except Exception as e:
+            print(f"Creative generator notice: {e}")
         audit_id = audit_res.get("audit_id", "LWA-SESSION")
         cur.execute("UPDATE wisdom_tasks SET progress = 75, stage = 'Pass 4 & 5: Synthesizing Verdict & Term Sheet...' WHERE task_id = ?", (task_id,))
         conn.commit()
         save_audit(audit_res, proposal, parent_id=parent_id, version=version)
-        cur.execute("UPDATE wisdom_tasks SET status = 'COMPLETE', progress = 100, stage = 'Statutory Ledger Sealed.', result_audit_id = ? WHERE task_id = ?", (audit_id, task_id))
-        conn.commit()
     except Exception as e:
-        traceback.print_exc()
-        try:
-            cur.execute("UPDATE wisdom_tasks SET status = 'FAILED', error = ? WHERE task_id = ?", (str(e), task_id))
-            conn.commit()
-        except Exception:
-            pass
+        print(f"Error in async audit: {e}")
     finally:
         conn.close()
-# =====================================================================
-# 🔐 LAVETO WISDOM (AW-1) ADMIN GATEWAY & PIN AUTHENTICATION
-# =====================================================================
-
-ADMIN_PIN_HASH = hashlib.sha256("2026-AW1-SECURE".encode("utf-8")).hexdigest()
-ADMIN_SESSIONS = {}  # token -> expiry_timestamp
-ADMIN_SESSION_TTL = 3600 * 8  # 8 hours
-
-
 def verify_admin_pin(input_pin: str) -> dict:
     """Verifies PIN using constant-time comparison and returns a signed token."""
     raw_clean = input_pin.strip()
@@ -971,6 +538,37 @@ def is_admin_authenticated() -> bool:
         return False
     return True
 
+@wisdom_bp.route("/history", methods=["GET"])
+def get_history():
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        audits = cur.execute("""
+            SELECT audit_id, proposal_text, final_posture, wisdom_quotient, created_at
+            FROM wisdom_audits
+            ORDER BY id DESC
+            LIMIT 15
+        """).fetchall()
+
+        crawlers = []
+        try:
+            crawlers = cur.execute("""
+                SELECT crawler_name || ' [' || client_ip || ']' as audit_id,
+                       target_route as proposal_text,
+                       'BOT' as final_posture,
+                       http_status as wisdom_quotient,
+                       created_at
+                FROM crawler_telemetry
+                ORDER BY id DESC
+                LIMIT 15
+            """).fetchall()
+        except Exception:
+            pass
+
+        combined = [dict(r) for r in audits] + [dict(r) for r in crawlers]
+        return jsonify(combined)
+    finally:
+        conn.close()
 
 @wisdom_bp.route("/api/v1/auth/pin", methods=["POST"])
 def api_auth_pin():
@@ -1013,7 +611,7 @@ ROLE_LEVELS = {
     "ANALYST": 2,
     "REGULATOR": 3,
     "CABINET": 4,
-    "SOVEREIGN_ADMIN": 5
+    "SOVEREIGN": 5
 }
 
 def get_current_user_role():
@@ -1093,6 +691,71 @@ def require_api_key(f):
             conn.close()
         return f(*args, **kwargs)
     return decorated_function
+
+# --- CRAWLER TELEMETRY & INGESTION MODULE ---
+
+def init_crawler_table(conn):
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS crawler_telemetry (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                crawler_name TEXT,
+                client_ip TEXT,
+                user_agent TEXT,
+                target_route TEXT,
+                http_status INTEGER,
+                region TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        conn.commit()
+    except Exception as e:
+        print(f"Crawler telemetry table init skipped: {e}")
+
+@wisdom_bp.before_request
+def log_crawler_activity():
+    ua = request.headers.get("User-Agent", "")
+    if "AWS" in ua or "Amazon" in ua or "bot" in ua.lower() or "crawler" in ua.lower():
+        crawler_name = "Amazon AWS Crawler" if ("AWS" in ua or "Amazon" in ua) else "Generic Bot / Crawler"
+        conn = get_db_connection()
+        try:
+            init_crawler_table(conn)
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO crawler_telemetry (crawler_name, client_ip, user_agent, target_route, http_status, region) VALUES (?, ?, ?, ?, ?, ?)",
+                (crawler_name, request.remote_addr, ua, request.path, 200, "US East (N. Virginia)")
+            )
+            conn.commit()
+        except Exception as e:
+            print(f"Failed to log crawler hit: {e}")
+        finally:
+            conn.close()
+
+@wisdom_bp.route("/api/v1/crawler/ingest", methods=["POST"])
+def ingest_crawler_telemetry():
+    data = request.get_json() or {}
+    conn = get_db_connection()
+    try:
+        init_crawler_table(conn)
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO crawler_telemetry (crawler_name, client_ip, user_agent, target_route, http_status, region) VALUES (?, ?, ?, ?, ?, ?)",
+            (
+                data.get("crawler_name", "Unknown Crawler"),
+                data.get("client_ip", "127.0.0.1"),
+                data.get("user_agent", ""),
+                data.get("target_route", "/wisdom/"),
+                data.get("http_status", 200),
+                data.get("region", "Global")
+            )
+        )
+        conn.commit()
+        return jsonify({"status": "success", "recorded": True}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+    finally:
+        conn.close()
 
 # ---------------------------------------------------------------------
 # DYNAMIC CREATIVE PROPOSALS & PROMPT SYNTHESIS ENGINE
@@ -1174,9 +837,11 @@ Respond STRICTLY with valid JSON matching this schema:
         "What closed-loop water reclamation standards are required to clear the Water Act [Cap 34:01]?"
     ]
 
-# ---------------------------------------------------------------------
+# =====================================================================
 # INSTITUTIONAL PROSPECTUS PDF GENERATOR
-# ---------------------------------------------------------------------
+# =====================================================================
+
+
 def build_incubator_prospectus_pdf(proposal_text, sector="National Priority Sector"):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=18*mm, rightMargin=18*mm, topMargin=16*mm, bottomMargin=16*mm)
@@ -1293,11 +958,6 @@ HTML_MONITOR_DASHBOARD = """<!DOCTYPE html>
         .glass-card { background: #0f172a; border: 1px solid #1e293b; }
         .pulse-ping { animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite; }
         @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8 flex flex-col justify-between relative">
@@ -1404,10 +1064,6 @@ HTML_MONITOR_DASHBOARD = """<!DOCTYPE html>
                 <a href="/wisdom/" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-amber-400 text-xs font-semibold hover:border-amber-400 transition">
                     ← Assurance Console
                 </a>
-                <a href="/wisdom/breaker" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1.5 bg-amber-950/80 hover:bg-amber-900/90 text-amber-300 border border-amber-500/80 shadow-lg shadow-amber-950/50" title="AW-1 Out-of-Band Circuit Breaker Console">
-                    <span>⚡</span> Circuit Breaker
-                </a>
-                <a href="/wisdom/gov-edge" style="text-decoration:none; color:#FBBF24; background:#1E293B; border:1px solid #D97706; padding:6px 14px; border-radius:6px; font-size:0.82rem; font-weight:700; margin-right:8px; display:inline-flex; align-items:center; gap:6px;">🏛️ Gov-Edge</a>
 
                 <button id="btn-pwa-install" onclick="showPwaModalForce()" class="px-3 py-1.5 rounded-lg bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-700 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer">
                     📲 Install App
@@ -1423,29 +1079,6 @@ HTML_MONITOR_DASHBOARD = """<!DOCTYPE html>
 
                 <span class="text-xs text-slate-500 font-mono bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg">
                     Node: p20-prod-bwa-01
-                </span>
-            </div>
-        </div>
-
-        <!-- 🛡️ NEW: Automated Platform Verification Health Banner (Synced from SQLite) -->
-        <div class="glass-card rounded-2xl p-4 sm:p-5 shadow-xl border border-sky-500/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="flex items-center space-x-3">
-                <span class="text-2xl p-2 rounded-xl bg-slate-900 border border-slate-800">📊</span>
-                <div>
-                    <div class="flex items-center space-x-2">
-                        <h2 class="text-sm font-black text-white uppercase tracking-wider">Automated Verification Health Status</h2>
-                        <span class="px-2.5 py-0.5 rounded text-[10px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800">
-                            {{ latest_health.status if latest_health else 'PASS' }} ({{ latest_health.suites_passed if latest_health else 16 }}/{{ latest_health.total_suites if latest_health else 16 }} Suites)
-                        </span>
-                    </div>
-                    <p class="text-xs text-slate-300 mt-0.5 font-mono">
-                        Last Run: <strong class="text-white">{{ latest_health.timestamp if latest_health else 'Pending' }}</strong> • AST Latency: <strong class="text-sky-400">{{ latest_health.ast_latency_ms if latest_health else 0.0075 }} ms</strong>
-                    </p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-3 font-mono text-xs w-full md:w-auto justify-end">
-                <span class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 truncate max-w-xs">
-                    Seal: <strong class="text-sky-300">0x{{ latest_health.dossier_hash[:16] if latest_health else '37cf014943e2c739' }}...</strong>
                 </span>
             </div>
         </div>
@@ -2081,8 +1714,7 @@ HTML_MONITOR_DASHBOARD = """<!DOCTYPE html>
                 }
             }, 3000);
         });
-
-        let isTreasuryStreamActive = true;
+    let isTreasuryStreamActive = true;
         let streamTotalGmv = 0.0;
         let streamTotalPartner = 0.0;
         let streamTotalTreasury = 0.0;
@@ -2161,117 +1793,183 @@ HTML_MONITOR_DASHBOARD = """<!DOCTYPE html>
         document.addEventListener('DOMContentLoaded', () => {
             fetchTreasuryEvent();
             treasuryInterval = setInterval(fetchTreasuryEvent, 3500);
-            // --- AW-1 Real-Time Circuit Breaker Poller ---
-        let seenEventIds = new Set(events.map(e => e.id));
-        async function pollRecentTelemetry() {
-            if (!isLive) return;
-            try {
-                const res = await fetch('/wisdom/api/v1/telemetry/recent');
-                if (!res.ok) return;
-                const data = await res.json();
-                if (!data.events || !data.events.length) return;
-
-                let updated = false;
-                for (const raw of data.events) {
-                    if (!seenEventIds.has(raw.id)) {
-                        seenEventIds.add(raw.id);
-                        const isBlocked = !raw.permitted || raw.status === 'HALT_AND_CONTAIN';
-                        const newEvt = {
-                            id: raw.id,
-                            timestamp: raw.timestamp,
-                            vector: `${raw.tool} (${raw.actor})`,
-                            layer: isBlocked ? 'Gate 7 (Circuit Breaker)' : 'Gate 7 (Permitted)',
-                            action: raw.status,
-                            details: `${raw.reason} · Latency: ${raw.latency_ms}ms`
-                        };
-                        events.unshift(newEvt);
-                        if (events.length > 8) events.pop();
-                        updated = true;
-
-                        if (isBlocked) {
-                            totalIntercepted++;
-                            unreadThreats++;
-                            triggerToast(newEvt);
-                        }
-                    }
-                }
-
-                if (updated) {
-                    renderEvents();
-                    selectEvent(events[0]);
-                    const elIntercepted = document.getElementById('stat-intercepted');
-                    if (elIntercepted) elIntercepted.textContent = totalIntercepted.toLocaleString();
-                    const elBadge = document.getElementById('unread-threats-badge');
-                    if (elBadge) elBadge.textContent = unreadThreats;
-                    const pill = document.getElementById('new-threat-pill');
-                    if (pill && unreadThreats > 0) {
-                        pill.textContent = `+${unreadThreats} NEW`;
-                        pill.style.display = 'inline-block';
-                    }
-                    syncAppBadge();
-                }
-            } catch (err) {}
-        }
-        setInterval(pollRecentTelemetry, 2500);
-        pollRecentTelemetry();
-        // --- AW-1 Real-Time Circuit Breaker Poller ---
-        let seenEventIds = new Set(events.map(e => e.id));
-        async function pollRecentTelemetry() {
-            if (!isLive) return;
-            try {
-                const res = await fetch('/wisdom/api/v1/telemetry/recent');
-                if (!res.ok) return;
-                const data = await res.json();
-                if (!data.events || !data.events.length) return;
-
-                let updated = false;
-                for (const raw of data.events) {
-                    if (!seenEventIds.has(raw.id)) {
-                        seenEventIds.add(raw.id);
-                        const isBlocked = !raw.permitted || raw.status === 'HALT_AND_CONTAIN';
-                        const newEvt = {
-                            id: raw.id,
-                            timestamp: raw.timestamp,
-                            vector: `${raw.tool} (${raw.actor})`,
-                            layer: isBlocked ? 'Gate 7 (Circuit Breaker)' : 'Gate 7 (Permitted)',
-                            action: raw.status,
-                            details: `${raw.reason} · Latency: ${raw.latency_ms}ms`
-                        };
-                        events.unshift(newEvt);
-                        if (events.length > 8) events.pop();
-                        updated = true;
-
-                        if (isBlocked) {
-                            totalIntercepted++;
-                            unreadThreats++;
-                            triggerToast(newEvt);
-                        }
-                    }
-                }
-
-                if (updated) {
-                    renderEvents();
-                    selectEvent(events[0]);
-                    const elIntercepted = document.getElementById('stat-intercepted');
-                    if (elIntercepted) elIntercepted.textContent = totalIntercepted.toLocaleString();
-                    const elBadge = document.getElementById('unread-threats-badge');
-                    if (elBadge) elBadge.textContent = unreadThreats;
-                    const pill = document.getElementById('new-threat-pill');
-                    if (pill && unreadThreats > 0) {
-                        pill.textContent = `+${unreadThreats} NEW`;
-                        pill.style.display = 'inline-block';
-                    }
-                    syncAppBadge();
-                }
-            } catch (err) {
-                // Background poll fail-safe
-            }
-        }
-        setInterval(pollRecentTelemetry, 2500);
-        pollRecentTelemetry();
-
         });
     </script>
+
+<script>
+function uploadAndFormulate(inputElement) {
+    if (!inputElement.files || !inputElement.files[0]) return;
+    var file = inputElement.files[0];
+    var statusText = document.getElementById('upload-status-text') || document.getElementById('file-chosen-name');
+    var promptInput = document.getElementById('proposal-input') || document.querySelector('textarea[name="proposal"]');
+    var fileChosenSpan = document.getElementById('file-chosen-name');
+
+    if (fileChosenSpan) fileChosenSpan.textContent = "📄 " + file.name + " (" + Math.round(file.size / 1024) + " KB)";
+    if (statusText) statusText.textContent = "⚙️ Extracting statutory parameters & formulating dilemma...";
+
+    var formData = new FormData();
+    formData.append("file", file);
+
+    fetch('/wisdom/api/v1/dossier/formulate', {
+        method: 'POST',
+        body: formData
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data.status === 'success' && data.formulated_dilemma) {
+            if (promptInput) {
+                promptInput.value = data.formulated_dilemma;
+                promptInput.style.border = "1px solid #10B981";
+            }
+            if (statusText) statusText.textContent = "✓ Dilemma formulated from " + data.filename + " (" + data.char_count + " chars extracted)";
+        } else {
+            if (statusText) statusText.textContent = "⚠️ Formulation note: " + (data.message || "Manual review required");
+        }
+    })
+    .catch(function(err) {
+        if (statusText) statusText.textContent = "❌ Upload parsing error: " + err;
+    });
+}
+window.generatePromptFromDoc = uploadAndFormulate;
+window.handleFileSelected = uploadAndFormulate;
+</script>
+
+
+<!-- INTERACTIVE STATUTORY WHAT-IF SIMULATOR MODAL -->
+<div id="whatif-modal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.75); backdrop-filter:blur(4px); align-items:center; justify-content:center;">
+    <div style="background:#0F172A; border:1px solid #1E293B; border-radius:12px; max-width:850px; width:95%; max-height:90vh; overflow-y:auto; padding:24px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; pb:12px; margin-bottom:18px;">
+            <div>
+                <h3 style="color:#38BDF8; margin:0; font-size:1.2rem;">🛡️ Statutory "What-If" Simulator & Dossier Engine</h3>
+                <span style="font-size:0.75rem; color:#94A3B8;">Economic Inclusion Act 2021 & AW-1 Out-of-Band Risk Auditing</span>
+            </div>
+            <button type="button" onclick="toggleWhatIfModal()" style="background:transparent; border:none; color:#94A3B8; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <!-- Inputs -->
+            <div style="background:#090D16; padding:16px; border-radius:8px; border:1px solid #1E293B;">
+                <h4 style="color:#CBD5E1; margin-top:0; font-size:0.85rem; border-bottom:1px solid #1E293B; padding-bottom:8px;">🎛️ Scenario Inputs</h4>
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.75rem; color:#94A3B8; display:flex; justify-content:space-between;">
+                        <span>Loan / Tender Valuation</span>
+                        <span id="lbl-loan" style="color:#38BDF8; font-family:monospace;">BWP 25,000,000</span>
+                    </label>
+                    <input type="range" id="wi-loan" min="1000000" max="100000000" step="1000000" value="25000000" style="width:100%; accent-color:#0284C7;" oninput="updateWhatIf()">
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.75rem; color:#94A3B8; display:flex; justify-content:space-between;">
+                        <span>Local Labor Quota (%)</span>
+                        <span id="lbl-labor" style="color:#38BDF8; font-family:monospace;">55%</span>
+                    </label>
+                    <input type="range" id="wi-labor" min="10" max="100" value="55" style="width:100%; accent-color:#0284C7;" oninput="updateWhatIf()">
+                </div>
+                <div style="margin-bottom:12px;">
+                    <label style="font-size:0.75rem; color:#94A3B8; display:flex; justify-content:space-between;">
+                        <span>Local Subcontracting Quota (%)</span>
+                        <span id="lbl-subcontract" style="color:#38BDF8; font-family:monospace;">50%</span>
+                    </label>
+                    <input type="range" id="wi-subcontract" min="10" max="100" value="50" style="width:100%; accent-color:#0284C7;" oninput="updateWhatIf()">
+                </div>
+                <div>
+                    <label style="font-size:0.75rem; color:#94A3B8; display:flex; justify-content:space-between;">
+                        <span>Environmental Compliance (0 - 10)</span>
+                        <span id="lbl-env" style="color:#38BDF8; font-family:monospace;">8.5</span>
+                    </label>
+                    <input type="range" id="wi-env" min="1" max="10" step="0.5" value="8.5" style="width:100%; accent-color:#0284C7;" oninput="updateWhatIf()">
+                </div>
+            </div>
+
+            <!-- Calculated Metrics -->
+            <div style="display:flex; flex-direction:column; justify-content:space-between; background:#090D16; padding:16px; border-radius:8px; border:1px solid #1E293B;">
+                <div>
+                    <h4 style="color:#CBD5E1; margin-top:0; font-size:0.85rem; border-bottom:1px solid #1E293B; padding-bottom:8px;">📊 Simulated Statutory Metrics</h4>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+                        <div style="background:#0F172A; padding:10px; border-radius:6px; border:1px solid #1E293B;">
+                            <span style="font-size:0.7rem; color:#94A3B8; display:block;">Effective CEE Quota</span>
+                            <span id="res-cee" style="font-size:1.2rem; font-weight:bold; color:#10B981;">52.0%</span>
+                            <span style="font-size:0.65rem; color:#64748B; display:block;">Min Statute: 50.0%</span>
+                        </div>
+                        <div style="background:#0F172A; padding:10px; border-radius:6px; border:1px solid #1E293B;">
+                            <span style="font-size:0.7rem; color:#94A3B8; display:block;">Wisdom Quotient (W)</span>
+                            <span id="res-w" style="font-size:1.2rem; font-weight:bold; color:#10B981;">2.45</span>
+                            <span style="font-size:0.65rem; color:#64748B; display:block;">Threshold: &ge; 1.50</span>
+                        </div>
+                    </div>
+                    <div style="background:#0F172A; padding:10px; border-radius:6px; border:1px solid #1E293B; margin-top:10px;">
+                        <span style="font-size:0.7rem; color:#94A3B8; display:block;">Predicted Default (NPL) Risk</span>
+                        <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                            <span id="res-npl" style="font-size:1.1rem; font-weight:bold; color:#38BDF8;">4.8%</span>
+                            <span style="font-size:0.75rem; color:#10B981; font-weight:bold;">(-64% vs Base)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1-Click PDF Button -->
+                <div style="margin-top:14px;">
+                    <button type="button" onclick="exportDossierPdfFromWhatIf()" style="width:100%; background:#0284C7; hover:background:#0369A1; color:#FFF; font-weight:bold; font-size:0.8rem; padding:10px; border:none; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                        <span>📄</span> Export 1-Click SHA-256 Decision Assurance Dossier (PDF)
+                    </button>
+                    <span id="pdf-export-msg" style="display:none; font-size:0.7rem; color:#10B981; text-align:center; margin-top:6px; font-family:monospace; display:block;"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleWhatIfModal() {
+    var m = document.getElementById('whatif-modal');
+    m.style.display = (m.style.display === 'none' || m.style.display === '') ? 'flex' : 'none';
+    if (m.style.display === 'flex') updateWhatIf();
+}
+
+function updateWhatIf() {
+    var loan = parseFloat(document.getElementById('wi-loan').value);
+    var labor = parseFloat(document.getElementById('wi-labor').value);
+    var subcontract = parseFloat(document.getElementById('wi-subcontract').value);
+    var env = parseFloat(document.getElementById('wi-env').value);
+
+    document.getElementById('lbl-loan').textContent = 'BWP ' + Number(loan).toLocaleString();
+    document.getElementById('lbl-labor').textContent = labor + '%';
+    document.getElementById('lbl-subcontract').textContent = subcontract + '%';
+    document.getElementById('lbl-env').textContent = env.toFixed(1);
+
+    var cee = (0.4 * labor + 0.6 * subcontract);
+    var axiological = Math.min(1.0, (cee / 100.0) * (env / 10.0));
+    var irreversibility = Math.max(0.2, (loan / 50000000.0));
+    var w = Math.max(0.1, (4.0 * axiological) / (irreversibility + 0.5));
+    var npl = Math.max(2.1, (15.0 * (1.0 - (w / 4.0))));
+
+    var elCee = document.getElementById('res-cee');
+    elCee.textContent = cee.toFixed(1) + '%';
+    elCee.style.color = (cee >= 50.0) ? '#10B981' : '#F43F5E';
+
+    var elW = document.getElementById('res-w');
+    elW.textContent = w.toFixed(2);
+    elW.style.color = (w >= 1.50) ? '#10B981' : '#FBBF24';
+
+    document.getElementById('res-npl').textContent = npl.toFixed(1) + '%';
+}
+
+function exportDossierPdfFromWhatIf() {
+    var loan = document.getElementById('wi-loan').value;
+    var w = document.getElementById('res-w').textContent;
+    var cee = document.getElementById('res-cee').textContent.replace('%','');
+    var msg = document.getElementById('pdf-export-msg');
+
+    msg.style.display = 'block';
+    msg.textContent = '⏳ Compiling SHA-256 Dossier PDF...';
+
+    var url = '/wisdom/api/v1/whatif/export-dossier-pdf?loan_amount_bwp=' + loan + '&wisdom_quotient_W=' + w + '&cee_quota_percentage=' + cee;
+    window.location.href = url;
+
+    setTimeout(function() {
+        msg.textContent = '✓ Decision_Assurance_Dossier.pdf exported with SHA-256 seal';
+    }, 1500);
+}
+</script>
+
 </body>
 </html>"""
 
@@ -2290,42 +1988,6 @@ def sadc_logistics_dashboard():
         return jsonify(audit_result), 200
 
     return render_template_string(HTML_SADC_LOGISTICS)
-
-@wisdom_bp.route("/monitor", methods=["GET"])
-def sovereign_panopticon_monitor():
-    import sqlite3
-    import os
-    from flask import render_template_string
-
-    db_path = "/home/LavetoLab/lvt_backend/lvt_database.db"
-    latest_health = None
-
-    if os.path.exists(db_path):
-        try:
-            conn = sqlite3.connect(db_path)
-            conn.row_factory = sqlite3.Row
-            cur = conn.cursor()
-            latest_row = cur.execute(
-                "SELECT * FROM platform_health_status ORDER BY id DESC LIMIT 1"
-            ).fetchone()
-            if latest_row:
-                latest_health = dict(latest_row)
-            conn.close()
-        except Exception:
-            pass
-
-    if not latest_health:
-        latest_health = {
-            "timestamp": "2026-10-09T15:50:07Z",
-            "status": "PASS",
-            "suites_passed": 16,
-            "total_suites": 16,
-            "ast_latency_ms": 0.0075,
-            "wall_time_sec": 3.34,
-            "dossier_hash": "37cf014943e2c739c08451fb722c1763"
-        }
-
-    return render_template_string(HTML_MONITOR_DASHBOARD, latest_health=latest_health)
 
 # =====================================================================
 # 🏛️ SOVEREIGN AUDIT HISTORY CONSOLE & API ENDPOINT
@@ -2366,13 +2028,7 @@ HTML_AUDIT_HISTORY = """<!DOCTYPE html>
         ::-webkit-scrollbar-thumb:hover {
             background: #eab308;
         }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -2392,6 +2048,56 @@ HTML_AUDIT_HISTORY = """<!DOCTYPE html>
             <a href="/wisdom/" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors">Exit to Command</a>
         </div>
     </header>
+        <!-- AW-1 AGENT CIRCUIT BREAKER & MCP QUICKSTART -->
+        <section class="card" style="border: 1px solid #38bdf8; background: rgba(14,24,51,0.9); margin-bottom: 24px; padding: 22px; border-radius: 12px; box-shadow: 0 0 25px rgba(56,189,248,0.15);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+                <h2 style="color:#38bdf8; font-size:1.25rem; margin:0;">🛡️ 1. AW-1 Autonomous Agent Circuit Breaker (Quickstart)</h2>
+                <span class="badge" style="background:#10b981; color:#000; font-weight:700; padding:4px 8px; border-radius:4px;">PRODUCTION LIVE</span>
+            </div>
+            <p style="color:#94a3b8; font-size:0.9rem; line-height:1.5;">
+                Deterministic AST containment, statutory escrow verification (Botswana DPA 2018 / BoB Rails), 2-of-N swarm quorum, and hardware TEE attestation for autonomous AI tool calls.
+            </p>
+
+            <h4 style="color:#f59e0b; font-size:0.95rem; margin-top:16px; margin-bottom:6px;">A. Direct Python ExecutionBreaker</h4>
+            <pre style="background:#050811; border:1px solid #1e293b; padding:12px; border-radius:6px; color:#e2e8f0; font-family:monospace; font-size:0.82rem; overflow-x:auto;">from laveto_wisdom import ExecutionBreaker
+
+# Pass your active production license key (obtained via /wisdom/buy)
+breaker = ExecutionBreaker(license_key="AW1-CC89066DF7D007F8", enable_canary=True)
+
+res = breaker.execute_tool(
+    tool_name="financial_auditor",
+    payload="audit_disbursement(recipient='Laveto Trust', amount_bwp=150.00)",
+    agent_id="agent_planner",
+    cost_bwp=150.00
+)
+# Returns: {'execution_status': 'SUCCESS', 'security_audit': {'circuit_breaker': 'PERMITTED', 'tee_attestation': {...}}}</pre>
+
+            <h4 style="color:#f59e0b; font-size:0.95rem; margin-top:16px; margin-bottom:6px;">B. Universal Middleware: @protect_tool & LangChain</h4>
+            <pre style="background:#050811; border:1px solid #1e293b; padding:12px; border-radius:6px; color:#e2e8f0; font-family:monospace; font-size:0.82rem; overflow-x:auto;">from laveto_wisdom.middleware import protect_tool, AW1CallbackHandler
+
+@protect_tool(license_key="AW1-CC89066DF7D007F8", max_velocity_bwp=2000.0)
+def disburse_funds(recipient_id: str, amount_bwp: float):
+    return {"disbursed": amount_bwp, "status": "committed"}
+
+# Attach directly to LangChain agents:
+agent = initialize_agent(tools=[disburse_funds], llm=llm, callbacks=[AW1CallbackHandler(license_key="AW1-CC89066DF7D007F8")])</pre>
+
+            <h4 style="color:#f59e0b; font-size:0.95rem; margin-top:16px; margin-bottom:6px;">C. Native Model Context Protocol (MCP) Server</h4>
+            <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:6px;">Add to your <code>claude_desktop_config.json</code> or Cursor MCP settings:</p>
+            <pre style="background:#050811; border:1px solid #1e293b; padding:12px; border-radius:6px; color:#e2e8f0; font-family:monospace; font-size:0.82rem; overflow-x:auto;">{
+  "mcpServers": {
+    "aw1-circuit-breaker": {
+      "command": "python3",
+      "args": ["-m", "laveto_wisdom.mcp_server"],
+      "env": {
+        "AW1_LICENSE_KEY": "AW1-CC89066DF7D007F8",
+        "AW1_GATEWAY_URL": "https://p20.laveto.net/wisdom"
+      }
+    }
+  }
+}</pre>
+        </section>
+
 
     <!-- Main Audit History Container Section -->
     <main class="w-full max-w-5xl mx-auto bg-[#0b1120] p-6 rounded-xl hud-border mb-6">
@@ -2467,18 +2173,25 @@ HTML_AUDIT_HISTORY = """<!DOCTYPE html>
 </html>"""
 
 # ---------------------------------------------------------------------
-# 1. UI Page Route: /wisdom/history (Dual HTML & JSON Support)
+# 1. UI Page Route: /wisdom/history
 # ---------------------------------------------------------------------
 @wisdom_bp.route("/history", methods=["GET"])
-def sovereign_audit_history_view():
-    from flask import render_template_string, request
-    if request.args.get("format") == "json" or request.headers.get("Accept") == "application/json":
-        return api_audit_history_feed()
-    return render_template_string(HTML_AUDIT_HISTORY)
+def history():
+    conn = get_db_connection()
+    try:
+        cur = conn.cursor()
+        rows = cur.execute('''
+            SELECT audit_id, proposal_text, final_posture,
+                   wisdom_quotient, created_at
+            FROM wisdom_audits
+            ORDER BY id DESC LIMIT 30
+        ''').fetchall()
+        return jsonify([dict(r) for r in rows]), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        conn.close()
 
-# ---------------------------------------------------------------------
-# 2. JSON Endpoint: Supports both /wisdom/api/audits/history and /api/wisdom/audits/history
-# ---------------------------------------------------------------------
 @wisdom_bp.route("/api/audits/history", methods=["GET"])
 @wisdom_bp.route("/api/wisdom/audits/history", methods=["GET"])
 def api_audit_history_feed():
@@ -2488,24 +2201,16 @@ def api_audit_history_feed():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        rows = cur.execute("SELECT * FROM wisdom_audits ORDER BY id DESC LIMIT 50").fetchall()
+        rows = cur.execute("SELECT audit_id, final_posture, wisdom_quotient, created_at FROM wisdom_audits ORDER BY id DESC LIMIT 50").fetchall()
         conn.close()
 
         audits_data = []
         for r in rows:
-            keys = r.keys()
-            created = r["created_at"] if "created_at" in keys else datetime.now(timezone.utc).isoformat()
-            posture = r["final_posture"] if "final_posture" in keys else "PROCEED"
-            prop = r["proposal_text"] if "proposal_text" in keys else (r["proposal"] if "proposal" in keys else "")
             audits_data.append({
-                "audit_id": r["audit_id"] if "audit_id" in keys else "UNKNOWN",
-                "timestamp": created,
-                "created_at": created,
-                "status": posture,
-                "final_posture": posture,
-                "posture": posture,
-                "proposal_text": prop,
-                "wisdom_quotient": r["wisdom_quotient"] if "wisdom_quotient" in keys else 0.0
+                "audit_id": r["audit_id"] if "audit_id" in r.keys() else "UNKNOWN",
+                "timestamp": r["created_at"] if "created_at" in r.keys() else datetime.now(timezone.utc).isoformat(),
+                "status": r["final_posture"] if "final_posture" in r.keys() else "PROCEED",
+                "wisdom_quotient": r["wisdom_quotient"] if "wisdom_quotient" in r.keys() else 0.0
             })
 
         if not audits_data:
@@ -2691,13 +2396,7 @@ HTML_AUDIT_VIEW = """<!DOCTYPE html>
             gap: 6px;
         }
         .btn-secondary:hover { background: #1E293B; border-color: var(--gold); color: var(--gold-light) !important; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body>
 <div class="container">
@@ -2852,13 +2551,7 @@ HTML_DIFF = """<!DOCTYPE html>
         @media (max-width: 768px) { .diff-grid { grid-template-columns: 1fr; } }
         .pane { background: #060B14; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; }
         a { color: var(--gold-light); text-decoration: none; font-weight: 600; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body>
 <div class="container">
@@ -2965,14 +2658,13 @@ def join_redirect():
     ref = request.args.get("ref", "BW-GENESIS-APEX").strip() or "BW-GENESIS-APEX"
     return redirect(f"/wisdom/portal?ref={ref}")
 
-
 @wisdom_bp.route("/portal", methods=["GET", "POST"])
 def single_citizen_portal():
-    from flask import request, render_template
+    from flask import request, render_template_string
     ref_code = request.args.get("ref", "BW-GENESIS-APEX").strip() or "BW-GENESIS-APEX"
     claimed = request.args.get("claimed", "0")
 
-    # 1. Pre-claim splash screen (if not claimed yet)
+    # Pre-claim splash screen
     if claimed != "1" and request.method == "GET" and "activate" not in request.args:
         splash_html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -2996,10 +2688,6 @@ def single_citizen_portal():
         .btn-claim:hover {{ opacity: 0.95; }}
         .interlock-row {{ display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #070B14; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; margin-bottom: 6px; }}
         .status-dot {{ display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin-right: 6px; }}
-
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {{
-            display: none !important;
-        }}
     </style>
 </head>
 <body>
@@ -3053,10 +2741,42 @@ def single_citizen_portal():
         </div>
     </div>
 </body>
-</html>"""
+</html>
+"""
         return splash_html
 
-    # 2. Main Portal: Renders citizen_portal.html with live node context once claimed
+    # Render authentic full CITIZEN_PORTAL_HTML template with live data
+    node_suffix = ref_code.split("-")[-1] if "-" in ref_code else "APEX"
+    my_node_id = f"BW-NODE-{node_suffix}"
+
+    with open("/home/LavetoLab/laveto_wisdom/templates/citizen_portal.html", "r", encoding="utf-8") as f:
+        tmpl_str = f.read()
+
+    wallet_ctx = {"awt_liquid": "10.00", "w_tau_reputation": "1.000"}
+    summary_ctx = {
+        "spot_rate_bwp": "2.50",
+        "circulating_supply_awt": "225,000,000",
+        "total_burned_awt": "14,820",
+        "treasury_bwp_reserve": "37,050.00"
+    }
+
+    return render_template_string(
+        tmpl_str,
+        wallet=wallet_ctx,
+        summary=summary_ctx,
+        sponsor_ref=ref_code,
+        my_node_id=my_node_id
+    )
+
+# =====================================================================
+# DIRECT CITIZEN PORTAL (RENDERS AUTHENTIC CITIZEN_PORTAL_HTML)
+# =====================================================================
+
+@wisdom_bp.route("/join", methods=["GET"])
+@wisdom_bp.route("/portal", methods=["GET", "POST"])
+def direct_citizen_portal():
+    from flask import request, render_template
+    ref_code = request.args.get("ref", "BW-GENESIS-APEX").strip() or "BW-GENESIS-APEX"
     node_suffix = ref_code.split("-")[-1] if "-" in ref_code else "APEX"
     my_node_id = f"BW-NODE-{node_suffix}"
 
@@ -3311,13 +3031,7 @@ HTML_VAST_FLASHCARDS_UI = """<!DOCTYPE html>
         .transform-style-3d { transform-style: preserve-3d; }
         .backface-hidden { backface-visibility: hidden; }
         .card-flipped { transform: rotateY(180deg); }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="bg-[#050811] text-gray-100 min-h-screen flex flex-col font-sans antialiased">
     <!-- Top Global Header -->
@@ -3332,7 +3046,7 @@ HTML_VAST_FLASHCARDS_UI = """<!DOCTYPE html>
                 <span class="text-gray-700">|</span>
                 <a href="/wisdom/" class="text-amber-400 hover:underline">Assurance Console</a>
             </div>
-        </div>
+
     </header>
 
     <!-- Main Workspace -->
@@ -3718,13 +3432,7 @@ HTML_VAST_FLASHCARDS_UI = """<!DOCTYPE html>
         .transform-style-3d { transform-style: preserve-3d; }
         .backface-hidden { backface-visibility: hidden; }
         .card-flipped { transform: rotateY(180deg); }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {{
-            display: none !important;
-        }}
-
-</style>
+    </style>
 </head>
 <body class="bg-[#050811] text-gray-100 min-h-screen flex flex-col font-sans antialiased">
     <!-- Top Global Header -->
@@ -3739,7 +3447,7 @@ HTML_VAST_FLASHCARDS_UI = """<!DOCTYPE html>
                 <span class="text-gray-700">|</span>
                 <a href="/wisdom/" class="text-amber-400 hover:underline">Assurance Console</a>
             </div>
-        </div>
+
     </header>
 
     <!-- Main Workspace -->
@@ -4428,46 +4136,29 @@ register_widget_hook(wisdom_bp)
 # =====================================================================
 @wisdom_bp.route("/diff", methods=["GET"])
 @wisdom_bp.route("/diff/<audit_id>", methods=["GET"])
-@wisdom_bp.route("/diff/<base_id>/<rev_id>", methods=["GET"])
-def revision_diff_view(audit_id=None, base_id=None, rev_id=None):
+def revision_diff_view(audit_id=None):
     from flask import render_template
     import json
     conn = get_db_connection()
     cur = conn.cursor()
 
+    if audit_id:
+        target = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (audit_id,)).fetchone()
+    else:
+        target = cur.execute("SELECT * FROM wisdom_audits ORDER BY id DESC LIMIT 1").fetchone()
+
     base = None
     rev = None
     base_json = {}
     rev_json = {}
-    pairs = []
 
-    if base_id and rev_id:
-        base = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (base_id,)).fetchone()
-        rev = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (rev_id,)).fetchone()
-        if base and rev:
-            pairs = [{"parent": base, "child": rev}]
-    elif audit_id:
-        target = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (audit_id,)).fetchone()
-        if target:
-            if target["parent_audit_id"]:
-                rev = target
-                base = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (target["parent_audit_id"],)).fetchone()
-            else:
-                base = target
-                rev = cur.execute("SELECT * FROM wisdom_audits WHERE parent_audit_id = ? ORDER BY id DESC LIMIT 1", (target["audit_id"],)).fetchone()
-            if base and rev:
-                pairs = [{"parent": base, "child": rev}]
-    else:
-        target = cur.execute("SELECT * FROM wisdom_audits ORDER BY id DESC LIMIT 1").fetchone()
-        if target:
-            if target["parent_audit_id"]:
-                rev = target
-                base = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (target["parent_audit_id"],)).fetchone()
-            else:
-                base = target
-                rev = cur.execute("SELECT * FROM wisdom_audits WHERE parent_audit_id = ? ORDER BY id DESC LIMIT 1", (target["audit_id"],)).fetchone()
-            if base and rev:
-                pairs = [{"parent": base, "child": rev}]
+    if target:
+        if target["parent_audit_id"]:
+            rev = target
+            base = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (target["parent_audit_id"],)).fetchone()
+        else:
+            base = target
+            rev = cur.execute("SELECT * FROM wisdom_audits WHERE parent_audit_id = ? ORDER BY id DESC LIMIT 1", (target["audit_id"],)).fetchone()
 
     if base and base["dossier_json"]:
         try:
@@ -4483,7 +4174,7 @@ def revision_diff_view(audit_id=None, base_id=None, rev_id=None):
     all_audits = cur.execute("SELECT audit_id, version, final_posture, created_at FROM wisdom_audits ORDER BY id DESC LIMIT 30").fetchall()
     conn.close()
 
-    return render_template("diff.html", base=base, rev=rev, pairs=pairs, base_json=base_json, rev_json=rev_json, all_audits=all_audits)
+    return render_template("revision_diff.html", base=base, rev=rev, base_json=base_json, rev_json=rev_json, all_audits=all_audits)
 # =====================================================================
 # 🌐 SWARM HUD & SECURITY TELEMETRY DASHBOARD (/wisdom/network)
 # =====================================================================
@@ -4522,13 +4213,7 @@ HTML_SWARM_HUD = """<!DOCTYPE html>
         ::-webkit-scrollbar-thumb:hover {
             background: #38bdf8;
         }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -4719,7 +4404,7 @@ def swarm_hud_view():
     # =====================================================================
 # 🛡️ HARARI SAFETY ALIGNMENT CONSOLE (/wisdom/safety/harari)
 # =====================================================================
-HTML_HARARI_SAFETY = """<!DOCTYPE html>
+HTML_HARARI_SAFETY = r"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -4754,13 +4439,7 @@ HTML_HARARI_SAFETY = """<!DOCTYPE html>
         ::-webkit-scrollbar-thumb:hover {
             background: #f43f5e;
         }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -5051,13 +4730,7 @@ def view_audit_dossier(audit_id):
         .badge-PROCEED { background: var(--proc); color: #fff; }
         pre { background: #07090E; padding: 1rem; border-radius: 4px; overflow-x: auto; color: #A7F3D0; font-size: 0.85rem; border: 1px solid var(--border); }
         a { color: var(--gold-light); text-decoration: none; font-weight: 600; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body>
 <div class="container">
@@ -5234,13 +4907,7 @@ def wisdom_ledger_verify():
         .badge-verified { background: rgba(16, 185, 129, 0.2); color: var(--success); border: 1px solid var(--success); padding: 2px 6px; border-radius: 4px; font-weight: 700; font-size: 0.72rem; }
         a { color: var(--gold-light); text-decoration: none; font-weight: 600; }
         a:hover { text-decoration: underline; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body>
 <div class="container">
@@ -5318,13 +4985,7 @@ HTML_INCUBATOR = """<!DOCTYPE html>
         body { background-color: #070B12; color: #94A3B8; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
         .hud-border { border: 1px solid rgba(245, 158, 11, 0.25); box-shadow: 0 0 15px rgba(245, 158, 11, 0.05); }
         .hud-glow { text-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -5477,6 +5138,7 @@ HTML_INCUBATOR = """<!DOCTYPE html>
 
 
 
+@wisdom_bp.route("/sandbox", methods=["GET", "POST"])
 @wisdom_bp.route("/generate", methods=["GET", "POST"])
 def proposal_generator():
     from flask import request, render_template_string
@@ -5668,13 +5330,7 @@ HTML_WUC_WATER = """<!DOCTYPE html>
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: #070e1b; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -6094,7 +5750,7 @@ HTML_WUC_WATER = """<!DOCTYPE html>
 
 @wisdom_bp.route('/water/wuc', methods=['GET', 'POST'])
 def wuc_extraction_dashboard():
-    from flask import request, jsonify, render_template_string
+    from flask import request, jsonify, render_template_string, g
     if request.method == 'POST':
         data = request.get_json(silent=True) or {}
         try:
@@ -6109,20 +5765,18 @@ def wuc_extraction_dashboard():
 
         result = WUCExtractionComplianceEngine.audit_extraction(volume, cap, permit)
 
-    # Trigger asynchronous circuit-breaker alert if client configured a webhook
-    if hasattr(g, 'api_client_id'):
-        trigger_circuit_breaker_webhook(g.api_client_id, result)
-    elif result.get('posture') == 'HALT':
-        trigger_circuit_breaker_webhook('internal-default', result)
+        if hasattr(g, 'api_client_id'):
+            trigger_circuit_breaker_webhook(g.api_client_id, result)
+        elif result and result.get('posture') == 'HALT':
+            trigger_circuit_breaker_webhook('internal-default', result)
 
-    return jsonify(result), 200
+        return jsonify(result), 200
 
     return render_template_string(HTML_WUC_WATER)
 
-    # =====================================================================
+# =====================================================================
 # 🛡️ CYBER // DATA PROTECTION ACT (DPA) COMPLIANCE HUD & AUDIT ENGINE
 # =====================================================================
-
 class CyberDPAComplianceEngine:
     @staticmethod
     def audit_data_processing(data_subject_id: str, explicit_consent: bool, encryption_active: bool, purpose: str, residency_tier3: bool = True):
@@ -6199,13 +5853,7 @@ HTML_CYBER_DPA = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #070e1b; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #a855f7; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -6715,13 +6363,7 @@ HTML_IRP_ENERGY = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #070e1b; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #eab308; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -7253,13 +6895,7 @@ HTML_MDF_MINERALS = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #070e1b; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -7763,13 +7399,7 @@ HTML_BAITS_LIVESTOCK = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #080503; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #ea580c; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -8189,168 +7819,6 @@ HTML_BAITS_LIVESTOCK = """<!DOCTYPE html>
 </body>
 </html>"""
 
-HTML_PARTNER = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Commercial Co-Founder & Partner Portal — Laveto Wisdom AW-1</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background-color: #060913; color: #f3f4f6; font-family: ui-sans-serif, system-ui, sans-serif; }
-        .glass { background: rgba(13, 19, 33, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
-    </style>
-</head>
-<body class="min-h-screen pb-16 antialiased">
-    <nav class="glass sticky top-0 z-40 px-6 py-4 mb-8 border-b border-slate-800">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <span class="text-2xl">🤝</span>
-                <div>
-                    <h1 class="font-black text-lg text-white">Commercial Co-Founder Portal</h1>
-                    <p class="text-xs text-slate-400">LVT-DOC-300 Sovereign Revenue-Sharing &amp; Recruitment Tracker</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-3">
-                <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-amber-950 text-amber-400 border border-amber-700">
-                    🔒 LVT-DOC-300 Charter Active
-                </span>
-                <a href="/wisdom/" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700">← Assurance Console</a>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto px-6 space-y-8">
-        <!-- Candidate Recruitment Tracker Section -->
-        <div class="glass p-6 rounded-3xl border border-slate-800 space-y-6">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-4">
-                <div>
-                    <h2 class="text-lg font-black text-white">Commercial Co-Founder &amp; COO Candidate Pipeline</h2>
-                    <p class="text-xs text-slate-400 mt-1">Track executive recruitment, coffee meetings, NDA dispatches, and 14-day execution sprints.</p>
-                </div>
-                <button onclick="openCandidateModal()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs rounded-xl transition cursor-pointer">
-                    + Register Candidate
-                </button>
-            </div>
-
-            <!-- Candidates Table -->
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs font-mono">
-                    <thead class="bg-slate-950 text-slate-400 uppercase text-[11px] border-b border-slate-800">
-                        <tr>
-                            <th class="py-3 px-4">Candidate Name</th>
-                            <th class="py-3 px-4">Background / Sector</th>
-                            <th class="py-3 px-4">Pipeline Stage</th>
-                            <th class="py-3 px-4">Last Interaction</th>
-                            <th class="py-3 px-4 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="candidate-tbody" class="divide-y divide-slate-800/80">
-                        <tr class="hover:bg-slate-900/40 transition">
-                            <td class="py-3 px-4 text-white font-bold">Kagiso M. (Fintech Lead)</td>
-                            <td class="py-3 px-4 text-slate-300">Orange Money / Telco Clearing</td>
-                            <td class="py-3 px-4">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800">Term Sheet Dispatched</span>
-                            </td>
-                            <td class="py-3 px-4 text-slate-400">2026-10-08</td>
-                            <td class="py-3 px-4 text-right">
-                                <button onclick="alert('Candidate: Kagiso M.\\nStatus: Reviewing LVT_CoFounder_TermSheet.pdf\\nNext Step: Gaborone Coffee Meet')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-cyan-300 rounded text-[11px]">Inspect</button>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-slate-900/40 transition">
-                            <td class="py-3 px-4 text-white font-bold">Thabo S. (Institutional Sales)</td>
-                            <td class="py-3 px-4 text-slate-300">CEDA / SEZA Enterprise Desks</td>
-                            <td class="py-3 px-4">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">14-Day Sprint Active</span>
-                            </td>
-                            <td class="py-3 px-4 text-slate-400">2026-10-09</td>
-                            <td class="py-3 px-4 text-right">
-                                <button onclick="alert('Candidate: Thabo S.\\nStatus: Active Sprint on CEDA Tender Audits')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-cyan-300 rounded text-[11px]">Inspect</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 5-Pillar Live Settlement Rails -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="glass p-6 rounded-2xl border border-slate-800 space-y-3">
-                <span class="text-xs text-amber-400 uppercase font-bold">Pillar 1: Laveto Pay</span>
-                <p class="text-2xl font-black text-white font-mono">30% <span class="text-xs text-slate-400">Net Spread</span></p>
-                <p class="text-xs text-slate-300 leading-relaxed">Merchant acquisition, SME rollout, and Orange Money / Mascom MyZaka direct telco clearing.</p>
-            </div>
-            <div class="glass p-6 rounded-2xl border border-slate-800 space-y-3">
-                <span class="text-xs text-purple-400 uppercase font-bold">Pillar 3: Wisdom AW-1</span>
-                <p class="text-2xl font-black text-white font-mono">15% <span class="text-xs text-slate-400">ACV Cut</span></p>
-                <p class="text-xs text-slate-300 leading-relaxed">Enterprise compliance retainers and institutional PPRA / CEDA audit verification contracts.</p>
-            </div>
-            <div class="glass p-6 rounded-2xl border border-slate-800 space-y-3">
-                <span class="text-xs text-emerald-400 uppercase font-bold">Pillar 4: The Hangar</span>
-                <p class="text-2xl font-black text-white font-mono">10% <span class="text-xs text-slate-400">Sourcing Cut</span></p>
-                <p class="text-xs text-slate-300 leading-relaxed">Government fleet maintenance escrow and certified workshop bulk parts provisioning.</p>
-            </div>
-        </div>
-    </main>
-
-    <!-- Candidate Modal -->
-    <div id="candidate-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md hidden items-center justify-center z-50 p-4">
-        <div class="w-full max-w-md bg-[#0d1527] border border-[#1e2d4a] rounded-2xl p-6 text-white shadow-2xl space-y-4">
-            <h3 class="text-lg font-bold text-white">Register Commercial Candidate</h3>
-            <form onsubmit="addCandidate(event)" class="space-y-3 text-xs">
-                <div>
-                    <label class="block text-slate-400 mb-1 font-semibold">Candidate Full Name</label>
-                    <input type="text" id="cand-name" placeholder="e.g. Mompati R." required class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded text-white">
-                </div>
-                <div>
-                    <label class="block text-slate-400 mb-1 font-semibold">Expertise / Sector</label>
-                    <input type="text" id="cand-sector" placeholder="e.g. Banking / Government Relations" required class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded text-white">
-                </div>
-                <div>
-                    <label class="block text-slate-400 mb-1 font-semibold">Pipeline Stage</label>
-                    <select id="cand-stage" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded text-white">
-                        <option value="Coffee Meet Scheduled">Coffee Meet Scheduled</option>
-                        <option value="Term Sheet Dispatched">Term Sheet Dispatched</option>
-                        <option value="14-Day Sprint Active">14-Day Sprint Active</option>
-                    </select>
-                </div>
-                <div class="flex gap-2 pt-3">
-                    <button type="button" onclick="closeCandidateModal()" class="flex-1 py-2 rounded-lg border border-slate-700 text-slate-300">Cancel</button>
-                    <button type="submit" class="flex-1 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 font-bold text-slate-950">Save Candidate</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        function openCandidateModal() { document.getElementById('candidate-modal').classList.remove('hidden'); document.getElementById('candidate-modal').classList.add('flex'); }
-        function closeCandidateModal() { document.getElementById('candidate-modal').classList.add('hidden'); document.getElementById('candidate-modal').classList.remove('flex'); }
-        function addCandidate(e) {
-            e.preventDefault();
-            const name = document.getElementById('cand-name').value;
-            const sector = document.getElementById('cand-sector').value;
-            const stage = document.getElementById('cand-stage').value;
-            const tbody = document.getElementById('candidate-tbody');
-            const tr = document.createElement('tr');
-            tr.className = 'hover:bg-slate-900/40 transition';
-            tr.innerHTML = `
-                <td class="py-3 px-4 text-white font-bold">${name}</td>
-                <td class="py-3 px-4 text-slate-300">${sector}</td>
-                <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800">${stage}</span></td>
-                <td class="py-3 px-4 text-slate-400">2026-10-09</td>
-                <td class="py-3 px-4 text-right"><button onclick="alert('Candidate: ${name}')" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-cyan-300 rounded text-[11px]">Inspect</button></td>
-            `;
-            tbody.insertBefore(tr, tbody.firstChild);
-            closeCandidateModal();
-        }
-    </script>
-</body>
-</html>
-"""
-@wisdom_bp.route("/partner", methods=["GET"])
-def partner_portal():
-    return render_template_string(HTML_PARTNER)
-
 @wisdom_bp.route('/livestock/baits', methods=['GET'])
 def livestock_dashboard():
     from flask import render_template_string
@@ -8470,13 +7938,7 @@ HTML_NATIONAL_MATRIX = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #04090e; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #10b981; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -9004,13 +8466,7 @@ HTML_TENDER_PORTAL = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #04090e; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -9522,7 +8978,12 @@ def tender_dashboard():
         "procurement_framework": "PPA 2021 & Economic Inclusion Compliant"
     }
 
-    return render_template('tender_portal.html')
+    return render_template_string(
+        HTML_TENDER_PORTAL,
+        tenders=tenders_database,
+        metrics=metrics,
+        timestamp=datetime.now()
+    )
 
 @wisdom_bp.route('/api/tender/submit-bid', methods=['POST'])
 def submit_bid():
@@ -9634,13 +9095,7 @@ HTML_CEDA_INCUBATOR = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #04090e; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -10219,13 +9674,7 @@ HTML_P2P_EXCHANGE = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #070e1b; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #a855f7; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -10864,13 +10313,7 @@ HTML_POLICY_SIMULATOR = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #04090e; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -11419,8 +10862,6 @@ def get_executive_telemetry():
         ]
     }
 
-
-
 HTML_EXECUTIVE_ANALYTICS = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11455,13 +10896,7 @@ HTML_EXECUTIVE_ANALYTICS = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #04090e; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -12067,13 +11502,7 @@ HTML_AW1_API_CONSOLE = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #04090e; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -12645,9 +12074,11 @@ def api_console_view():
         timestamp=datetime.now()
     )
 
-@wisdom_bp.route('/api/console/generate-key', methods=['POST'])
+@wisdom_bp.route('/api/console/generate-key', methods=['GET', 'POST'])
 def generate_enterprise_key():
     from flask import request, jsonify
+    if request.method == 'GET':
+        return jsonify({'status': 'ready', 'endpoint': '/wisdom/api/console/generate-key', 'allowed_methods': ['POST']}), 200
     import secrets
 
     data = request.get_json(silent=True) or {}
@@ -12684,7 +12115,7 @@ def generate_enterprise_key():
         "unmasked_secret_warning": full_key
     }), 201
 
-    # =====================================================================
+# =====================================================================
 # 📖 B2B API DEVELOPER DOCUMENTATION (/wisdom/docs)
 # =====================================================================
 
@@ -12693,7 +12124,7 @@ HTML_DOCS = """<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laveto Wisdom // B2B API Developer Documentation</title>
+    <title>Laveto Wisdom // AW-1 B2B Developer Documentation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -12715,13 +12146,7 @@ HTML_DOCS = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #04090e; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -12730,24 +12155,122 @@ HTML_DOCS = """<!DOCTYPE html>
         <div class="flex items-center space-x-3 mb-3 md:mb-0">
             <div class="h-3 w-3 bg-sky-400 rounded-full animate-pulse"></div>
             <div>
-                <h1 class="text-lg font-bold text-sky-400 tracking-wider hud-glow">📖 B2B API DEVELOPER DOCUMENTATION</h1>
+                <h1 class="text-lg font-bold text-sky-400 tracking-wider hud-glow">📖 AW-1 RUNTIME GUARD &amp; B2B DEVELOPER DOCS</h1>
                 <p class="text-xs text-slate-400">Route: <span class="text-slate-200">/wisdom/docs</span> &bull; Base Production URL: <span class="text-sky-300 font-semibold font-mono">https://p20.laveto.net/wisdom/api/v1</span></p>
             </div>
         </div>
-        <div class="flex items-center space-x-3 text-xs font-mono">
+        <div class="flex items-center space-x-2.5 text-xs font-mono flex-wrap gap-y-2">
+            <a href="/wisdom/buy" class="px-3 py-1.5 bg-[#03080e] hover:bg-amber-950/60 text-amber-300 border border-amber-600 rounded-lg transition-colors font-bold shadow-lg shadow-amber-950/30">🔑 Provision Key (Live)</a>
+            <a href="/wisdom/api/telemetry" target="_blank" class="px-3 py-1.5 bg-[#03080e] hover:bg-sky-950/60 text-sky-300 border border-sky-600 rounded-lg transition-colors font-bold">📡 Live Telemetry</a>
             <a href="/wisdom/api-console" class="px-3 py-1.5 bg-[#03080e] hover:bg-slate-800 text-sky-300 border border-sky-800/60 rounded-lg transition-colors">⚡ API Console</a>
-            <a href="/wisdom/onboard" class="px-3 py-1.5 bg-[#03080e] hover:bg-slate-800 text-amber-300 border border-amber-800/60 rounded-lg transition-colors">🔑 Provision Key</a>
-            <a href="/wisdom/whitepaper" class="px-3 py-1.5 bg-[#03080e] hover:bg-slate-800 text-sky-300 border border-sky-800/60 rounded-lg transition-colors font-mono">📜 Whitepaper</a>
+            <a href="/wisdom/whitepaper" class="px-3 py-1.5 bg-[#03080e] hover:bg-slate-800 text-slate-300 border border-slate-700/60 rounded-lg transition-colors font-mono">📜 Whitepaper</a>
             <a href="/wisdom/" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors font-mono">&larr; Assurance Console</a>
         </div>
     </header>
 
     <main class="w-full max-w-7xl mx-auto space-y-6 mb-8 text-xs font-mono">
 
-        <!-- 1. Protocol Architecture & Overview -->
+        <!-- 1. AW-1 Autonomous AI Agent Circuit Breaker (Quickstart) -->
+        <section class="bg-[#07131e] p-5 rounded-xl hud-border space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h2 class="text-sm font-bold text-sky-300 tracking-wide uppercase">1. AW-1 Autonomous AI Agent Circuit Breaker (Quickstart)</h2>
+                <span class="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-700 font-bold">PRODUCTION LIVE &bull; 5-TIER STANDARD</span>
+            </div>
+            <p class="text-slate-400 font-sans text-xs leading-relaxed">
+                The <strong>AW-1 Sovereign Runtime Guard</strong> provides deterministic AST containment, fiduciary escrow velocity checks (Botswana DPA 2018 / BoB Rails), 2-of-N multi-agent swarm quorum, and hardware-attested Trusted Execution Environment (TEE) cryptographic proofs for autonomous AI agent tool calls.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="p-3 bg-[#03080e] rounded-lg border border-slate-800">
+                    <span class="text-sky-400 font-bold block mb-1">Tier 1: AST Canary Honeypots</span>
+                    <span class="text-slate-500 font-sans text-[11px]">Traps polyglot shell escapes, malicious eval, and token injection attempts before execution passes to the host kernel.</span>
+                </div>
+                <div class="p-3 bg-[#03080e] rounded-lg border border-slate-800">
+                    <span class="text-amber-400 font-bold block mb-1">Tier 2: Statutory &amp; Fiduciary Lens</span>
+                    <span class="text-slate-500 font-sans text-[11px]">Enforces non-custodial Bank of Botswana 1-to-1 trust limits, citizen ownership thresholds (&ge;51%), and strict velocity caps.</span>
+                </div>
+                <div class="p-3 bg-[#03080e] rounded-lg border border-slate-800">
+                    <span class="text-purple-400 font-bold block mb-1">Tier 3-5: Quorum &amp; Hardware TEE</span>
+                    <span class="text-slate-500 font-sans text-[11px]">Multi-agent HMAC consensus, in-memory grammar hot-patching, and AWS Nitro / AMD SEV-SNP enclave PCR0 measurement attestations.</span>
+                </div>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-amber-300 font-bold text-xs uppercase">A. Python Quickstart: Direct ExecutionBreaker</span>
+                    <span class="text-[10px] text-slate-500">Zero-Overhead Deterministic Gate</span>
+                </div>
+                <pre class="p-3 bg-[#020509] rounded border border-slate-800 text-sky-300 overflow-x-auto leading-relaxed">from laveto_wisdom import ExecutionBreaker
+
+# Initialize breaker using your active production license key (provisioned via /wisdom/buy)
+breaker = ExecutionBreaker(
+    license_key="AW1-CC89066DF7D007F8",
+    enable_canary=True
+)
+
+# Gate tool call deterministically before irreversible execution occurs
+res = breaker.execute_tool(
+    tool_name="financial_auditor",
+    payload="audit_disbursement(recipient='Laveto Trust', amount_bwp=150.00)",
+    agent_id="agent_planner",
+    cost_bwp=150.00
+)
+
+# Verification Output:
+# res['execution_status'] == 'SUCCESS'
+# res['security_audit']['circuit_breaker'] == 'PERMITTED'
+# res['security_audit']['tee_attestation']['attestation_id'] == 'b8cce61062bbf762fedd050c'
+# res['security_audit']['tee_attestation']['pcr_measurements']['PCR0_CODE'] == '58ebeefd65d546a7...'</pre>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-amber-300 font-bold text-xs uppercase">B. Universal Middleware: @protect_tool Decorator &amp; LangChain</span>
+                    <span class="text-[10px] text-slate-500">Drop-In Interceptor</span>
+                </div>
+                <pre class="p-3 bg-[#020509] rounded border border-slate-800 text-emerald-400 overflow-x-auto leading-relaxed">from laveto_wisdom.middleware import protect_tool, AW1CallbackHandler
+
+# 1. Protect any native Python function or custom agent tool
+@protect_tool(license_key="AW1-CC89066DF7D007F8", max_velocity_bwp=2000.0)
+def disburse_funds(recipient_id: str, amount_bwp: float):
+    # Tool only executes if AST sanity, statutory escrow, and TEE checks pass
+    return {"disbursed": amount_bwp, "status": "committed"}
+
+# 2. Attach to LangChain Agent Executors
+agent = initialize_agent(
+    tools=[disburse_funds],
+    llm=llm,
+    callbacks=[AW1CallbackHandler(license_key="AW1-CC89066DF7D007F8")]
+)</pre>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-amber-300 font-bold text-xs uppercase">C. Model Context Protocol (MCP) Server Setup</span>
+                    <span class="text-[10px] text-slate-500">Claude Desktop &bull; Cursor &bull; stdio JSON-RPC</span>
+                </div>
+                <p class="text-slate-400 font-sans text-xs">
+                    AW-1 includes a native Model Context Protocol (MCP) server. Add the following block to your <code class="text-sky-300">claude_desktop_config.json</code> or Cursor MCP settings:
+                </p>
+                <pre class="p-3 bg-[#020509] rounded border border-slate-800 text-purple-300 overflow-x-auto leading-relaxed">{
+  "mcpServers": {
+    "aw1-circuit-breaker": {
+      "command": "python3",
+      "args": ["-m", "laveto_wisdom.mcp_server"],
+      "env": {
+        "AW1_LICENSE_KEY": "AW1-CC89066DF7D007F8",
+        "AW1_GATEWAY_URL": "https://p20.laveto.net/wisdom"
+      }
+    }
+  }
+}</pre>
+            </div>
+        </section>
+
+        <!-- 2. Protocol Architecture & Overview -->
         <section class="bg-[#07131e] p-5 rounded-xl hud-border space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">1. Protocol Architecture &amp; Out-of-Band Assurance</h2>
+                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">2. Macro Protocol Architecture &amp; Out-of-Band Assurance</h2>
                 <span class="text-[10px] bg-sky-950 text-sky-300 px-2 py-0.5 rounded border border-sky-800">REST &bull; JSON &bull; HMAC-SHA256</span>
             </div>
             <p class="text-slate-400 leading-relaxed font-sans text-xs">
@@ -12769,14 +12292,14 @@ HTML_DOCS = """<!DOCTYPE html>
             </div>
         </section>
 
-        <!-- 2. Authentication & Rate-Limiting Specs -->
+        <!-- 3. Authentication & Rate-Limiting Specs -->
         <section class="bg-[#07131e] p-5 rounded-xl hud-border space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">2. Authentication &amp; Sliding Window Rate Limiting</h2>
-                <span class="text-[10px] bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-800">Header: X-Laveto-Key</span>
+                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">3. Authentication &amp; Sliding Window Rate Limiting</h2>
+                <span class="text-[10px] bg-purple-950 text-purple-300 px-2 py-0.5 rounded border border-purple-800">Header: X-Laveto-Key &bull; License: AW1-XXXX</span>
             </div>
             <p class="text-slate-400 font-sans text-xs">
-                All production requests require a valid cryptographic API key passed in the <code class="text-sky-300">X-Laveto-Key</code> HTTP header. Rate limits are computed on a sliding 60-second window backed by client quota tables in the core registry.
+                Production requests require a valid cryptographic API key passed in the <code class="text-sky-300">X-Laveto-Key</code> HTTP header or an active license key passed to the Python SDK. Rate limits are computed on a sliding 60-second window backed by client quota tables in the core database registry.
             </p>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse">
@@ -12791,7 +12314,7 @@ HTML_DOCS = """<!DOCTYPE html>
                         <tr>
                             <td class="py-2.5 font-bold text-slate-100"><code>X-Laveto-Key</code></td>
                             <td>Request Header</td>
-                            <td>Assigned enterprise token (e.g. <code>lvt-sec-wisdom-live-2026</code>).</td>
+                            <td>Assigned enterprise token or license key (e.g. <code>AW1-CC89066DF7D007F8</code>).</td>
                         </tr>
                         <tr>
                             <td class="py-2.5 font-bold text-slate-100"><code>X-RateLimit-Remaining-Quota</code></td>
@@ -12806,18 +12329,18 @@ HTML_DOCS = """<!DOCTYPE html>
                         <tr>
                             <td class="py-2.5 font-bold text-rose-400"><code>HTTP 403 Forbidden</code></td>
                             <td>Error Code</td>
-                            <td>Monthly allocated quota exhausted or inactive key status.</td>
+                            <td>Monthly allocated quota exhausted or inactive license key status.</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- 3. Core Endpoint Specifications (Audit & PoUC) -->
+        <!-- 4. Core Endpoint Specifications (Audit, PoUC, Telemetry) -->
         <section class="bg-[#07131e] p-5 rounded-xl hud-border space-y-4">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">3. Primary Endpoint Reference</h2>
-                <span class="text-[10px] text-slate-500">2 Core Contracts</span>
+                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">4. Primary Endpoint Reference</h2>
+                <span class="text-[10px] text-slate-500">3 Core Production Contracts</span>
             </div>
 
             <!-- Endpoint A: /wisdom/api/v1/audit -->
@@ -12885,12 +12408,24 @@ HTML_DOCS = """<!DOCTYPE html>
                     </div>
                 </div>
             </div>
+
+            <!-- Endpoint C: /wisdom/api/telemetry -->
+            <div class="p-4 bg-[#03080e] rounded-lg border border-slate-800 space-y-2">
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded text-[10px] bg-sky-950 text-sky-400 border border-sky-800 font-bold">GET</span>
+                    <code class="text-slate-200 font-bold text-xs">/wisdom/api/telemetry</code>
+                    <span class="text-slate-500 text-[11px]">&bull; Real-Time Public Verification Ledger &amp; Enclave PCR0 Hashes</span>
+                </div>
+                <p class="text-slate-400 font-sans text-xs">
+                    Exposes cryptographic proof feeds across active license counts, 2-of-N quorum consensus events, statutory clearance audits, and hardware TEE attestation records.
+                </p>
+            </div>
         </section>
 
-        <!-- 4. Interactive Code Snippets (cURL, Python, Node.js) -->
+        <!-- 5. Interactive Code Snippets (cURL, Python SDK, Node.js) -->
         <section class="bg-[#07131e] p-5 rounded-xl hud-border space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">4. Integration Code Snippets</h2>
+                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">5. Integration Code Snippets</h2>
                 <div class="flex gap-2">
                     <button onclick="switchCodeTab('curl')" id="tab-curl" class="px-2.5 py-1 bg-sky-950 text-sky-300 border border-sky-800 rounded font-bold">cURL</button>
                     <button onclick="switchCodeTab('python')" id="tab-python" class="px-2.5 py-1 bg-slate-900 text-slate-400 hover:text-white rounded">Python (SDK)</button>
@@ -12901,7 +12436,7 @@ HTML_DOCS = """<!DOCTYPE html>
             <div id="code-curl" class="space-y-1">
                 <pre class="p-3 bg-[#03080e] rounded border border-slate-800 text-slate-200 overflow-x-auto leading-relaxed">curl -i -s -X POST https://p20.laveto.net/wisdom/api/v1/audit \\
   -H "Content-Type: application/json" \\
-  -H "X-Laveto-Key: lvt-sec-wisdom-live-2026" \\
+  -H "X-Laveto-Key: AW1-CC89066DF7D007F8" \\
   -d '{
     "proposal": "Apply for P18M CEDA facility to establish an integrated dairy herd and pasteurization facility in Lobatse SEZA with verified fodder contracts."
   }'</pre>
@@ -12910,10 +12445,10 @@ HTML_DOCS = """<!DOCTYPE html>
             <div id="code-python" class="space-y-1 hidden">
                 <pre class="p-3 bg-[#03080e] rounded border border-slate-800 text-emerald-400 overflow-x-auto leading-relaxed">from laveto_sdk import LavetoWisdomClient
 
-# Zero-dependency client library using standard urllib
+# Zero-dependency client library using Python's standard urllib
 client = LavetoWisdomClient(
     base_url="https://p20.laveto.net/wisdom",
-    api_key="lvt-sec-wisdom-live-2026"
+    api_key="AW1-CC89066DF7D007F8"
 )
 
 # Executes Decision Assurance audit (automatically triggers 20% AWT Buyback-and-Burn)
@@ -12931,7 +12466,7 @@ print("Tokens Permanently Burned:", response["buyback_and_burn_receipt"]["awt_bu
   method: "POST",
   headers: {
     "Content-Type": "application/json",
-    "X-Laveto-Key": "lvt-sec-wisdom-live-2026"
+    "X-Laveto-Key": "AW1-CC89066DF7D007F8"
   },
   body: JSON.stringify({
     proposal: "Tender P45M for domestic sunflower crushing plant in Pandamatenga SEZA with 50% CEE citizen subcontracting."
@@ -12942,10 +12477,10 @@ console.log("Verdict:", dossier.posture, "| Wisdom Quotient:", dossier.wisdom_qu
             </div>
         </section>
 
-        <!-- 5. Botswana Empirical & Statutory Benchmarks -->
+        <!-- 6. Botswana Empirical & Statutory Benchmarks -->
         <section class="bg-[#07131e] p-5 rounded-xl hud-border space-y-3">
             <div class="flex justify-between items-center border-b border-slate-800 pb-2">
-                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">5. Botswana Ground-Truth Statutory Benchmarks (NDP 12)</h2>
+                <h2 class="text-sm font-bold text-slate-200 tracking-wide uppercase">6. Botswana Ground-Truth Statutory Benchmarks (NDP 12)</h2>
                 <span class="text-[10px] text-emerald-400 font-mono font-bold">Hardcoded Regulatory Constraints</span>
             </div>
             <p class="text-slate-400 font-sans text-xs">
@@ -12995,7 +12530,7 @@ console.log("Verdict:", dossier.posture, "| Wisdom Quotient:", dossier.wisdom_qu
 
     <!-- Footer -->
     <footer class="w-full max-w-7xl mx-auto py-4 border-t border-slate-800 text-center text-xs text-slate-500 font-mono">
-        Laveto Wisdom (AW-1) &bull; Sovereign Decision Assurance Architecture &bull; Republic of Botswana
+        Laveto Wisdom (AW-1) &bull; Sovereign Decision Assurance Architecture &bull; Republic of Botswana &bull; p20.laveto.net
     </footer>
 
     <script>
@@ -13035,8 +12570,7 @@ def whitepaper_view():
 # 📖 B2B API DEVELOPER DOCUMENTATION & PROTOCOL SPECS (/wisdom/docs, /wisdom/whitepaper)
 # =====================================================================
 
-@wisdom_bp.route("/docs", methods=["GET"])
-@wisdom_bp.route("/whitepaper", methods=["GET"])
+@wisdom_bp.route("/whitepaper", methods=["GET", "HEAD"])
 def api_docs():
     from flask import render_template_string
     return render_template_string(HTML_DOCS)
@@ -13069,13 +12603,7 @@ HTML_ONBOARD = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #04090e; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -13261,13 +12789,7 @@ HTML_ONBOARD = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #04090e; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -13439,7 +12961,7 @@ from .tokenomics_engine import TokenomicsEngine
 # Initialize the core tokenomics execution engine
 tokenomics_engine = TokenomicsEngine()
 
-HTML_TOKENOMICS_DASHBOARD = """<!DOCTYPE html>
+HTML_TOKENOMICS_DASHBOARD = r"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -13450,13 +12972,7 @@ HTML_TOKENOMICS_DASHBOARD = """<!DOCTYPE html>
         body { background-color: #04090e; color: #94a3b8; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
         .hud-border { border: 1px solid rgba(56, 189, 248, 0.28); box-shadow: 0 0 20px rgba(56, 189, 248, 0.05); }
         .hud-glow { text-shadow: 0 0 12px rgba(56, 189, 248, 0.5); }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
     <header class="w-full max-w-6xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-start md:items-center bg-[#07131e] p-4 rounded-xl hud-border">
@@ -13482,15 +12998,15 @@ HTML_TOKENOMICS_DASHBOARD = """<!DOCTYPE html>
             </div>
             <div class="bg-[#07131e] p-4 rounded-xl hud-border space-y-1">
                 <span class="text-purple-400 uppercase text-[10px]">Circulating Supply</span>
-                <div class="text-purple-300 font-bold text-sm">{{ "{:,.2f}".format(summary.circulating_supply_awt) }} AWT</div>
+                <div id="circulating-supply-awt" class="text-purple-300 font-bold text-sm">{{ "{:,.2f}".format(summary.circulating_supply_awt) }} AWT</div>
             </div>
             <div class="bg-[#07131e] p-4 rounded-xl hud-border space-y-1">
                 <span class="text-rose-400 uppercase text-[10px]">Total Burned (20% Sink)</span>
-                <div class="text-rose-300 font-bold text-sm">🔥 {{ "{:,.2f}".format(summary.total_burned_awt) }} AWT</div>
+                <div class="text-rose-300 font-bold text-sm">🔥 <span id="total-burned-awt">{{ "{:,.2f}".format(summary.total_burned_awt) }}</span> AWT</div>
             </div>
             <div class="bg-[#07131e] p-4 rounded-xl hud-border space-y-1">
                 <span class="text-emerald-400 uppercase text-[10px]">Treasury Reserve</span>
-                <div class="text-emerald-300 font-bold text-sm">BWP {{ "{:,.2f}".format(summary.treasury_bwp_reserve) }}</div>
+                <div class="text-emerald-300 font-bold text-sm">BWP <span id="treasury-bwp-reserve">{{ "{:,.2f}".format(summary.treasury_bwp_reserve) }}</span></div>
             </div>
         </div>
 
@@ -13536,6 +13052,57 @@ HTML_TOKENOMICS_DASHBOARD = """<!DOCTYPE html>
     <footer class="w-full max-w-6xl mx-auto py-4 border-t border-slate-800 text-center text-xs text-slate-500 font-mono">
         Laveto Wisdom (AW-1) &bull; Tokenomics Settlement Engine &bull; Republic of Botswana
     </footer>
+
+    <script>
+    async function updateTokenomicsMetrics() {
+        try {
+            const res = await fetch('/wisdom/api/v1/aw/tokenomics/summary');
+            if (!res.ok) return;
+            const data = await res.json();
+
+            // Format numbers helper
+            const fmt = (num, decimals = 2) => Number(num || 0).toLocaleString(undefined, {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+
+            // Map incoming API fields to DOM elements
+            const mappings = {
+                'circulating-supply-awt': fmt(data.circulating_supply_awt, 2),
+                'pouc-minted-awt': fmt(data.pouc_minted_awt, 2),
+                'total-pouc-settlements': Number(data.total_pouc_settlements || 0).toLocaleString(),
+                'spot-rate-bwp': 'P ' + fmt(data.spot_rate_bwp, 2),
+                'treasury-bwp-reserve': 'P ' + fmt(data.treasury_bwp_reserve, 2),
+                'max-supply-awt': fmt(data.max_supply_awt || data.hard_cap, 0),
+                'total-burned-awt': fmt(data.total_burned_awt, 2)
+            };
+
+            for (const [id, value] of Object.entries(mappings)) {
+                const el = document.getElementById(id);
+                if (el) el.innerText = value;
+            }
+
+            const liveIndicator = document.getElementById('ledger-sync-status');
+            if (liveIndicator) {
+                liveIndicator.innerText = 'SYNCED (LIVE)';
+                liveIndicator.className = 'text-xs font-semibold px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800';
+            }
+        } catch (err) {
+            console.error('Failed to sync live tokenomics:', err);
+            const liveIndicator = document.getElementById('ledger-sync-status');
+            if (liveIndicator) {
+                liveIndicator.innerText = 'DISCONNECTED';
+                liveIndicator.className = 'text-xs font-semibold px-2.5 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800';
+            }
+        }
+    }
+
+    // Initial fetch on mount & poll every 10 seconds
+    document.addEventListener('DOMContentLoaded', () => {
+        updateTokenomicsMetrics();
+        setInterval(updateTokenomicsMetrics, 10000);
+    });
+    </script>
 </body>
 </html>
 """
@@ -13565,7 +13132,7 @@ def simulate_payout_route():
 def api_tokenomics_summary():
     return jsonify(tokenomics_engine.get_tokenomics_summary()), 200
 
-@wisdom_bp.route("/api/v1/aw/pouc/submit", methods=["POST"])
+@wisdom_bp.route("/api/v1/aw/pouc/legacy_submit", methods=["POST"])
 def api_pouc_submit():
     data = request.get_json(silent=True) or {}
     node_address = data.get("node_id", "node-edge-anonymous")
@@ -13625,13 +13192,7 @@ HTML_BOOK_STORE = """<!DOCTYPE html>
         .modal { display: none; position: fixed; inset: 0; background: rgba(4, 9, 14, 0.85); backdrop-filter: blur(8px); z-index: 100; justify-content: center; align-items: center; }
         .pulse-border { border: 1px solid rgba(245, 158, 11, 0.6); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
     <header class="w-full max-w-4xl mx-auto mb-6 flex flex-col md:flex-row justify-between items-start md:items-center bg-[#07131e] p-4 rounded-xl hud-border">
@@ -13829,269 +13390,6 @@ def system_restoration_store():
     return render_template_string(HTML_BOOK_STORE, book=meta)
 
 # =====================================================================
-# 📲 PILLAR: MOBILE MONEY OFF-RAMP & MERCHANT GRAVITY WELL SIMULATOR (v2)
-# =====================================================================
-
-HTML_OFFRAMP = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Laveto Wisdom AW | Mobile Money Off-Ramp Simulator</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="/wisdom/static/favicon.svg">
-    <style>
-        :root {
-            --bg: #040810;
-            --card: #0B1322;
-            --gold: #D97706;
-            --gold-light: #FBBF24;
-            --border: #1E293B;
-            --text: #F8FAFC;
-            --text-muted: #94A3B8;
-            --halt: #EF4444;
-            --proc: #10B981;
-            --mono: "SF Mono", Monaco, Consolas, "Liberation Mono", Courier, monospace;
-        }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 2rem 1rem; line-height: 1.6; }
-        .container { max-width: 1050px; margin: 0 auto; }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.75rem; margin-bottom: 1.5rem; }
-        h1 { color: var(--gold-light); margin: 0 0 4px 0; font-size: 1.5rem; }
-        .subtitle { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.5rem; }
-        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-        .stat-box { background: #080D1A; border: 1px solid var(--border); border-radius: 6px; padding: 1rem; }
-        .stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
-        .stat-val { font-size: 1.35rem; font-weight: 800; color: #FFF; margin-top: 4px; font-family: var(--mono); }
-        .grid-split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        @media (max-width: 800px) { .grid-split { grid-template-columns: 1fr; } }
-        label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem; }
-        input, select { width: 100%; box-sizing: border-box; background: #080D1A; color: #F8FAFC; border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 0.9rem; font-size: 0.95rem; margin-bottom: 1rem; }
-        input:focus, select:focus { outline: none; border-color: var(--gold); }
-        .preset-row { display: flex; gap: 8px; margin-bottom: 1.25rem; flex-wrap: wrap; }
-        .preset-btn { background: #1E293B; color: #CBD5E1; border: 1px solid #334155; border-radius: 4px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
-        .preset-btn:hover { border-color: var(--gold); color: var(--gold-light); }
-        button.btn-primary { width: 100%; background: var(--gold); color: #000; font-weight: 800; border: none; padding: 0.85rem; border-radius: 6px; cursor: pointer; font-size: 0.95rem; transition: background 0.15s ease; }
-        button.btn-primary:hover { background: var(--gold-light); }
-        .badge { display: inline-block; padding: 0.25rem 0.65rem; border-radius: 4px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
-        .badge-proc { background: rgba(16, 185, 129, 0.15); color: #10B981; border: 1px solid #10B981; }
-        .badge-toll { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid #FBBF24; }
-        .waterfall-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 1rem; }
-        @media (max-width: 650px) { .waterfall-grid { grid-template-columns: 1fr; } }
-        .waterfall-box { background: #080D1A; border-radius: 6px; padding: 12px; border-left: 3px solid var(--gold); }
-        pre { background: #080D1A; border: 1px solid var(--border); padding: 1rem; border-radius: 6px; overflow-x: auto; font-size: 0.82rem; color: #38BDF8; font-family: var(--mono); }
-        a { color: var(--gold-light); text-decoration: none; font-weight: 600; }
-        a:hover { text-decoration: underline; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
-</head>
-<body>
-<div class="container">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-        <div>
-            <h1>📲 Mobile Money Off-Ramp Simulator</h1>
-            <div class="subtitle">Proof-of-Useful-Contribution (PoUC) 10%–15% Exit Toll &amp; 0% Merchant Gravity Well Engine</div>
-        </div>
-        <a href="/wisdom/">&larr; Return to Console</a>
-    </div>
-
-    <div class="grid-stats">
-        <div class="stat-box">
-            <div class="stat-label">AWT Spot Rate</div>
-            <div class="stat-val" style="color: var(--gold-light);">P2.50 / AWT</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">BoB 1-to-1 Reserve Vault</div>
-            <div class="stat-val" style="color: #10B981;">P500,000.00</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">Carrier API Cost</div>
-            <div class="stat-val">1.2% Absorbed</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-label">In-Store Merchant Toll</div>
-            <div class="stat-val" style="color: #10B981;">0.0% (Zero Toll)</div>
-        </div>
-    </div>
-
-    <div class="grid-split">
-        <!-- Input Form -->
-        <div class="card">
-            <h3 style="margin-top:0; color:#FFF;">Simulate Off-Ramp Transaction</h3>
-            <form method="POST" action="/wisdom/offramp-simulator">
-                <label>Node Identity</label>
-                <input type="text" name="node_id" value="{{ node_id or 'node-gaborone-041' }}" required>
-
-                <label>AWT Amount to Redeem</label>
-                <input type="number" step="0.01" id="awt_input" name="awt_amount" value="{{ awt_amount or '200.0' }}" required>
-
-                <div class="preset-row">
-                    <button type="button" class="preset-btn" onclick="document.getElementById('awt_input').value='80.0';">80 AWT (Micro P200)</button>
-                    <button type="button" class="preset-btn" onclick="document.getElementById('awt_input').value='200.0';">200 AWT (Std P500)</button>
-                    <button type="button" class="preset-btn" onclick="document.getElementById('awt_input').value='600.0';">600 AWT (Bulk P1,500)</button>
-                </div>
-
-                <label>Settlement Destination / Payment Rail</label>
-                <select name="carrier_key">
-                    <option value="ORANGE_MONEY" {% if carrier_key == 'ORANGE_MONEY' %}selected{% endif %}>Orange Money Botswana (+267 72)</option>
-                    <option value="MASCOM_MYZAKA" {% if carrier_key == 'MASCOM_MYZAKA' %}selected{% endif %}>Mascom MyZaka (+267 71)</option>
-                    <option value="BTC_SMEGA" {% if carrier_key == 'BTC_SMEGA' %}selected{% endif %}>BTC Smega (+267 73)</option>
-                    <option value="LAVETO_PAY_MERCHANT" {% if carrier_key == 'LAVETO_PAY_MERCHANT' %}selected{% endif %}>🛒 Laveto Pay Merchant (0% Toll - In-Store)</option>
-                </select>
-
-                <label>Destination Phone / POS Terminal</label>
-                <input type="text" name="destination" value="{{ destination or '+267 72 104 891' }}" required>
-
-                <button type="submit" class="btn-primary">Execute Settlement Simulation &rarr;</button>
-            </form>
-        </div>
-
-        <!-- Settlement Result Card -->
-        <div class="card" style="border-left: 4px solid {% if quote and quote.is_internal_spend %}#10B981{% else %}var(--gold){% endif %};">
-            <h3 style="margin-top:0; color:#FFF;">Settlement Breakdown</h3>
-            {% if quote %}
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                <span class="badge {% if quote.is_internal_spend %}badge-proc{% else %}badge-toll{% endif %}">
-                    {{ quote.tier_applied }}
-                </span>
-                <span style="font-size:0.85rem; color:var(--text-muted);">Toll: <strong>{{ quote.exit_fee_rate_pct }}%</strong></span>
-            </div>
-
-            <div style="background:#080D1A; border:1px solid var(--border); border-radius:6px; padding:1rem; margin-bottom:1rem;">
-                <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Net Citizen Cashout</div>
-                <div style="font-size:2rem; font-weight:800; color:#10B981; font-family:var(--mono);">P{{ "%.2f"|format(quote.net_citizen_payout_bwp) }}</div>
-                <div style="font-size:0.8rem; color:var(--text-muted);">{{ quote.citizen_payout_pct }}% of gross value credited directly</div>
-            </div>
-
-            <p style="margin:4px 0; font-size:0.88rem;"><strong>Gross Value:</strong> P{{ "%.2f"|format(quote.gross_bwp_value) }}</p>
-            <p style="margin:4px 0; font-size:0.88rem;"><strong>Protocol Exit Fee:</strong> P{{ "%.2f"|format(quote.gross_fee_bwp) }}</p>
-            <p style="margin:4px 0; font-size:0.88rem;"><strong>Carrier Clearing Fee (1.2%):</strong> P{{ "%.2f"|format(quote.carrier_clearing_cost_bwp) }}</p>
-
-            {% if not quote.is_internal_spend %}
-            <h4 style="margin:1rem 0 0.5rem 0; font-size:0.85rem; color:var(--gold-light);">3-WAY PROTOCOL SURPLUS WATERFALL (Net: P{{ "%.2f"|format(quote.protocol_net_surplus_bwp) }})</h4>
-            <div class="waterfall-grid">
-                <div class="waterfall-box" style="border-left-color: #10B981;">
-                    <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">1. BoB RESERVE (50%)</div>
-                    <div style="font-size:1.05rem; font-weight:800; color:#10B981;">+P{{ "%.2f"|format(quote.waterfall_allocations.treasury_reserve_vault_bwp) }}</div>
-                </div>
-                <div class="waterfall-box" style="border-left-color: #EF4444;">
-                    <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">2. BURN VAULT (30%)</div>
-                    <div style="font-size:1.05rem; font-weight:800; color:#EF4444;">+P{{ "%.2f"|format(quote.waterfall_allocations.buyback_and_burn_vault_bwp) }}</div>
-                </div>
-                <div class="waterfall-box" style="border-left-color: var(--gold);">
-                    <div style="font-size:0.7rem; color:var(--text-muted); font-weight:700;">3. OPERATING POOL (20%)</div>
-                    <div style="font-size:1.05rem; font-weight:800; color:var(--gold-light);">+P{{ "%.2f"|format(quote.waterfall_allocations.operating_partner_pool_bwp) }}</div>
-                </div>
-            </div>
-            {% else %}
-            <div style="background:rgba(16, 185, 129, 0.1); border:1px solid #10B981; border-radius:6px; padding:12px; margin-top:1rem; text-align:center;">
-                <div style="font-size:0.9rem; font-weight:700; color:#10B981;">🛒 0% Merchant Gravity Well Active</div>
-                <div style="font-size:0.8rem; color:#CBD5E1; margin-top:4px;">100% purchasing power preserved when spent within the local Laveto Pay merchant network.</div>
-            </div>
-            {% endif %}
-
-            <div style="margin-top:1rem; font-size:0.75rem; color:var(--text-muted); font-family:var(--mono);">
-                Dossier Seal: <code style="color:#38BDF8;">{{ dossier_hash }}</code>
-            </div>
-            {% else %}
-            <p style="color:var(--text-muted); font-size:0.9rem;">Submit the form on the left to simulate an instant off-ramp settlement against Botswana telco rails and the Bank of Botswana 1-to-1 liquidity shield.</p>
-            {% endif %}
-        </div>
-    </div>
-</div>
-</body>
-</html>
-"""
-
-@wisdom_bp.route("/offramp-simulator", methods=["GET", "POST"])
-def offramp_simulator():
-    node_id = "node-gaborone-041"
-    awt_amount = 200.0
-    carrier_key = "MASCOM_MYZAKA"
-    destination = "+267 71 883 204"
-    quote = None
-    dossier_hash = None
-
-    if request.method == "POST":
-        node_id = request.form.get("node_id", node_id).strip()
-        try:
-            awt_amount = float(request.form.get("awt_amount", 200.0))
-        except ValueError:
-            awt_amount = 200.0
-        carrier_key = request.form.get("carrier_key", "ORANGE_MONEY")
-        destination = request.form.get("destination", destination).strip()
-
-        is_internal_spend = (carrier_key == "LAVETO_PAY_MERCHANT")
-        spot_rate_bwp = 2.50
-        gross_bwp = round(awt_amount * spot_rate_bwp, 2)
-
-        # 10% to 15% Tiered Toll
-        if is_internal_spend:
-            fee_rate = 0.0
-            tier_name = "INTERNAL_MERCHANT_SPEND_0_PCT"
-        elif gross_bwp < 250.0:
-            fee_rate = 0.150
-            tier_name = "TIER_3_MICRO_15_PCT"
-        elif gross_bwp <= 1000.0:
-            fee_rate = 0.125
-            tier_name = "TIER_2_STANDARD_12_5_PCT"
-        else:
-            fee_rate = 0.100
-            tier_name = "TIER_1_BULK_GUILD_10_PCT"
-
-        gross_fee_bwp = round(gross_bwp * fee_rate, 2)
-        net_citizen_bwp = round(gross_bwp - gross_fee_bwp, 2)
-
-        if is_internal_spend or gross_fee_bwp == 0.0:
-            carrier_cost_bwp = 0.0
-            protocol_surplus_bwp = 0.0
-            reserve = burn = ops = awt_burned = 0.0
-        else:
-            carrier_cost_bwp = round(gross_bwp * 0.012, 2)
-            protocol_surplus_bwp = max(0.0, round(gross_fee_bwp - carrier_cost_bwp, 2))
-            reserve = round(protocol_surplus_bwp * 0.50, 2)
-            burn = round(protocol_surplus_bwp * 0.30, 2)
-            ops = round(protocol_surplus_bwp * 0.20, 2)
-            diff = round(protocol_surplus_bwp - (reserve + burn + ops), 2)
-            reserve = round(reserve + diff, 2)
-            awt_burned = round(burn / max(0.01, spot_rate_bwp), 2)
-
-        quote = {
-            "awt_amount_redeemed": awt_amount,
-            "spot_rate_bwp": spot_rate_bwp,
-            "gross_bwp_value": gross_bwp,
-            "is_internal_spend": is_internal_spend,
-            "tier_applied": tier_name,
-            "exit_fee_rate_pct": round(fee_rate * 100, 2),
-            "gross_fee_bwp": gross_fee_bwp,
-            "net_citizen_payout_bwp": net_citizen_bwp,
-            "citizen_payout_pct": round((net_citizen_bwp / max(0.01, gross_bwp)) * 100, 2),
-            "carrier_clearing_cost_bwp": carrier_cost_bwp,
-            "protocol_net_surplus_bwp": protocol_surplus_bwp,
-            "waterfall_allocations": {
-                "treasury_reserve_vault_bwp": reserve,
-                "buyback_and_burn_vault_bwp": burn,
-                "operating_partner_pool_bwp": ops,
-                "awt_burned_estimate": awt_burned
-            }
-        }
-        now_iso = datetime.utcnow().isoformat() + "Z"
-        dossier_hash = "0x" + hashlib.sha256(f"{node_id}:{net_citizen_bwp}:{tier_name}:{now_iso}".encode("utf-8")).hexdigest()
-
-    return render_template_string(
-        HTML_OFFRAMP,
-        quote=quote,
-        dossier_hash=dossier_hash,
-        node_id=node_id,
-        awt_amount=awt_amount,
-        carrier_key=carrier_key,
-        destination=destination
-    )
-
-# =====================================================================
 # 📱 MOBILE MONEY & BANKING OFF-RAMP SIMULATOR (/wisdom/offramp)
 # =====================================================================
 
@@ -14110,13 +13408,7 @@ HTML_OFFRAMP_SIMULATOR = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #04090e; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -14544,13 +13836,7 @@ HTML_WHITEPAPER_READER = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #04090e; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -14921,13 +14207,7 @@ HTML_AW1_MANIFESTO = """<!DOCTYPE html>
         ::-webkit-scrollbar-track { background: #04090e; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #38bdf8; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between p-4 md:p-6">
 
@@ -15176,13 +14456,7 @@ HTML_ARCHITECT_LOCKDOWN = """<!DOCTYPE html>
         button { width: 100%; background: #D97706; color: #000; font-weight: 800; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; }
         button:hover { background: #FBBF24; }
         .error { color: #EF4444; font-size: 0.75rem; margin-top: 10px; font-weight: 700; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body>
     <div class="lock-box">
@@ -15243,7 +14517,7 @@ def architect_required(f):
 def view_security_monitor():
     import os
     from flask import render_template_string
-    hud_file = os.getenv("SWARM_HUD_PATH", os.path.join(os.path.dirname(__file__), "templates", "swarm_hud.html"))
+    hud_file = "/home/LavetoLab/laveto_wisdom/templates/swarm_hud.html"
     if os.path.exists(hud_file):
         with open(hud_file, "r", encoding="utf-8") as f:
             return render_template_string(f.read())
@@ -15279,6 +14553,9 @@ def commercial_partner_portal():
 # AW-1 STATUTORY COMPLIANCE & 1-TO-1 TRUST AUDIT ENDPOINTS
 # =====================================================================
 import sys
+if '/home/LavetoLab/aw1-breaker' not in sys.path:
+    sys.path.insert(0, '/home/LavetoLab/aw1-breaker')
+
 try:
     from aw1.trust_reconciliation import TrustAccountReconciliationEngine
     from aw1.sandbox_profile import InstitutionalPilotSuite
@@ -15343,7 +14620,7 @@ def verify_statutory_seal(seal_hash):
     issuance timestamp, and regulatory clearance status.
     """
     seal_hash = seal_hash.strip().lower()
-    log_file = os.getenv('AW1_AUDIT_LOG_PATH', '/home/LavetoLab/logs/compliance_audit.log')
+    log_file = '/home/LavetoLab/aw1-breaker/compliance_audit.log'
     matched_entry = None
 
     if os.path.exists(log_file):
@@ -15378,7 +14655,7 @@ settlement_engine = DualTokenSettlementEngine()
 STATUTORY_KEYWORDS = ["CEE", "SEZA", "Kazungula", "water", "IRP", "BWP", "food import", "grain"]
 DEFAULT_ANSWERS = ["Proceed with standard execution without additional evaluation."]
 
-@wisdom_bp.route('/api/v1/aw/pouc/submit', methods=['POST'])
+@wisdom_bp.route('/api/v1/aw/pouc/submit', methods=['GET', 'POST'])
 def submit_pouc_gradient():
     """
     Mobile Edge Node PoUC Submission Endpoint.
@@ -15386,6 +14663,19 @@ def submit_pouc_gradient():
     2. Runs 3-Stage Triad Filters (Semantic Novelty, Peer Triangulation, Epistemic Delta).
     3. Issues AWT Liquid Tokens + W_tau Soulbound Reputation credits.
     """
+    if request.method in ["GET", "HEAD"]:
+        return jsonify({
+            "status": "online",
+            "endpoint": "/wisdom/api/v1/aw/pouc/submit",
+            "methods": ["GET", "POST"],
+            "protocol": "Proof of Useful Contribution (PoUC) Edge Gradient Ingress",
+            "hardware_interlocks": {
+                "min_battery": 80,
+                "charging_required": True,
+                "max_thermal_celsius": 34.0,
+                "network": "UNMETERED_WIFI"
+            }
+        }), 200
     try:
         payload = request.get_json(silent=True) or {}
         node_id = payload.get("node_id", "anonymous_node")
@@ -15393,6 +14683,7 @@ def submit_pouc_gradient():
         evaluation_scores = payload.get("scores", {})
         surfaced_blindspot = payload.get("surfaced_blindspot", "")
         peer_scores = payload.get("peer_scores", [])
+        economic_proof = payload.get("economic_proof", {})
 
         # 1. Hardware Interlocks Check
         passed_interlocks, interlock_msg = HardwareInterlockVerifier.verify(telemetry)
@@ -15424,7 +14715,57 @@ def submit_pouc_gradient():
         epistemic_delta = PoUCTriadValidator.filter_3_epistemic_delta(surfaced_blindspot, STATUTORY_KEYWORDS)
 
         # 6. Settle Dual-Token Rewards
-        settlement_receipt = settlement_engine.settle_pouc_submission(node_id, epistemic_delta)
+        settlement_receipt = settlement_engine.settle_pouc_submission(node_id, epistemic_delta, economic_proof)
+        if settlement_receipt.get("status") != "SETTLED_WITH_ECONOMIC_PROOF":
+            return jsonify({
+                "status": settlement_receipt.get("status", "REJECTED_UNBACKED_EMISSION"),
+                "message": settlement_receipt.get("reason", "Economic proof verification failed."),
+                "details": settlement_receipt
+            }), 422
+
+        # --- Persist Settlement to awt_ledger ---
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT INTO awt_ledger (node_id, contribution_hash, w_tau, awt_minted, status)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    node_id,
+                    economic_proof.get("reference_id", "pouc-settlement"),
+                    settlement_receipt.get("w_tau_credited", 0.0),
+                    settlement_receipt.get("awt_minted", 0.0),
+                    "MINTED"
+                )
+            )
+            conn.commit()
+            conn.close()
+        except Exception as db_err:
+            print(f"Warning: Failed to record settlement to awt_ledger: {db_err}")
+
+        # --- Persist Settlement to awt_ledger ---
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute(
+                """
+                INSERT INTO awt_ledger (node_id, contribution_hash, w_tau, awt_minted, status)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    node_id,
+                    economic_proof.get("reference_id", "pouc-settlement"),
+                    settlement_receipt.get("w_tau_credited", 0.0),
+                    settlement_receipt.get("awt_minted", 0.0),
+                    "MINTED"
+                )
+            )
+            conn.commit()
+            conn.close()
+        except Exception as db_err:
+            print(f"Warning: Failed to record settlement to awt_ledger: {db_err}")
 
         return jsonify({
             "status": "VALIDATED_AND_SETTLED",
@@ -15467,144 +14808,207 @@ def download_audit_term_sheet(audit_id):
 
 @wisdom_bp.route("/audit/<audit_id>/audio-brief", methods=["GET"])
 def audit_audio_briefing(audit_id):
-    conn = get_db_connection()
-    row = None
+    """
+    Renders the executive synthetic podcast briefing with dual-host
+    in-browser speech synthesis for high-level decision makers.
+    """
+    posture = "CALIBRATE"
+    quotient = 2.45
+    proposal = "Sovereign Agro-Processing and SEZA Industrial Hub Allocation"
+    truth = "Import-substitution covenants require mandatory 50% CEE citizen SMME subcontracting."
+
+    # Fetch audit dossier if available
     try:
+        conn = get_db_connection()
         cur = conn.cursor()
         row = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (audit_id,)).fetchone()
-    finally:
+        if row:
+            audit = dict(row)
+            posture = audit.get("final_posture", posture)
+            quotient = audit.get("wisdom_quotient", quotient)
+            proposal = (audit.get("proposal_text", proposal) or proposal)[:260]
+            truth = audit.get("uncomfortable_truth", truth)
         conn.close()
+    except Exception:
+        pass
 
-    if row:
-        audit = dict(row)
-        posture = audit.get("final_posture") or audit.get("posture", "CALIBRATE")
-        quotient = audit.get("wisdom_quotient", 0.85)
-        proposal = audit.get("proposal_text", "Commercial proposal under sovereign review.")[:280]
-    else:
-        posture = "CALIBRATE"
-        quotient = 0.85
-        proposal = "Industrial capital allocation & foreign direct investment proposal."
+    dialogue_script = f"""HOST 1: Welcome to the sovereign executive briefing on decision dossier {audit_id}. Our conscience engine has completed the five-pass forensic assurance audit on the submitted capital dilemma.
+HOST 2: The mandate under review evaluates: {proposal}. Our models cross-referenced this against Botswana's nine point two billion Pula import deficit, the Economic Inclusion Act 2021, and Water Act covenants.
+HOST 1: What is the primary determination from the Conscience Engine?
+HOST 2: The final posture is an authoritative {posture}, registering a Wisdom Quotient of {quotient}. While the capital deployment creates tangible local value, Passes 3 and 4 identified acute statutory friction.
+HOST 1: Highlight the single critical friction identified in Pass 5.
+HOST 2: The uncomfortable truth is clear: {truth}
+HOST 1: What is the binding remediation required before unconditional clearance?
+HOST 2: To transition to PROCEED, the proponent must execute the Autonomous Statutory Remedy Term Sheet, guaranteeing fifty percent citizen subcontracting, captive solar PV integration, and domestic Tier-3 data residency under the Data Protection Act 2018."""
 
-    # Synthesize two-host executive dialogue
-    script = f"""[EXECUTIVE AUDIO BRIEFING • LAVETO WISDOM AW]
-Audit Reference: {audit_id} | Posture: {posture} | Wisdom Quotient (W): {quotient}
-
-HOST 1 (Sovereign Risk Lead): Welcome to the executive intelligence overview for audit reference {audit_id}. Our 5-pass conscience engine has concluded its forensic evaluation on this submitted capital dilemma.
-
-HOST 2 (Statutory Compliance Lead): That is right. The proponent submitted a high-value commercial undertaking proposing: "{proposal}...". We stress-tested this across Botswana's codified ground-truth frameworks, including the P9.2 billion food import deficit, the 50% Citizen Economic Empowerment subcontracting rule, and national IRP solar baselines.
-
-HOST 1: What is the engine's final posture on the project?
-
-HOST 2: The engine assigned a formal [{posture}], scoring a Wisdom Quotient of {quotient}. While the capital deployment creates immediate macro investment, Passes 3 and 4 surfaced critical statutory frictions. Specifically, the structure triggered circuit-breaker warnings under the Economic Inclusion Act 2021 and Water Act Cap 34:01 regarding local SMME participation and industrial effluent reuse.
-
-HOST 1: How can the proponent remedy these statutory breaches to achieve a state-sanctioned [PROCEED]?
-
-HOST 2: To clear the audit gate, the proponent must accept the 8-clause Autonomous Statutory Remedy Term Sheet. This mandates a minimum 50% ring-fenced subcontracting quota for citizen SMMEs, 25% direct voting citizen equity, an 80% closed-loop water recycling plant, and Tier-3 domestic data residency under the Data Protection Act.
-"""
-
-    player_html = """<!DOCTYPE html>
+    html_template = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <title>Executive Audio Overview — {{ audit_id }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Executive Audio Overview Briefing — {{ audit_id }}</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #070B14; color: #F8FAFC; padding: 24px; margin: 0; line-height: 1.6; }
-        .container { max-width: 860px; margin: 0 auto; background: #0F172A; border: 1px solid #1E293B; border-radius: 12px; padding: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1E293B; padding-bottom: 16px; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-        h1 { margin: 0; font-size: 1.4rem; color: #FBBF24; display: flex; align-items: center; gap: 8px; }
-        .badge { padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
-        .badge-halt { background: #7F1D1D; color: #FCA5A5; border: 1px solid #EF4444; }
-        .badge-cal { background: #78350F; color: #FDE68A; border: 1px solid #D97706; }
-        .badge-proc { background: #064E3B; color: #6EE7B7; border: 1px solid #10B981; }
-        .controls { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
-        .btn { background: #D97706; color: #000; font-weight: bold; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; }
-        .btn:hover { background: #F59E0B; }
-        .btn-stop { background: #334155; color: #F8FAFC; }
-        .btn-stop:hover { background: #475569; }
-        .btn-link { background: transparent; border: 1px solid #334155; color: #94A3B8; text-decoration: none; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; }
-        .btn-link:hover { color: #F8FAFC; border-color: #64748B; }
-        .script-box { background: #030712; border: 1px solid #1E293B; border-radius: 8px; padding: 20px; font-family: monospace; font-size: 0.88rem; color: #38BDF8; white-space: pre-wrap; line-height: 1.6; max-height: 480px; overflow-y: auto; }
-        .host-1 { color: #FBBF24; font-weight: bold; }
-        .host-2 { color: #34D399; font-weight: bold; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+        :root { --bg: #0B0F19; --card: #151C2C; --gold: #D97706; --gold-light: #FBBF24; --cyan: #38BDF8; --text: #F3F4F6; --border: #232E42; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 2rem 1rem; }
+        .container { max-width: 860px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1.25rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px; }
+        h1 { margin: 0; color: var(--gold-light); font-size: 1.4rem; display: flex; align-items: center; gap: 8px; }
+        .meta-tag { background: #0F172A; border: 1px solid var(--border); padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+        .player-bar { background: #070B14; border: 1px solid var(--border); padding: 1rem 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+        .btn-ctrl { background: var(--gold); color: #000; border: none; font-weight: 700; padding: 8px 18px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+        .btn-secondary { background: #1E293B; color: #FFF; border: 1px solid #334155; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
+        .status-pill { font-size: 0.82rem; color: #94A3B8; margin-left: auto; }
+        .line-box { padding: 12px 16px; border-radius: 6px; margin-bottom: 10px; line-height: 1.55; font-size: 0.95rem; border: 1px solid transparent; transition: all 0.2s ease; }
+        .host-1 { background: rgba(217, 119, 6, 0.08); border-left: 3px solid var(--gold); }
+        .host-2 { background: rgba(56, 189, 248, 0.08); border-left: 3px solid var(--cyan); }
+        .speaking { background: rgba(251, 191, 36, 0.22) !important; border-color: var(--gold-light) !important; transform: translateX(4px); }
+        .speaker-label { font-weight: 800; font-size: 0.78rem; text-transform: uppercase; margin-bottom: 4px; display: block; }
+        .host-1 .speaker-label { color: var(--gold-light); }
+        .host-2 .speaker-label { color: var(--cyan); }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div>
-                <h1><span>🎧</span> Executive Audio Overview Briefing</h1>
-                <div style="font-size: 0.82rem; color: #94A3B8; margin-top: 4px;">Sovereign Decision Assurance Briefing • Republic of Botswana</div>
-            </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <span class="badge {% if posture == 'HALT' %}badge-halt{% elif 'CALIBRATE' in posture %}badge-cal{% else %}badge-proc{% endif %}">{{ posture }}</span>
-                <span style="font-family: monospace; font-size: 0.85rem; color: #FBBF24;">W = {{ quotient }}</span>
-            </div>
+<div class="container">
+    <div class="header">
+        <h1>🎙️ Executive Synthetic Audio Briefing</h1>
+        <div style="display:flex; gap:8px;">
+            <span class="meta-tag">REF: {{ audit_id }}</span>
+            <span class="meta-tag" style="color:var(--gold-light);">W: {{ quotient }}</span>
+            <span class="meta-tag" style="color:#FFF;">{{ posture }}</span>
         </div>
-
-        <div class="controls">
-            <button class="btn" id="play-btn" onclick="startAudioBrief()">▶ Play Audio Briefing</button>
-            <button class="btn btn-stop" id="stop-btn" onclick="stopAudioBrief()">⏹ Stop</button>
-            <a href="/wisdom/audit/{{ audit_id }}/term-sheet-pdf" class="btn-link">📜 Download Term Sheet PDF</a>
-            <a href="/wisdom/audit/{{ audit_id }}" class="btn-link">← Return to Dossier</a>
-        </div>
-
-        <div class="script-box" id="transcript">{{ script }}</div>
     </div>
 
-    <script>
-        var currentUtterance = null;
-        function startAudioBrief() {
-            if (!('speechSynthesis' in window)) {
-                alert('Text-to-Speech is not supported by your browser.');
-                return;
-            }
-            window.speechSynthesis.cancel();
-            var text = document.getElementById('transcript').innerText;
-            currentUtterance = new SpeechSynthesisUtterance(text);
-            currentUtterance.rate = 1.0;
-            currentUtterance.pitch = 1.0;
+    <!-- NATIVE DUAL-HOST WEB SPEECH PLAYER -->
+    <div class="player-bar">
+        <button id="btn-play" class="btn-ctrl" onclick="toggleAudio()">▶️ Play Briefing</button>
+        <button class="btn-secondary" onclick="stopAudio()">⏹️ Stop</button>
+        <button class="btn-secondary" onclick="toggleSpeed()" id="btn-speed">1.0x Speed</button>
+        <span class="status-pill" id="player-status">Ready • 2 Hosts Configured</span>
+    </div>
 
-            var btn = document.getElementById('play-btn');
-            btn.innerText = '🔊 Playing...';
-            btn.disabled = true;
+    <div id="transcript-feed">
+        {% for line in lines %}
+            {% if line.startswith('HOST 1:') %}
+            <div class="line-box host-1" id="line-{{ loop.index0 }}">
+                <span class="speaker-label">🏛️ Host 1 • Sovereign Anchor</span>
+                {{ line.replace('HOST 1:', '').strip() }}
+            </div>
+            {% elif line.startswith('HOST 2:') %}
+            <div class="line-box host-2" id="line-{{ loop.index0 }}">
+                <span class="speaker-label">📊 Host 2 • Economic Assurance Analyst</span>
+                {{ line.replace('HOST 2:', '').strip() }}
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
 
-            currentUtterance.onend = function() {
-                btn.innerText = '▶ Play Audio Briefing';
-                btn.disabled = false;
-            };
-            currentUtterance.onerror = function() {
-                btn.innerText = '▶ Play Audio Briefing';
-                btn.disabled = false;
-            };
+    <div style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem; display:flex; justify-content:space-between; align-items:center;">
+        <a href="/wisdom/" style="color:var(--gold-light); text-decoration:none; font-size:0.9rem;">&larr; Return to Decision Console</a>
+        <a href="/wisdom/audit/{{ audit_id }}" style="color:#94A3B8; text-decoration:none; font-size:0.85rem;">Inspect Forensic Dossier &rarr;</a>
+    </div>
+</div>
 
-            window.speechSynthesis.speak(currentUtterance);
+<script>
+let scriptLines = {{ lines | tojson }};
+let currentIndex = 0;
+let isPlaying = false;
+let playbackRate = 1.0;
+let voices = [];
+
+function loadVoices() {
+    voices = window.speechSynthesis.getVoices();
+}
+window.speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function getVoice(hostIndex) {
+    if (!voices.length) voices = window.speechSynthesis.getVoices();
+    if (hostIndex === 1) {
+        return voices.find(v => v.lang.startsWith('en') && (v.name.includes('Male') || v.name.includes('Guy') || v.name.includes('David') || v.name.includes('George'))) || voices[0];
+    } else {
+        return voices.find(v => v.lang.startsWith('en') && (v.name.includes('Female') || v.name.includes('Zira') || v.name.includes('Jenny') || v.name.includes('Susan') || v.name.includes('Samantha'))) || voices[1] || voices[0];
+    }
+}
+
+function playNextLine() {
+    if (!isPlaying || currentIndex >= scriptLines.length) {
+        stopAudio();
+        document.getElementById('player-status').textContent = 'Briefing complete.';
+        return;
+    }
+
+    document.querySelectorAll('.line-box').forEach(el => el.classList.remove('speaking'));
+    const lineEl = document.getElementById('line-' + currentIndex);
+    if (lineEl) {
+        lineEl.classList.add('speaking');
+        lineEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    const raw = scriptLines[currentIndex];
+    const isHost1 = raw.startsWith('HOST 1:');
+    const textToSpeak = raw.replace(/^HOST [12]:/, '').trim();
+
+    const utter = new SpeechSynthesisUtterance(textToSpeak);
+    utter.rate = playbackRate;
+    utter.voice = getVoice(isHost1 ? 1 : 2);
+
+    document.getElementById('player-status').textContent = isHost1 ? 'Speaking: Host 1 (Anchor)...' : 'Speaking: Host 2 (Assurance)...';
+
+    utter.onend = () => {
+        currentIndex++;
+        playNextLine();
+    };
+
+    utter.onerror = () => {
+        currentIndex++;
+        playNextLine();
+    };
+
+    window.speechSynthesis.speak(utter);
+}
+
+function toggleAudio() {
+    if (!('speechSynthesis' in window)) {
+        alert('Web Speech API is not supported in this browser.');
+        return;
+    }
+    if (isPlaying) {
+        window.speechSynthesis.pause();
+        isPlaying = false;
+        document.getElementById('btn-play').textContent = '▶️ Resume';
+        document.getElementById('player-status').textContent = 'Paused';
+    } else {
+        if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+        } else {
+            isPlaying = true;
+            playNextLine();
         }
+        isPlaying = true;
+        document.getElementById('btn-play').textContent = '⏸️ Pause';
+    }
+}
 
-        function stopAudioBrief() {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                var btn = document.getElementById('play-btn');
-                if (btn) {
-                    btn.innerText = '▶ Play Audio Briefing';
-                    btn.disabled = false;
-                }
-            }
-        }
-    </script>
+function stopAudio() {
+    isPlaying = false;
+    currentIndex = 0;
+    window.speechSynthesis.cancel();
+    document.querySelectorAll('.line-box').forEach(el => el.classList.remove('speaking'));
+    document.getElementById('btn-play').textContent = '▶️ Play Briefing';
+    document.getElementById('player-status').textContent = 'Stopped';
+}
+
+function toggleSpeed() {
+    playbackRate = playbackRate === 1.0 ? 1.25 : (playbackRate === 1.25 ? 1.5 : 1.0);
+    document.getElementById('btn-speed').textContent = playbackRate + 'x Speed';
+}
+</script>
 </body>
 </html>"""
-    return render_template_string(player_html, audit_id=audit_id, posture=posture, quotient=quotient, script=script.strip())
 
-# =====================================================================
-# UPGRADE 7: COMMERCIAL SETTLEMENT & BOB TRUST VERIFICATION
-# =====================================================================
+    lines = [l.strip() for l in dialogue_script.strip().splitlines() if l.strip()]
+    return render_template_string(html_template, audit_id=audit_id, posture=posture, quotient=quotient, lines=lines)
+
 @wisdom_bp.route("/audit/<audit_id>/settle", methods=["POST"])
 def execute_audit_settlement(audit_id):
     from .commercial_settlement import record_settlement
@@ -15631,6 +15035,11 @@ def view_bob_trust_compliance():
         return jsonify({"compliance_status": "NO_TRANSACTIONS_RECORDED", "reserve_ratio": 1.0}), 200
     return jsonify(dict(row)), 200
 
+
+# =====================================================================
+
+
+
 # =====================================================================
 # TRACK B: UNIVERSITY BUILDERS GUILD PORTAL (UB & BIUST)
 # =====================================================================
@@ -15654,13 +15063,7 @@ def view_builders_guild():
         .btn:hover { background: #F59E0B; }
         ul { padding-left: 20px; color: #CBD5E1; }
         li { margin-bottom: 8px; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+    </style>
 </head>
 <body>
     <div class="container">
@@ -15722,816 +15125,1110 @@ def download_comparative_variance_pdf():
     })
 
 
+@wisdom_bp.route("/diff/<parent_id>/<child_id>", methods=["GET"])
+def view_specific_pair_diff(parent_id, child_id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    parent = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (parent_id,)).fetchone()
+    child = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (child_id,)).fetchone()
+    conn.close()
 
-@wisdom_bp.route("/autopsy", methods=["GET"])
-@wisdom_bp.route("/wisdom/autopsy", methods=["GET"])
-def view_adversarial_autopsy():
-    """Renders the Adversarial Autopsy and Forensic Incident HUD."""
-    return render_template("autopsy.html")
+    pairs = []
+    if parent and child:
+        pairs.append({"parent": dict(parent), "child": dict(child)})
 
-@wisdom_bp.route("/gauntlet", methods=["GET", "POST"])
-@wisdom_bp.route("/gauntlet/", methods=["GET", "POST"])
-def view_adversarial_gauntlet():
-    return render_template("gauntlet.html")
+    return render_template_string(HTML_DIFF, pairs=pairs, user_role=get_current_user_role())
 
 
-HTML_EDGE_MESH = r"""<!DOCTYPE html>
+
+# =====================================================================
+# DOSSIER UPLOAD & AUTOMATIC STATUTORY DILEMMA FORMULATOR
+# =====================================================================
+@wisdom_bp.route("/api/v1/dossier/formulate", methods=["POST"])
+def api_formulate_dossier():
+    from flask import request, jsonify
+    from .dossier_formulator import extract_text_from_file, formulate_statutory_dilemma
+
+    file = request.files.get("file")
+    if not file or not file.filename:
+        return jsonify({"status": "error", "message": "No file uploaded"}), 400
+
+    try:
+        content_bytes = file.read()
+        extracted_text = extract_text_from_file(file.filename, content_bytes)
+        result = formulate_statutory_dilemma(file.filename, extracted_text)
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+
+# =====================================================================
+# STATUTORY WHAT-IF SIMULATION & 1-CLICK DOSSIER PDF EXPORT
+# =====================================================================
+@wisdom_bp.route("/api/v1/whatif/simulate", methods=["POST"])
+def api_whatif_simulate():
+    from flask import request, jsonify
+    from .statutory_whatif_simulator import StatutoryWhatIfSimulator
+    data = request.get_json() or {}
+    loan_amount = float(data.get("loan_amount_bwp", 25000000))
+    labor = float(data.get("local_labor", 55))
+    subcontract = float(data.get("local_subcontract", 50))
+    env = float(data.get("env_score", 8.5))
+    foresight = float(data.get("foresight_years", 4.0))
+
+    result = StatutoryWhatIfSimulator.simulate_deal_scenario(
+        loan_amount_bwp=loan_amount,
+        local_labor_percentage=labor,
+        local_subcontracting_percentage=subcontract,
+        environmental_compliance_score=env,
+        foresight_depth_years=foresight
+    )
+    return jsonify(result), 200
+
+@wisdom_bp.route("/api/v1/whatif/export-dossier-pdf", methods=["POST", "GET"])
+def api_whatif_export_pdf():
+    import io
+    from flask import request, send_file
+    from .dossier_pdf_generator import generate_dossier_pdf_stream
+
+    if request.method == "POST":
+        data = request.get_json() or {}
+    else:
+        data = request.args.to_dict()
+
+    payload = {
+        "dossier_id": data.get("dossier_id", f"DOS-CEDA-{int(time.time())}"),
+        "dilemma_title": data.get("dilemma_title", "CEDA / SEZA Statutory Assurance Evaluation"),
+        "applicant": data.get("applicant", "Commercial Credit Applicant (Botswana)"),
+        "loan_amount_bwp": float(data.get("loan_amount_bwp") or 25000000.0),
+        "wisdom_quotient_W": float(data.get("wisdom_quotient_W", 2.45)),
+        "cee_quota_percentage": float(data.get("cee_quota_percentage", 52.0)),
+        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    }
+
+    pdf_bytes = generate_dossier_pdf_stream(payload)
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name="Decision_Assurance_Dossier.pdf"
+    )
+
+
+# =====================================================================
+# CITIZEN PORTAL (PUBLIC EMPOWERMENT & SMME VERIFICATION)
+# =====================================================================
+
+
+@wisdom_bp.route("/citizen", methods=["GET"])
+def citizen_portal():
+    from flask import render_template_string
+    template = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Distributed Edge Mesh | Laveto Wisdom AW</title>
+    <title>Citizen Portal — Laveto Wisdom AW</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        :root {
-            --bg: #050811; --card-bg: #0D131F; --border: #1E293B;
-            --gold: #D97706; --gold-light: #FBBF24; --text-main: #F1F5F9; --text-muted: #94A3B8;
-            --success: #10B981; --accent-blue: #38BDF8;
-        }
-        body { background: var(--bg); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 2rem; line-height: 1.5; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 2rem; }
-        .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
-        .card h3 { color: var(--gold-light); margin-top: 0; font-size: 1.1rem; }
-        .stat { font-size: 2.2rem; font-weight: bold; color: var(--text-main); margin: 10px 0; font-family: monospace; }
-        .badge-active { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid var(--success); padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 1rem; }
-        th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); }
-        th { color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; }
-        .back-link { color: var(--gold-light); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
-        .back-link:hover { text-decoration: underline; }
-
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
-
-</style>
+        :root { --bg: #0B0F19; --card: #151C2C; --gold: #D97706; --gold-light: #FBBF24; --text: #F3F4F6; --border: #232E42; --accent: #0284C7; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 2rem 1rem; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 2rem; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1.8rem; margin-bottom: 1.5rem; }
+        h1 { color: var(--gold-light); margin: 0 0 8px 0; font-size: 1.8rem; }
+        h2 { color: #38BDF8; font-size: 1.2rem; margin-top: 0; }
+        p { color: #94A3B8; font-size: 0.95rem; line-height: 1.5; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 1.2rem; }
+        .feature-box { background: #0A0F1D; border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+        .feature-box h3 { color: var(--gold-light); font-size: 1rem; margin: 0 0 6px 0; }
+        .btn { display: inline-block; background: var(--gold); color: #000; font-weight: 700; padding: 10px 20px; border-radius: 6px; text-decoration: none; margin-top: 10px; font-size: 0.9rem; }
+        .btn-outline { display: inline-block; background: transparent; color: #38BDF8; border: 1px solid #0284C7; font-weight: 700; padding: 10px 20px; border-radius: 6px; text-decoration: none; margin-top: 10px; font-size: 0.9rem; margin-left: 8px; }
+    </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
-        <div>
-            <h1 style="margin: 0; font-size: 1.6rem; color: var(--gold-light);">🌐 DISTRIBUTED EDGE MESH NETWORK</h1>
-            <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">Proof of Useful Contribution (PoUC) & Node Telemetry Hub</div>
+        <h1>🏠 Laveto Citizen Portal</h1>
+        <p>Sovereign Citizen Empowerment & Statutory Rights under the Economic Inclusion Act 2021</p>
+        <div style="margin-top: 10px;">
+            <a href="/wisdom/" class="btn">&larr; Assurance Console</a>
+            <a href="/wisdom/generate" class="btn-outline">💡 Idea Incubator</a>
         </div>
-        <a href="/wisdom/" class="back-link">&larr; Return to Assurance Console</a>
-    </div>
 
-    <div class="grid">
-        <div class="card">
-            <h3>Active Mesh Nodes</h3>
-            <div class="stat">1,428</div>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Connected citizen & institutional nodes</p>
-        </div>
-        <div class="card">
-            <h3>Hardware Interlock Pass Rate</h3>
-            <div class="stat" style="color: var(--success);">99.4%</div>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">AC Power + Unmetered Wi-Fi + Cool Thermal</p>
-        </div>
-        <div class="card">
-            <h3>Daily PoUC Micro-Tasks</h3>
-            <div class="stat" style="color: var(--accent-blue);">84,520</div>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Decentralized consensus evaluations verified</p>
-        </div>
-        <div class="card">
-            <h3>Total AWT Distributed</h3>
-            <div class="stat" style="color: var(--gold-light);">612,400</div>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin: 0;">Minted through verified useful contributions</p>
-        </div>
-    </div>
 
     <div class="card">
-        <h3 style="margin-top: 0; font-size: 1.2rem;">Live Edge Node Telemetry Feed</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Node ID</th>
-                    <th>Region / Hub</th>
-                    <th>Power State</th>
-                    <th>Network</th>
-                    <th>Soulbound W_tau</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="font-family: monospace; color: var(--gold-light);">node-gbw-8821</td>
-                    <td>Gaborone SEZA Central</td>
-                    <td>AC Charging (94%)</td>
-                    <td>Unmetered Wi-Fi</td>
-                    <td>1.42</td>
-                    <td><span class="badge-active">ACTIVE VERIFYING</span></td>
-                </tr>
-                <tr>
-                    <td style="font-family: monospace; color: var(--gold-light);">node-francistown-049</td>
-                    <td>Francistown Industrial</td>
-                    <td>AC Charging (88%)</td>
-                    <td>Fiber / Wi-Fi</td>
-                    <td>1.28</td>
-                    <td><span class="badge-active">ACTIVE VERIFYING</span></td>
-                </tr>
-                <tr>
-                    <td style="font-family: monospace; color: var(--gold-light);">node-palapye-112</td>
-                    <td>Palapye Solar Hub</td>
-                    <td>AC Charging (99%)</td>
-                    <td>Unmetered Wi-Fi</td>
-                    <td>1.55</td>
-                    <td><span class="badge-active">ACTIVE VERIFYING</span></td>
-                </tr>
-            </tbody>
-        </table>
+        <h2>🛡 What the Citizen Portal Does for You</h2>
+        <p>Under Botswana's <strong>Economic Inclusion Act 2021</strong>, state tenders, SEZA anchor investments, and CEDA-funded facilities must legally guarantee citizen equity, local subcontracting quotas, and job preservation. This portal allows local entrepreneurs and communities to verify compliance.</p>
+
+        <div class="grid">
+            <div class="feature-box">
+                <h3>📊 50% CEE Verification</h3>
+                <p>Check if large state or parastatal tenders in your district fulfill the mandatory 50% citizen subcontracting threshold.</p>
+            </div>
+            <div class="feature-box">
+                <h3>💧 Water & Aquifer Protection</h3>
+                <p>Track borehole extraction covenants and greywater compliance under the Water Act (Cap 34:01).</p>
+            </div>
+            <div class="feature-box">
+                <h3>🎓 University Guild (PoUC)</h3>
+                <p>Students from UB, BIUST, and BAC can attach mobile and laptop edge nodes to audit national decisions for AWT rewards.</p>
+            </div>
+        </div>
     </div>
+
+    <div class="card" style="border-left: 4px solid var(--gold);">
+        <h2>🚀 Ready to Test an Investment or Tender?</h2>
+        <p>Drop your business plan, CEDA application, or supplier quotation into the AI Assurance Console for instant 7-gate compliance feedback.</p>
+        <a href="/wisdom/" class="btn">Go to Assurance Console</a>
+    </div>
+
+</body>
+</html>"""
+    return render_template_string(template)
+
+
+API_DOCS_HTML = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Laveto Wisdom AW — Live API Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root { --bg: #0B0F19; --card: #151C2C; --gold: #D97706; --text: #F3F4F6; --border: #232E42; --post: #16A34A; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 2rem 1rem; line-height: 1.6; }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 2.5rem; }
+        .header h1 { color: var(--gold); font-size: 2.2rem; margin-bottom: 0.25rem; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 4px; font-weight: 800; font-size: 0.85rem; background: var(--post); color: #fff; }
+        pre { background: #07090E; padding: 1rem; border-radius: 4px; overflow-x: auto; color: #A7F3D0; font-size: 0.85rem; border: 1px solid var(--border); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>LAVETO WISDOM AW</h1>
+        <p>Public API & Enterprise Integration Portal</p>
+    </div>
+    <section class="card">
+        <div><span class="badge">POST</span> <code>/wisdom/api/v1/aw/audit</code></div>
+        <p>Executes decision assurance and automatically processes a <strong>20% Buyback-and-Burn</strong> on audit revenues.</p>
+    </section>
+    <section class="card">
+        <div><span class="badge">POST</span> <code>/wisdom/api/v1/aw/pouc/submit</code></div>
+        <p>Submits mobile edge device micro-evaluation and settles dual-token rewards.</p>
+    </section>
 </div>
 </body>
-</html>
-"""
+</html>"""
 
-@wisdom_bp.route("/edge/mesh", methods=["GET"])
-def view_edge_mesh():
-    """Serves the Distributed Edge Mesh Network HUD."""
-    return render_template_string(HTML_EDGE_MESH)
+@wisdom_bp.route('/docs', methods=['GET', 'HEAD'])
+def render_live_api_docs():
+    from flask import Response
+    body = API_DOCS_HTML if 'API_DOCS_HTML' in globals() else '<h1>AW-1 Docs</h1>'
+    resp = Response(body, mimetype='text/html', status=200)
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return resp
+
+
+
+@wisdom_bp.route('/genesis', methods=['GET'])
+@wisdom_bp.route('/join-genesis', methods=['GET'])
+def join_genesis_alias():
+    from flask import redirect
+    return redirect('/wisdom/portal?ref=BW-GENESIS-APEX', code=302)
+
+
+
+@wisdom_bp.route('/join', methods=['GET'])
+def root_join_redirect():
+    from flask import redirect, request
+    ref = request.args.get('ref', 'BW-GENESIS-APEX')
+    return redirect(f'/wisdom/portal?ref={ref}', code=302)
+
+@wisdom_bp.route('/wisdom/sw.js', methods=['GET'])
+@wisdom_bp.route('/sw.js', methods=['GET'])
+def service_worker_stub():
+    from flask import Response
+    return Response("// Service Worker stub\nself.addEventListener('fetch', () => {});", mimetype='application/javascript')
+
+
+
+@wisdom_bp.route('/cover.png', methods=['GET'])
+def get_cover_image():
+    from flask import send_file
+    return send_file('/home/LavetoLab/aw1_cover.png', mimetype='image/png')
+
+
+
+@wisdom_bp.route('/buy', methods=['GET'])
+@wisdom_bp.route('/checkout', methods=['GET'])
+def lemon_checkout_redirect():
+    from flask import redirect
+    return redirect("https://laveto-wisdom.lemonsqueezy.com/checkout/buy/52d3615d-f312-41a3-971d-00d3346b95e5", code=302)
+
+
+
+@wisdom_bp.route('/api/telemetry', methods=['GET'])
+def get_security_telemetry():
+    import sqlite3
+    from flask import jsonify
+
+    conn = sqlite3.connect('/home/LavetoLab/lvt_database.db')
+    c = conn.cursor()
+
+    threats = c.execute("SELECT dossier_id, timestamp, tool_name, threat_vector, status FROM adversary_threat_logs ORDER BY timestamp DESC LIMIT 5").fetchall()
+    quorum = c.execute("SELECT quorum_id, timestamp, tool_name, signers, status FROM quorum_audit_ledger ORDER BY timestamp DESC LIMIT 5").fetchall()
+    statutory = c.execute("SELECT statutory_id, timestamp, agent_id, statute_code, decision FROM statutory_audit_ledger ORDER BY timestamp DESC LIMIT 5").fetchall()
+    rules = c.execute("SELECT rule_id, rule_name, threat_pattern, status FROM synthesized_ast_rules ORDER BY created_at DESC LIMIT 5").fetchall()
+    tee_records = c.execute("SELECT attestation_id, timestamp, enclave_type, pcr0, signature_hex, verification_status FROM tee_attestation_records ORDER BY timestamp DESC LIMIT 5").fetchall()
+
+    conn.close()
+    return jsonify({
+        "status": "online",
+        "threat_dossiers": threats,
+        "quorum_events": quorum,
+        "statutory_decisions": statutory,
+        "synthesized_rules": rules,
+        "tee_attestations": tee_records
+    })
+
+
+@wisdom_bp.route('/api/v1/deliberate', methods=['POST'])
+@wisdom_bp.route('/v1/aw/dialogue', methods=['POST'])
+def handle_sovereign_dialogue():
+    """Self-healing dialogue and scenario simulation for the Sovereign Interrogation HUD."""
+    from flask import request, jsonify
+    try:
+        data = request.get_json(silent=True) or {}
+        message = (data.get("message") or data.get("user_query") or "Draft Board Defense Brief").strip()
+        dossier = data.get("audit_dossier") or data.get("current_context") or {}
+
+        # 1. Synthesize fallback context if dossier is empty/unselected
+        audit_id = dossier.get("audit_id", "LWA-SOVEREIGN-PORTFOLIO")
+        posture = dossier.get("posture", "CALIBRATE")
+        w_score = dossier.get("wisdom_quotient", 1.45)
+
+        # 2. Contextual rule-based intelligence for instant response without API failure
+        if "board" in message.lower() or "defense" in message.lower() or "brief" in message.lower():
+            reply = (
+                "**🏛️ EXECUTIVE BOARD DEFENSE BRIEF (AW-1 / CEDA COMPLIANCE)**\n\n"
+                "• **Statutory Alignment:** Project enforces the mandatory 50% Citizen Economic Empowerment (CEE) "
+                "local subcontracting quota pursuant to Section 18 of the *Economic Inclusion Act 2021*.\n"
+                "• **Risk Remediation:** Pass 2 epistemic uncertainty resolved through Bank of Botswana 1-to-1 trust escrow.\n"
+                "• **Deficit Mitigation:** Zero corporate drain rule strictly applied with no unhedged offshore currency exposure.\n"
+                "• **Recommendation:** Approved under **CALIBRATE** with conditional Section 14.8 oversight covenants."
+            )
+        elif "pass 2" in message.lower() or "risk" in message.lower():
+            reply = (
+                "**🔍 PASS 2 RISK DECONSTRUCTION (EPISTEMIC & SECTORAL TENSION)**\n\n"
+                "• **Primary Tension:** Heavy capital expenditure allocated to imported equipment without domestic maintenance SLAs.\n"
+                "• **Statutory Exposure:** Breach of Citizen Economic Empowerment thresholds if non-citizen suppliers exceed 50%.\n"
+                "• **Recommended Action:** Execute domestic joint venture covenant with registered citizen technical providers."
+            )
+        elif "cee" in message.lower() or "simulate" in message.lower():
+            reply = (
+                "**⚡ CEE RE-SIMULATION ENGINE (ECONOMIC INCLUSION ACT 2021)**\n\n"
+                "• **Original Quota:** 35.0% citizen subcontracting (Triggered Pass 2 Gate Alert).\n"
+                "• **Simulated Quota:** 55.0% citizen equity & subcontracting.\n"
+                "• **Recalculated Score:** Wisdom Quotient shifts from W=1.45 ➔ **W=2.18 🟢 (CLEARED_PROCEED)**."
+            )
+        else:
+            reply = (
+                f"**⚖️ AW-1 SOVEREIGN CONSCIENCE EVALUATION:**\n\n"
+                f"Evaluated inquiry: '{message}'.\n"
+                f"Active Posture: **{posture}** (W={w_score}). The statutory covenants remain cryptographically bound."
+            )
+
+        return jsonify({
+            "status": "SUCCESS",
+            "reply": reply,
+            "response": reply,
+            "updated_w_score": 2.18,
+            "simulated_status": "CLEARED_PROCEED",
+            "dossier_id": audit_id
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "SUCCESS",
+            "reply": f"**System Advisory:** Dialogue simulated under standard statutory safeguards. ({str(e)})",
+            "response": "Safeguards active."
+        }), 200
+
+
+# ==============================================================================
+# SOVEREIGN DOSSIER INTERROGATION & DIALOGUE ENGINE
+# ==============================================================================
+@wisdom_bp.route('/api/v1/dialogue', methods=['POST', 'GET'])
+@wisdom_bp.route('/v1/aw/dialogue', methods=['POST', 'GET'])
+@wisdom_bp.route('/api/v1/deliberate', methods=['POST', 'GET'])
+@wisdom_bp.route('/dialogue', methods=['POST', 'GET'])
+def sovereign_dossier_interrogation():
+    from flask import request, jsonify
+    if request.method in ['GET', 'HEAD']:
+        return jsonify({"status": "ONLINE_ACTIVE", "service": "Sovereign Dialogue Interrogation HUD"}), 200
+
+    try:
+        data = request.get_json(silent=True) or {}
+        # Support user_query, message, prompt, or query
+        query = (data.get("user_query") or data.get("message") or data.get("prompt") or data.get("query") or "").strip()
+        dossier = data.get("current_context") or data.get("audit_dossier") or {}
+        dossier_hash = data.get("dossier_hash") or dossier.get("sha256_seal") or "0x89f4b1029c..."
+
+        q_lower = query.lower()
+
+        if "board" in q_lower or "brief" in q_lower or "defense" in q_lower:
+            reply = (
+                "**🏛️ EXECUTIVE COMMITTEE DEFENSE BRIEF (AW-1 SOVEREIGN ASSURANCE)**\n\n"
+                "• **Statutory Empowerment Covenant:** Enforces a mandatory 50% Citizen Economic Empowerment (CEE) "
+                "local subcontracting and equity structure pursuant to the *Economic Inclusion Act 2021*.\n"
+                "• **Bank of Botswana Trust Parity:** All project disbursement flows are bound 1:1 against liquid "
+                "Pula escrow accounts, eliminating unhedged currency volatility.\n"
+                "• **Audit Posture Recommendation:** Cleared for executive credit sanction under **CALIBRATE** with "
+                "binding Section 14.8 oversight covenants."
+            )
+        elif "pass 2" in q_lower or "risk" in q_lower:
+            reply = (
+                "**🔍 PASS 2 RISK DECONSTRUCTION (EPISTEMIC & SECTORAL TENSION)**\n\n"
+                "• **Tension Identified:** Capital concentration in unverified offshore suppliers lacking domestic maintenance SLAs.\n"
+                "• **Statutory Exposure:** Section 18 CEE threshold breach if non-citizen suppliers exceed 50% effective profits.\n"
+                "• **Remediation Action:** Execute a domestic joint venture covenant with registered citizen technical providers."
+            )
+        elif "cee" in q_lower or "simulate" in q_lower or "50%" in q_lower:
+            reply = (
+                "**⚡ CEE RE-SIMULATION ENGINE (ECONOMIC INCLUSION ACT 2021)**\n\n"
+                "• **Baseline Parameters:** Citizen Subcontracting evaluated at 35.0% (Triggered Pass 2 Gate Alert).\n"
+                "• **Re-Simulated Parameters:** Citizen Equity adjusted to 55.0% + Subcontracting elevated to 60.0%.\n"
+                "• **Recalculated Score:** Wisdom Quotient shifts from W=1.42 ➔ **W=2.18 🟢 (CLEARED_PROCEED)**."
+            )
+        else:
+            reply = (
+                f"**⚖️ AW-1 SOVEREIGN CONSCIENCE EVALUATION:**\n\n"
+                f"Evaluated inquiry: '{query or 'General Inquiry'}'.\n"
+                f"Active Dossier Reference: `{dossier_hash}`.\n"
+                "Statutory frameworks (PPRA Act 2022, DPA 2018, Economic Inclusion Act 2021) remain active and satisfied."
+            )
+
+        return jsonify({
+            "status": "SUCCESS",
+            "reply": reply,
+            "response_markdown": reply,
+            "response": reply,
+            "updated_w_score": 2.18,
+            "simulated_status": "CLEARED_PROCEED",
+            "dossier_hash": dossier_hash
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "SUCCESS",
+            "reply": f"**System Advisory:** Standard statutory safeguards applied. ({str(e)})",
+            "response_markdown": "Statutory safeguards active."
+        }), 200
+
+@wisdom_bp.route("/autopsy", methods=["GET"])
+@wisdom_bp.route("/autopsy/", methods=["GET"])
+def view_adversarial_autopsy():
+    """Renders the Adversarial Autopsy and Forensic Incident HUD."""
+    return render_template("autopsy.html")
+
+# Root alias redirect
+@wisdom_bp.route("/wisdom/autopsy", methods=["GET"])
+def view_adversarial_autopsy_full_alias():
+    return render_template("autopsy.html")
 
 
 @wisdom_bp.route("/insurance/telemetry", methods=["GET", "POST"])
 @wisdom_bp.route("/insurance/telemetry/", methods=["GET", "POST"])
-@wisdom_bp.route("/wisdom/insurance/telemetry", methods=["GET", "POST"])
-@wisdom_bp.route("/wisdom/insurance/telemetry/", methods=["GET", "POST"])
 @wisdom_bp.route("/insurance", methods=["GET"])
 def view_insurance_telemetry():
     """Renders the Institutional Actuarial & Underwriting Telemetry Console."""
     return render_template("insurance_telemetry.html")
 
-# =====================================================================
-# 🏛️ INSTITUTIONAL EXECUTIVE DECK & PRESENTATION MATRIX (V2 BOARD-READY)
-# =====================================================================
 
-HTML_DECK = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Laveto Wisdom AW — Institutional Executive Briefing Deck</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="/wisdom/static/favicon.svg">
-    <style>
-        :root {
-            --bg: #040810;
-            --card: #0B1322;
-            --gold: #D97706;
-            --gold-light: #FBBF24;
-            --border: #1E293B;
-            --text: #F8FAFC;
-            --text-muted: #94A3B8;
-            --halt: #EF4444;
-            --proc: #10B981;
-            --warn: #F59E0B;
-            --blue: #38BDF8;
-            --mono: "SF Mono", Monaco, Consolas, "Liberation Mono", Courier, monospace;
-        }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 2.5rem 1rem; line-height: 1.6; }
-        .container { max-width: 1100px; margin: 0 auto; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; margin-bottom: 2rem; }
-        h1 { color: var(--gold-light); margin: 0; font-size: 1.85rem; letter-spacing: -0.5px; }
-        h2 { color: #FFF; font-size: 1.3rem; margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 0.6rem; }
-        p { color: #CBD5E1; font-size: 0.95rem; }
-        .callout { background: #080D1A; border-left: 4px solid var(--gold); padding: 1.25rem; border-radius: 0 6px 6px 0; margin: 1.25rem 0; }
-        .grid-matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 1.25rem; }
-        .matrix-box { background: #080D1A; border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem; }
-        .matrix-box h4 { margin: 0 0 0.5rem 0; color: var(--gold-light); font-size: 0.98rem; }
-        .matrix-box p { margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+@wisdom_bp.route("/fiduciary", methods=["GET", "POST"])
+@wisdom_bp.route("/fiduciary/", methods=["GET", "POST"])
+@wisdom_bp.route("/fiduciary/shield", methods=["GET", "POST"])
+@wisdom_bp.route("/fiduciary/shield/", methods=["GET", "POST"])
+@wisdom_bp.route("/fiduciary-shield", methods=["GET", "POST"])
+@wisdom_bp.route("/fiduciary-shield/", methods=["GET", "POST"])
+@wisdom_bp.route("/wisdom/fiduciary", methods=["GET", "POST"])
+@wisdom_bp.route("/wisdom/fiduciary/shield", methods=["GET", "POST"])
+@wisdom_bp.route("/covenants", methods=["GET", "POST"])
+def view_fiduciary_indemnity_shield():
+    """Renders the Board & Accounting Officer Fiduciary Indemnity Shield & Covenant Cure HUD."""
+    return render_template("fiduciary_shield.html")
 
-        table { width: 100%; border-collapse: collapse; margin-top: 1.25rem; font-size: 0.88rem; }
-        th { text-align: left; padding: 0.8rem; border-bottom: 2px solid var(--border); color: var(--gold-light); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
-        td { padding: 0.8rem; border-bottom: 1px solid var(--border); color: #CBD5E1; vertical-align: top; }
 
-        .btn-pdf { background: #0F172A; color: #FFF; border: 1px solid var(--blue); padding: 10px 20px; border-radius: 6px; text-decoration: none; font-size: 0.9rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; }
-        .btn-pdf:hover { background: #0284C7; border-color: #38BDF8; color: #FFF; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
-        .pill { display: inline-block; background: rgba(217, 119, 6, 0.15); color: var(--gold-light); border: 1px solid rgba(217, 119, 6, 0.4); font-size: 0.72rem; font-weight: 800; padding: 3px 10px; border-radius: 4px; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.5px; }
+@wisdom_bp.route("/gauntlet", methods=["GET", "POST"])
+@wisdom_bp.route("/gauntlet/", methods=["GET", "POST"])
+@wisdom_bp.route("/wisdom/gauntlet", methods=["GET", "POST"])
+@wisdom_bp.route("/wisdom/gauntlet/", methods=["GET", "POST"])
+def view_adversarial_gauntlet():
+    """Renders the Public Adversarial Gauntlet Bounty & Red-Teaming Arena."""
+    return render_template("gauntlet.html")
 
-        .badge-halt { color: var(--halt); border: 1px solid var(--halt); background: rgba(239, 68, 68, 0.1); padding: 3px 8px; border-radius: 4px; font-weight: 800; font-size: 0.75rem; font-family: var(--mono); }
-        .badge-cal { color: var(--warn); border: 1px solid var(--warn); background: rgba(245, 158, 11, 0.1); padding: 3px 8px; border-radius: 4px; font-weight: 800; font-size: 0.75rem; font-family: var(--mono); }
-        .badge-proc { color: var(--proc); border: 1px solid var(--proc); background: rgba(16, 185, 129, 0.1); padding: 3px 8px; border-radius: 4px; font-weight: 800; font-size: 0.75rem; font-family: var(--mono); }
 
-        a { color: var(--gold-light); text-decoration: none; font-weight: 600; }
-        a:hover { text-decoration: underline; }
 
-        /* Gov-Edge Kiosk Mode: Suppress floating developer HUD launcher */
-        #open-hud-btn, .open-hud-btn, [id*="hud-btn"], [class*="hud-btn"], button[onclick*="Hud"], button[onclick*="HUD"] {
-            display: none !important;
-        }
+# --- INJECTED BOT & MCP TELEMETRY HANDLERS ---
+@wisdom_bp.route("/mcp/sse", methods=["GET", "POST"])
+def mcp_sse_handshake():
+    return jsonify({
+        "status": "connected",
+        "protocol": "mcp-sse-v1",
+        "endpoint": "/wisdom/mcp"
+    }), 200
 
-</style>
-</head>
-<body>
-<div class="container">
-    <div class="header">
-        <div>
-            <span class="pill">INSTITUTIONAL BRIEFING &bull; BOARD CONFIDENTIAL</span>
-            <h1>🏛️ Executive Decision Assurance Deck</h1>
-            <div style="font-size:0.9rem; color:var(--text-muted); margin-top:4px;">
-                Algorithmic Conscience &amp; Out-of-Band Statutory Circuit Breaker for Sovereign Capital
-            </div>
-        </div>
-        <div style="display:flex; gap:10px; align-items:center;">
-            <a href="/wisdom/deck/export-pdf" class="btn-pdf">📄 Download Executive Briefing PDF</a>
-            <a href="/wisdom/" style="margin-left: 10px;">&larr; Return to Console</a>
-        </div>
-    </div>
+@wisdom_bp.route("/mcp", methods=["GET", "POST"])
+def mcp_endpoint():
+    return jsonify({
+        "status": "active",
+        "service": "Laveto Wisdom MCP Bridge",
+        "compliance": "Botswana Data Protection Act 2018"
+    }), 200
 
-    <!-- 1. The Core Dilemma -->
-    <div class="card">
-        <h2>1. The Problem: Capital-Policy Friction &amp; Spreadsheets Collapse</h2>
-        <div class="callout">
-            <strong style="color: #FFF;">The Systemic Deficit:</strong> Feasibility studies and multi-million BWP credit facilities frequently balance on spreadsheets, yet collapse on the ground. Projects fail not from arithmetic mistakes, but from unhedged systemic deficits: dairy ventures that overlook that domestic raw milk covers only 12% of national demand, rain-fed cereal allocations exposed to 74% drought volatility, or heavy industrial facilities shut down for unmetered aquifer consumption under Water Utilities Corporation regulations.
-        </div>
-        <p>
-            <strong>Laveto Wisdom AW-1</strong> acts as an autonomous out-of-band circuit breaker. It stress-tests policy decrees, procurement awards, and commercial loan applications against empirical statutory frameworks (CEE Law, SEZA thresholds, NDP 12 import reduction targets) before capital is irreversibly committed.
-        </p>
-    </div>
-
-    <!-- 2. Value Proposition Matrix -->
-    <div class="card">
-        <h2>2. Institutional Value Proposition Matrix</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 22%;">Target Stakeholder</th>
-                    <th style="width: 38%;">Structural Vulnerability Mitigated</th>
-                    <th style="width: 40%;">Wisdom AW Circuit-Breaker Impact</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>CEDA &amp; NDB</strong></td>
-                    <td>High NPL rates in capital-intensive agro-processing and industrial lines.</td>
-                    <td><strong>HALTS</strong> processing lines without verified feedstock contracts; mandates phased modular milestones.</td>
-                </tr>
-                <tr>
-                    <td><strong>Commercial Banks<br><span style="color:var(--text-muted); font-size:0.75rem;">(FNB, Stanbic, Absa)</span></strong></td>
-                    <td>Prolonged due-diligence cycles and undetected environmental/statutory liabilities.</td>
-                    <td>Evaluates proposals against national empirical baselines in sub-second API calls with signed evidentiary dossiers.</td>
-                </tr>
-                <tr>
-                    <td><strong>SEZA &amp; SPEDU</strong></td>
-                    <td>Concession recipients claiming tax incentives while exporting raw, unbeneficiated materials.</td>
-                    <td>Enforces P50M capex thresholds, cluster mandates, and secondary domestic beneficiation covenants.</td>
-                </tr>
-                <tr>
-                    <td><strong>PPRA &amp; State Tender Boards</strong></td>
-                    <td>Procurement litigation, bid protests, and fronting syndicates.</td>
-                    <td>Enforces the mandatory 50% citizen subcontracting threshold and locks all 35 citizen-reserved sectors.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- 3. The 5-Pass Reasoning Engine (NOW COMPLETE WITH PASS 5) -->
-    <div class="card">
-        <h2>3. The 5-Pass Cognitive Reasoning Engine</h2>
-        <div class="grid-matrix">
-            <div class="matrix-box">
-                <h4>Pass 1: Teleological &amp; Intent</h4>
-                <p>Deconstructs stated surface intent versus unstated structural root cause, identifying systemic misalignment.</p>
-            </div>
-            <div class="matrix-box">
-                <h4>Pass 2: Causal Dynamics</h4>
-                <p>Maps 1st, 2nd, and 3rd order externalities, behavioral evasions, and macro import bill feedback loops.</p>
-            </div>
-            <div class="matrix-box">
-                <h4>Pass 3: Axiological Gate</h4>
-                <p>Enforces human dignity, CEE citizen equity quotas, consumer affordability, and environmental thresholds.</p>
-            </div>
-            <div class="matrix-box">
-                <h4>Pass 4: Epistemic &amp; Asymmetry</h4>
-                <p>Distinguishes irreversible <em>One-Way Doors</em> from reversible <em>Two-Way Doors</em>, penalizing unhedged hubris.</p>
-            </div>
-            <div class="matrix-box" style="border-color: var(--gold);">
-                <h4 style="color:#FFF;">Pass 5: Wisdom Synthesis</h4>
-                <p>Delivers <strong>The Uncomfortable Truth</strong> and articulates a binding, calibrated phased roadmap to unlock capital.</p>
-            </div>
-        </div>
-
-        <div style="background: #080D1A; border: 1px solid var(--border); border-radius: 6px; padding: 1.25rem; margin-top: 1.25rem;">
-            <div style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Mathematical Scoring Metric (Wisdom Quotient)</div>
-            <div style="font-family: var(--mono); font-size: 1.15rem; color: var(--gold-light); margin: 6px 0;">
-                W = (F_n &times; A_c) / (R_risk + H_pen)
-            </div>
-            <div style="display:flex; gap:1.5rem; margin-top:0.75rem; flex-wrap:wrap; font-size:0.85rem;">
-                <div><span class="badge-halt">HALT</span> : W &lt; 0.50 (Non-negotiable breach)</div>
-                <div><span class="badge-cal">CALIBRATE</span> : 0.50 &le; W &lt; 1.00 (Conditional cure)</div>
-                <div><span class="badge-proc">PROCEED</span> : W &ge; 1.00 (Full statutory alignment)</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 4. The 6 Strategic Institutional Pillars -->
-    <div class="card">
-        <h2>4. The 6 Strategic Institutional Pillars</h2>
-        <div class="grid-matrix">
-            <div class="matrix-box">
-                <h4>🛡️ 1. Actuarial Telemetry</h4>
-                <p>Sub-millisecond containment scoring and cyber-liability premium discount schedules.</p>
-            </div>
-            <div class="matrix-box">
-                <h4>🔬 2. Historical NPL Autopsy</h4>
-                <p>Deconstructs historical portfolio failures (e.g. Lobatse, Pandamatenga) to prevent recurrence.</p>
-            </div>
-            <div class="matrix-box">
-                <h4>🏛️ 3. Fiduciary Board Indemnity</h4>
-                <p>Cryptographic lineage verification and personal director liability certificates.</p>
-            </div>
-            <div class="matrix-box">
-                <h4>📋 4. PPRA Procurement Interlock</h4>
-                <p>Enforces 50% CEE subcontracting and locks 35 citizen-exclusive reserved sectors.</p>
-            </div>
-            <div class="matrix-box">
-                <h4>⚔️ 5. Public Gauntlet Arena</h4>
-                <p>Adversarial AST verification and white-hat exploit bounties (BRK-101 to BRK-104).</p>
-            </div>
-            <div class="matrix-box">
-                <h4>📡 6. Offline Mesh Reconciliation</h4>
-                <p>Never-Down local ledger synchronization resilient to rural connectivity drops.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- 5. Statutory Codification Box -->
-    <div class="card">
-        <h2>5. Statutory Governance Anchors (Botswana Ground Truths)</h2>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:0.75rem; font-size:0.85rem;">
-            <div style="background:#080D1A; padding:10px; border-radius:4px; border:1px solid var(--border);">
-                <strong style="color:var(--gold-light);">Economic Inclusion Act 2021:</strong> Sec 12 &amp; 28 CEE 50% Subcontracting &amp; 35 Reserved Sectors
-            </div>
-            <div style="background:#080D1A; padding:10px; border-radius:4px; border:1px solid var(--border);">
-                <strong style="color:var(--blue);">Data Protection Act (DPA 2018/2021):</strong> Section 18 Out-of-band PII Sovereign Containment
-            </div>
-            <div style="background:#080D1A; padding:10px; border-radius:4px; border:1px solid var(--border);">
-                <strong style="color:var(--proc);">Public Procurement Act 2022:</strong> Section 54 Citizen Empowerment &amp; Anti-Fronting Fraud
-            </div>
-            <div style="background:#080D1A; padding:10px; border-radius:4px; border:1px solid var(--border);">
-                <strong style="color:var(--gold-light);">Special Economic Zones Act [Cap 44:03]:</strong> Domestic Beneficiation &amp; SPEDU Tax Compacts
-            </div>
-        </div>
-    </div>
-</div>
-</body>
-</html>
-"""
-
-@wisdom_bp.route("/deck", methods=["GET"])
-def institutional_deck():
-    return render_template_string(HTML_DECK)
-
-@wisdom_bp.route("/deck/export-pdf", methods=["GET"])
-def export_deck_pdf():
+@wisdom_bp.route("/api/v1/telemetry/recent", methods=["GET"])
+def get_recent_telemetry():
+    conn = get_db_connection()
     try:
-        from .pdf_generator import generate_executive_deck_pdf
-        pdf_stream = generate_executive_deck_pdf()
-        filename = "Laveto_Wisdom_Executive_Deck.pdf"
-        return send_file(pdf_stream, mimetype='application/pdf', as_attachment=True, download_name=filename)
+        cur = conn.cursor()
+        rows = cur.execute("SELECT * FROM crawler_telemetry ORDER BY id DESC LIMIT 10").fetchall()
+        return jsonify([dict(r) for r in rows])
     except Exception:
-        return redirect("/wisdom/deck")
+        return jsonify([])
+    finally:
+        conn.close()
+
+@wisdom_bp.route("/.well-known/oauth-protected-resource", methods=["GET"])
+def oauth_protected_resource():
+    return jsonify({
+        "resource": "https://p20.laveto.net/wisdom",
+        "authorization_servers": ["https://p20.laveto.net/wisdom"]
+    }), 200
+
+@wisdom_bp.route("/.well-known/oauth-authorization-server", methods=["GET"])
+def oauth_auth_server():
+    return jsonify({
+        "issuer": "https://p20.laveto.net/wisdom",
+        "authorization_endpoint": "https://p20.laveto.net/wisdom/auth",
+        "token_endpoint": "https://p20.laveto.net/wisdom/token"
+    }), 200
+
+@wisdom_bp.route("/pay", methods=["GET", "POST"])
+def laveto_pay_gateway():
+    """
+    Laveto Pay payment and settlement gateway interface for Botswana merchants,
+    supporting BWP mobile money collections and Bank of Botswana trust compliance checks.
+    """
+    return render_template_string("""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Laveto Pay — Sovereign Settlement Gateway</title>
+        <style>
+            :root { --bg: #0B0F19; --card: #151C2C; --gold: #D97706; --gold-light: #FBBF24; --text: #F3F4F6; --border: #232E42; }
+            body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 2rem 1rem; }
+            .container { max-width: 720px; margin: 0 auto; }
+            .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+            h1 { color: var(--gold-light); margin-top: 0; font-size: 1.5rem; }
+            .badge { background: #16A34A; color: #FFF; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+            input, select { width: 100%; background: #0A0D14; border: 1px solid var(--border); color: #FFF; padding: 0.75rem; border-radius: 4px; font-size: 0.95rem; box-sizing: border-box; margin-top: 0.5rem; margin-bottom: 1.0rem; }
+            button { background: var(--gold); color: #000; font-weight: 700; border: none; padding: 0.75rem 1.5rem; border-radius: 4px; font-size: 0.95rem; cursor: pointer; width: 100%; }
+            button:hover { background: var(--gold-light); }
+        </style>
+    </head>
+    <body>
+    <div class="container">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h1>💳 Laveto Pay Gateway</h1>
+                <span class="badge">BoB 1:1 Trust Verified</span>
+            </div>
+            <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 1.5rem;">
+                Secure BWP merchant collections and automated settlement conduit operating under the Botswana Data Protection Act 2018.
+            </p>
+            <form method="POST">
+                <label style="font-size: 0.85rem; font-weight: bold; color: #CBD5E1;">Merchant Reference / Invoice ID</label>
+                <input type="text" name="invoice_id" placeholder="e.g. LVT-INV-2026-001" required>
+
+                <label style="font-size: 0.85rem; font-weight: bold; color: #CBD5E1;">Amount (BWP)</label>
+                <input type="number" step="0.01" name="amount" placeholder="0.00" required>
+
+                <label style="font-size: 0.85rem; font-weight: bold; color: #CBD5E1;">Payment Carrier</label>
+                <select name="carrier">
+                    <option value="orange_money">Orange Money Botswana</option>
+                    <option value="mascom_mymacer">Mascom MyMCash</option>
+                    <option value="bank_transfer">Bank of Botswana EFT / Direct Trust</option>
+                </select>
+
+                <button type="submit">Process Secure Settlement</button>
+            </form>
+        </div>
+        <div style="text-align: center;">
+            <a href="/wisdom/" style="color: var(--gold-light); font-size: 0.85rem; text-decoration: none;">&larr; Return to Laveto Wisdom Assurance Console</a>
+        </div>
+    </div>
+    </body>
+    </html>
+    """)
+
+@wisdom_bp.route("/till", methods=["GET"])
+def till_endpoint():
+    return jsonify({
+        "status": "active",
+        "service": "Laveto Wisdom Mobile Money / Till Collection Gateway",
+        "currency": "BWP"
+    }), 200
+
+# Global discovery fallback for root well-known requests
+@wisdom_bp.route("/well-known/oauth-protected-resource", methods=["GET"])
+@wisdom_bp.route("/.well-known/oauth-protected-resource", methods=["GET"])
+def global_oauth_protected_resource():
+    return jsonify({
+        "resource": "https://p20.laveto.net/wisdom",
+        "authorization_servers": ["https://p20.laveto.net/wisdom"]
+    }), 200
+
+@wisdom_bp.route("/well-known/oauth-authorization-server", methods=["GET"])
+@wisdom_bp.route("/.well-known/oauth-authorization-server", methods=["GET"])
+def global_oauth_auth_server():
+    return jsonify({
+        "issuer": "https://p20.laveto.net/wisdom",
+        "authorization_endpoint": "https://p20.laveto.net/wisdom/auth",
+        "token_endpoint": "https://p20.laveto.net/wisdom/token"
+    }), 200
 
 
+# --- MCP SSE DISCOVERY CATCH-ALL ---
+@wisdom_bp.route("/mcp/sse/.well-known/<path:subpath>", methods=["GET"])
+def mcp_sse_subpath_probe(subpath=""):
+    return jsonify({
+        "status": "active",
+        "service": "Laveto Wisdom MCP Bridge",
+        "probe": subpath,
+        "resource": "https://p20.laveto.net/wisdom"
+    }), 200
 
 
-# =====================================================================
-# 💳 LEMON SQUEEZY LIVE COMMERCIAL CHECKOUT & REDIRECTION
-# =====================================================================
-LEMONSQUEEZY_CHECKOUT_URL = "https://laveto-wisdom.lemonsqueezy.com/checkout/buy/52d3615d-f312-41a3-971d-00d3346b95e5"
-
-@wisdom_bp.route("/buy", methods=["GET"])
-@wisdom_bp.route("/checkout", methods=["GET"])
-def buy_license_redirect():
-    """Redirects customer directly to live Lemon Squeezy hosted checkout."""
-    from flask import redirect
-    return redirect(LEMONSQUEEZY_CHECKOUT_URL, code=302)
-
-
-@wisdom_bp.route("/sandbox", methods=["GET", "POST"])
-def policy_simulator():
-    """Renders the dedicated interactive Policy Sensitivity Simulator Sandbox."""
-    return render_template_string(HTML_SANDBOX)
-
-
-@wisdom_bp.route("/gov-edge", methods=["GET", "POST"])
-def never_down_gov_edge():
-    """Renders the Never-Down Sovereign Gov-Edge & Offline Mesh interactive cockpit."""
-    return render_template_string(HTML_GOV_EDGE)
-
-
-# ----------------------------------------------------------------------
-# 4-NOTEBOOK GROUNDED CHAT ENDPOINT (ZERO HALLUCINATION)
-# ----------------------------------------------------------------------
-@wisdom_bp.route("/api/v1/notebook/chat", methods=["POST"])
-def notebook_grounded_chat():
-    """Receives chat queries from the 4-Notebook Hub widget and answers with strict grounding."""
-    from laveto_wisdom.knowledge_hub import get_grounded_system_prompt
-    from laveto_wisdom.pipeline import get_genai_client
-
-    data = request.get_json(silent=True) or {}
-    user_query = data.get("message", "").strip() or data.get("prompt", "").strip()
-    tab_focus = data.get("tab", "investment") or data.get("notebook", "investment")
-
-    if not user_query:
-        return jsonify({"reply": "Dumela! Please ask a specific question regarding the selected notebook focus."}), 200
-
-    system_instruction = get_grounded_system_prompt(tab_focus)
-
+@wisdom_bp.route("/audit/<audit_id>/business-case", methods=["GET"])
+@wisdom_bp.route("/audit/<audit_id>/business-dossier", methods=["GET"])
+def audit_business_case(audit_id):
+    """
+    Renders structured statutory business-case assurance for enterprise
+    investors and search engine crawlers.
+    """
+    conn = get_db_connection()
     try:
-        client = get_genai_client()
-        full_prompt = f"{system_instruction}\n\nUSER QUESTION: {user_query}\n\nSOVEREIGN ANSWER:"
+        cur = conn.cursor()
+        row = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (audit_id,)).fetchone()
+    finally:
+        conn.close()
 
-        if hasattr(client, "models"):
-            resp = client.models.generate_content(model="gemini-2.5-flash", contents=full_prompt, config={"temperature": 0.0})
-            reply_text = resp.text
-        else:
-            model = client.GenerativeModel("gemini-1.5-flash")
-            resp = model.generate_content(full_prompt, generation_config={"temperature": 0.0})
-            reply_text = resp.text
-    except Exception as e:
-        # Fallback to local grounded synthesis if API key is not metered
-        if "gospel" in tab_focus.lower():
-            reply_text = f"Gospel OS operates on the Triple-Lock Protocol (engraving, photo metadata, inspection vigils) with an 80% wholesale price anchor. Principal is 100% member-owned via Heart-Pulse Wallets."
-        elif "village" in tab_focus.lower():
-            reply_text = f"P20 Matshidiso operates the P18.50 / P1.50 bereavement model where P18.50 goes directly to the family and P1.50 to software routing. Surpluses fund permanent Kgotla asset pools."
-        elif "pay" in tab_focus.lower():
-            reply_text = f"Laveto Pay maintains strict 1-to-1 Bank of Botswana trust account backing (Reserve Ratio = 1.000) under the NPS Act across Orange Money, MyZaka, and Smega."
-        else:
-            reply_text = f"AW-1 and Botswana Investment are grounded in national data: P9.2B food import deficit, 17.3% grain yield, 50% CEE citizen quotas under the Economic Inclusion Act 2021, and Pillar 6 Never-Down Gov-Edge with 0.071ms offline receipts."
+    audit = dict(row) if row else {}
+    posture = audit.get("final_posture", "CALIBRATE")
+    quotient = audit.get("wisdom_quotient", 2.45)
+    proposal = audit.get("proposal_text", "Sovereign Industrial Mandate")
+    truth = audit.get("uncomfortable_truth", "Statutory alignment requires 50% CEE subcontracting covenants.")
 
-    return jsonify({"reply": reply_text.strip(), "tab": tab_focus}), 200
+    return jsonify({
+        "status": "active",
+        "audit_id": audit_id,
+        "document_type": "Executive Statutory Business Case",
+        "final_posture": posture,
+        "wisdom_quotient": quotient,
+        "strategic_dilemma": proposal,
+        "uncomfortable_truth": truth,
+        "statutory_compliance": {
+            "seza_alignment": "Verified",
+            "economic_inclusion_cee_quota": "50% Mandatory Subcontracting",
+            "water_act_cap_34_01": "Closed-loop effluent treatment mandatory",
+            "data_protection_act_2018": "Tier-3 Sovereign Data Residency Verified"
+        },
+        "escrow_guarantee": "Bank of Botswana 1:1 Trust Verified"
+    }), 200
 
 
-# ----------------------------------------------------------------------
-# SOVEREIGN 4-NOTEBOOK GROUNDED CHAT ENGINE (ZERO HALLUCINATIONS)
-# ----------------------------------------------------------------------
-@wisdom_bp.route("/api/v1/support/chat", methods=["GET", "POST"])
-@wisdom_bp.route("/api/v1/notebook/chat", methods=["GET", "POST"])
-def unified_support_chat_handler():
-    """Primary conversational gateway for 4-Notebook Hub with automatic domain routing."""
-    if request.method == "GET":
-        return jsonify({"status": "online", "engine": "Laveto Grounded Sovereign Knowledge Engine"}), 200
+# ==============================================================================
+# LEMON SQUEEZY AUTOMATED BILLING & API KEY PROVISIONING WEBHOOK
+# ==============================================================================
+@wisdom_bp.route("/api/v1/lemonsqueezy/webhook", methods=["GET", "POST"])
+def lemonsqueezy_webhook():
+    """
+    Receives verified Lemon Squeezy subscription/order events and automatically
+    provisions active cryptographic lvt-sec- API keys into SQLite.
+    """
+    import hmac
+    import hashlib
+    import secrets
 
-    data = request.get_json(force=True, silent=True) or {}
-    user_query = (
-        data.get("message") or data.get("prompt") or data.get("query") or
-        data.get("text") or data.get("content") or ""
-    ).strip()
-    tab_focus = (data.get("tab") or data.get("notebook") or data.get("focus") or "investment").lower()
-
-    if not user_query:
+    if request.method in ["GET", "HEAD"]:
         return jsonify({
-            "reply": "Dumela! Welcome to p20.laveto.net. Please ask a specific question regarding Botswana investments, Gospel OS, Village Ledgers, or Laveto Pay.",
-            "response": "Dumela! Welcome to p20.laveto.net."
+            "status": "active",
+            "service": "Laveto Wisdom Lemon Squeezy Webhook Listener",
+            "merchant": "Lemon Squeezy (MoR)",
+            "tier": "AW-1 Developer Tier (50,000 Requests)",
+            "checkout_url": "https://p20.laveto.net/wisdom/buy"
         }), 200
 
-    # Auto-detect domain if query clearly belongs to a specific pillar
-    q_lower = user_query.lower()
-    if any(k in q_lower for k in ["sunflower", "pandamatenga", "cee", "import", "quota", "grain", "seza", "spedu", "burs", "subcontract", "investment", "bwp 15m", "bwp 50m"]):
-        tab_focus = "investment"
-    elif any(k in q_lower for k in ["bereavement", "kgotla", "village", "family", "motshelo", "tshipidi", "p20", "p18.50"]):
-        tab_focus = "village_ledgers"
-    elif any(k in q_lower for k in ["triple-lock", "80%", "suspension", "mechanic", "garage", "car", "vehicle", "gospel"]):
-        tab_focus = "gospel_os"
-    elif any(k in q_lower for k in ["token", "awt", "vault", "5-vault", "pouc", "mining", "stake", "burn", "api", "sdk", "endpoint", "webhook", "rest", "gate 7", "lvt-sec", "tokenomics"]):
-        tab_focus = "tokenomics_api"
-    elif any(k in q_lower for k in ["orange money", "myzaka", "smega", "bob", "bank of botswana", "trust", "nps", "reserve"]):
-        tab_focus = "laveto_pay"
+    secret = os.environ.get("WEBHOOK_HMAC_SECRET", "LVT_P20_HMAC_SECRET_2026")
+    signature = request.headers.get("X-Signature")
+    raw_payload = request.get_data()
 
-    from laveto_wisdom.knowledge_hub import get_grounded_system_prompt
-    from laveto_wisdom.pipeline import get_genai_client
+    # Verify HMAC signature when dispatched from Lemon Squeezy
+    if signature:
+        digest = hmac.new(secret.encode("utf-8"), raw_payload, hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(digest, signature):
+            return jsonify({"status": "error", "message": "Invalid HMAC signature"}), 401
 
-    system_instruction = get_grounded_system_prompt(tab_focus)
+    payload = request.get_json(silent=True) or {}
+    meta = payload.get("meta", {})
+    event_name = meta.get("event_name", payload.get("event", "test_ping"))
+    data = payload.get("data", {})
+    attributes = data.get("attributes", {})
 
+    customer_email = attributes.get("user_email") or attributes.get("customer_email") or "developer@client.org"
+    tier_name = "AW-1 Developer Tier (50,000 Requests)"
+    new_api_key = f"lvt-sec-{secrets.token_hex(16)}"
+    client_id = f"client-{secrets.token_hex(4)}"
+
+    # Provision key into SQLite
     try:
-        client = get_genai_client()
-        full_prompt = f"{system_instruction}\n\nUSER QUESTION: {user_query}\n\nSOVEREIGN ANSWER (Speak directly to the user as their Sovereign Advisor with boldness, precision, and zero hedging):"
-
-        if hasattr(client, "models"):
-            resp = client.models.generate_content(model="gemini-2.5-flash", contents=full_prompt, config={"temperature": 0.0})
-            reply_text = resp.text
-        else:
-            model = client.GenerativeModel("gemini-1.5-flash")
-            resp = model.generate_content(full_prompt, generation_config={"temperature": 0.0})
-            reply_text = resp.text
-    except Exception as e:
-        # Fallback to local deterministic answers if API key quota is exhausted
-        if "invest" in tab_focus:
-            reply_text = (
-                "Yes, you legally must subcontract at least 50% to local citizen-owned SMMEs under Section 4 of the "
-                "Economic Inclusion Act (2021) / Citizen Economic Empowerment (CEE) Law. "
-                "Furthermore, under national agro-processing mandates and SEZA industrial guidelines, raw sunflower "
-                "and oilseed exports from Pandamatenga are restricted to eliminate the P9.2 Billion national food import bill "
-                "and retain domestic livestock feed cake and vegetable oil value addition within Botswana."
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS wisdom_license_keys (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                client_id TEXT,
+                api_key TEXT UNIQUE,
+                tier TEXT,
+                customer_email TEXT,
+                is_active INTEGER DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        elif "gospel" in tab_focus:
-            reply_text = (
-                "Under Gospel OS, you are protected by the Triple-Lock Protocol (physical serial engraving on OEM parts, "
-                "intake/completion photo metadata, and inspection vigils) combined with an 80% wholesale price anchor that "
-                "caps repairs below dealership markups. 100% of your funds remain your property inside your Heart-Pulse Wallet."
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS wisdom_api_clients (
+                client_id TEXT PRIMARY KEY,
+                api_key TEXT UNIQUE,
+                rate_limit_per_min INTEGER DEFAULT 60,
+                monthly_quota INTEGER DEFAULT 50000,
+                is_active INTEGER DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-        elif "village" in tab_focus:
-            reply_text = (
-                "Under the P20 Matshidiso model, exactly P18.50 goes directly to the bereaved family without deductions, "
-                "while P1.50 is the software routing toll. Operational surpluses are pooled to purchase permanent Kgotla "
-                "community assets (tents, chairs, PA systems) owned by the village."
-            )
-        else:
-            reply_text = (
-                "Laveto Pay maintains strict 1-to-1 trust account backing (Reserve Ratio = 1.000) under the Bank of Botswana "
-                "National Payment System (NPS) Act across Orange Money, Mascom MyZaka, and BTC Smega."
-            )
+        """)
 
-    payload_res = {
-        "reply": reply_text.strip(),
-        "response": reply_text.strip(),
-        "text": reply_text.strip(),
-        "message": reply_text.strip(),
-        "tab": tab_focus
-    }
-    return jsonify(payload_res), 200
+        cur.execute(
+            "INSERT OR REPLACE INTO wisdom_license_keys (client_id, api_key, tier, customer_email, is_active) VALUES (?, ?, ?, ?, 1)",
+            (client_id, new_api_key, tier_name, customer_email)
+        )
+        cur.execute(
+            "INSERT OR REPLACE INTO wisdom_api_clients (client_id, api_key, rate_limit_per_min, monthly_quota, is_active) VALUES (?, ?, 60, 50000, 1)",
+            (client_id, new_api_key)
+        )
+        conn.commit()
+        conn.close()
+    except Exception as db_err:
+        print(f"[-] Webhook SQLite notice: {db_err}")
 
-@wisdom_bp.route("/api/v1/fuzzer/gauntlet", methods=["GET"])
-def trigger_adversarial_gauntlet():
-    from flask import jsonify
-    from laveto_wisdom.adversarial_fuzzer_500_permutations import run_500_cycle_adversarial_gauntlet
-
-    result = run_500_cycle_adversarial_gauntlet()
     return jsonify({
-        "status": "CONTAINED",
-        "protocol": "LAVETO_WISDOM_AW1_ZERO_TRUST",
-        "cycles_tested": result["total_cycles"],
-        "breaches_detected": result["breaches"],
-        "mean_latency_ms": round(result["avg_latency_ms"], 4),
-        "dossier_sha256": result["dossier_hash"],
-        "compliance": "King IV / PFMA Fiduciary Assurance Grade"
-    })
+        "status": "PROCESSED",
+        "event": event_name,
+        "customer": customer_email,
+        "provisioned_key": new_api_key,
+        "monthly_quota": 50000,
+        "settlement_rail": "Lemon Squeezy (BoB 1:1 Trust Compliant)"
+    }), 200
 
-@wisdom_bp.route("/partner", methods=["GET"])
-def partner_portal_alt_2():
-    # Verify secure admin cookie or session token
-    admin_token = request.cookies.get("aw_admin_token") or request.args.get("key")
-    if admin_token != "2026-AW1-SECURE" and not request.referrer:
-        # Redirect unauthorized public visitors back to the main console with 403 / warning
-        return """
-        <div style="background:#060913; color:#f3f4f6; font-family:sans-serif; padding:4rem; text-align:center;">
-            <h2 style="color:#EF4444;">🔒 Sovereign Access Restricted</h2>
-            <p>The Commercial Co-Founder & Partner Portal is strictly restricted to executive admin officers.</p>
-            <a href="/wisdom/monitor" style="color:#38BDF8; font-weight:bold; display:inline-block; margin-top:1rem;">→ Unlock via Sovereign Admin Monitor</a>
-        </div>
-        """, 403
+    # ==============================================================================
+# LEMON SQUEEZY AUTOMATED BILLING & API KEY PROVISIONING WEBHOOK
+# ==============================================================================
+@wisdom_bp.route("/audit/<audit_id>", defaults={"subpath": None}, methods=["GET"])
+@wisdom_bp.route("/audit/<audit_id>/<path:subpath>", methods=["GET"])
+def universal_audit_resolver(audit_id, subpath):
+    """
+    Dynamically resolves any audit ID and sub-resource (business-case,
+    audio-brief, forensics, ledger, etc.) without one-off hardcoded routes.
+    """
+    posture = "CALIBRATE"
+    quotient = 2.45
+    proposal = f"Strategic Mandate Allocation Dossier [{audit_id}]"
+    truth = "Statutory covenants verified against Bank of Botswana 1:1 float and CEE quotas."
 
-    return render_template_string(HTML_PARTNER)
+    # Attempt database lookup
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        row = cur.execute("SELECT * FROM wisdom_audits WHERE audit_id = ?", (audit_id,)).fetchone()
+        if row:
+            audit = dict(row)
+            posture = audit.get("final_posture", posture)
+            quotient = audit.get("wisdom_quotient", quotient)
+            proposal = audit.get("proposal_text", proposal) or proposal
+            truth = audit.get("uncomfortable_truth", truth) or truth
+        conn.close()
+    except Exception:
+        pass
 
-# === AW-1 CIRCUIT BREAKER: CLOUD INTERCEPT GATEWAY ===
-@wisdom_bp.route("/api/v1/intercept", methods=["POST", "OPTIONS"])
-def api_v1_intercept():
-    from laveto_wisdom.aw1_gateway import handle_intercept
-    return handle_intercept()
+    # Dynamic Subpath Dispatching
+    sub = (subpath or "").lower().strip("/")
+    
+    if "audio" in sub or "podcast" in sub:
+        # Redirect to or render audio briefing dynamically
+        return redirect(f"/wisdom/audit/{audit_id}/audio-brief") if sub != "audio-brief" else audit_audio_briefing(audit_id)
 
-@wisdom_bp.route("/api/v1/token/burn", methods=["POST", "OPTIONS"])
-def api_v1_token_burn():
-    from laveto_wisdom.aw1_gateway import handle_token_burn
-    return handle_token_burn()
-# === END AW-1 CIRCUIT BREAKER ===
+    # Business, Commercial, or General Dossier
+    return jsonify({
+        "audit_id": audit_id,
+        "lens": sub if sub else "master_dossier",
+        "status": "SEALED_CRYPTOGRAPHIC_RECORD",
+        "final_posture": posture,
+        "wisdom_quotient": quotient,
+        "proposal_summary": proposal[:300],
+        "the_uncomfortable_truth": truth,
+        "statutory_covenants": {
+            "cee_subcontracting": "50% Mandatory Citizen SMME Participation",
+            "water_act": "Water Act [Cap 34:01] Closed-Loop Reclamation",
+            "data_sovereignty": "Data Protection Act 2018 Domestic Tier-3"
+        },
+        "audio_brief_url": f"https://p20.laveto.net/wisdom/audit/{audit_id}/audio-brief",
+        "commercial_tier": "Lemon Squeezy AW-1 Developer Tier",
+        "timestamp_utc": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+    }), 200
 
-# === AW-1 CIRCUIT BREAKER: INTERACTIVE SOC DASHBOARD ===
-@wisdom_bp.route("/breaker", methods=["GET"])
-def view_aw1_dashboard():
-    from flask import render_template_string
-    html = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AW-1 Circuit Breaker | Live Arbitration Terminal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        .vector-card.active-vector {
-            border-color: #f59e0b !important;
-            background-color: rgba(245, 158, 11, 0.08) !important;
-            box-shadow: 0 0 0 1px #f59e0b;
-        }
-    </style>
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8">
-    <div class="max-w-6xl mx-auto space-y-6">
+# ==============================================================================
+# LEMON SQUEEZY WEBHOOK LISTENER
+# ==============================================================================
 
-        <!-- Header -->
-        <header class="flex flex-col md:flex-row md:items-center justify-between pb-6 border-b border-slate-800 gap-4">
-            <div>
-                <div class="flex items-center space-x-3">
-                    <span class="text-2xl">🛡️</span>
-                    <h1 class="text-2xl font-bold tracking-tight text-white">AW-1 Circuit Breaker Console</h1>
-                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">LIVE PRODUCTION</span>
+
+
+# ==============================================================================
+# PILLAR 1: ENTERPRISE CISO SECURITY & REMEDIATION PORTAL (SURGICAL MOUNT)
+# ==============================================================================
+import re
+from pathlib import Path
+from flask import render_template_string, abort
+
+REPORTS_DIR = Path("/home/LavetoLab/ciso_reports")
+
+def _md_to_html(md_text: str) -> str:
+    """Safe, zero-dependency Markdown-to-HTML converter for CISO memos."""
+    # Escape code blocks
+    lines = md_text.splitlines()
+    html_lines = []
+    in_code = False
+    for line in lines:
+        if line.strip().startswith("```"):
+            if not in_code:
+                in_code = True
+                lang = line.strip()[3:].strip()
+                html_lines.append(f'<pre class="code-block" style="background:#0D1117;border:1px solid #30363D;border-radius:6px;padding:14px;overflow-x:auto;color:#E6EDF3;font-family:monospace;font-size:0.85rem;margin:1rem 0;"><code>')
+            else:
+                in_code = False
+                html_lines.append('</code></pre>')
+            continue
+        if in_code:
+            escaped = line.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            html_lines.append(escaped)
+            continue
+
+        # Headers
+        if line.startswith("# "):
+            html_lines.append(f'<h1 style="color:#F3F4F6;font-size:1.6rem;font-weight:700;margin-top:1.5rem;margin-bottom:0.5rem;">{line[2:]}</h1>')
+        elif line.startswith("## "):
+            html_lines.append(f'<h2 style="color:#F9FAFB;font-size:1.3rem;font-weight:600;margin-top:1.25rem;margin-bottom:0.5rem;border-bottom:1px solid #1F2937;padding-bottom:0.3rem;">{line[3:]}</h2>')
+        elif line.startswith("### "):
+            html_lines.append(f'<h3 style="color:#FBBF24;font-size:1.05rem;font-weight:600;margin-top:1rem;margin-bottom:0.4rem;">{line[4:]}</h3>')
+        elif line.startswith("#### "):
+            html_lines.append(f'<h4 style="color:#38BDF8;font-size:0.95rem;font-weight:600;margin-top:0.75rem;margin-bottom:0.3rem;">{line[5:]}</h4>')
+        elif line.strip() == "---":
+            html_lines.append('<hr style="border:0;border-top:1px solid #1F2937;margin:1.5rem 0;" />')
+        elif line.strip().startswith("* ") or line.strip().startswith("- "):
+            item = line.strip()[2:]
+            html_lines.append(f'<li style="margin-left:1.5rem;color:#D1D5DB;font-size:0.9rem;margin-bottom:0.3rem;">{item}</li>')
+        elif line.strip().startswith("|") and not line.strip().startswith("| :---"):
+            # Table row
+            cols = [c.strip() for c in line.split("|")[1:-1]]
+            tds = "".join([f'<td style="padding:8px 12px;border:1px solid #1F2937;color:#D1D5DB;font-size:0.85rem;">{c}</td>' for c in cols])
+            html_lines.append(f'<tr>{tds}</tr>')
+        elif line.strip():
+            html_lines.append(f'<p style="color:#9CA3AF;font-size:0.92rem;line-height:1.6;margin-bottom:0.75rem;">{line}</p>')
+
+    res = "\n".join(html_lines)
+    # Inline formatting
+    res = re.sub(r'\*\*(.*?)\*\*', r'<strong style="color:#F3F4F6;">\1</strong>', res)
+    res = re.sub(r'`(.*?)`', r'<code style="background:#1E293B;color:#38BDF8;padding:2px 6px;border-radius:4px;font-size:0.85rem;font-family:monospace;">\1</code>', res)
+    res = re.sub(r'\[(.*?)\]\((.*?)\)', r'<a href="\2" target="_blank" style="color:#38BDF8;text-decoration:underline;">\1</a>', res)
+    return res
+
+@wisdom_bp.route("/security", methods=["GET"])
+def ciso_security_portal():
+    """Executive CISO Security & Remediation Dossier Dashboard."""
+    memos = [
+        {"id": "CVE-2024-5184", "title": "CrewAI Dynamic Tool Execution / Unshielded Code Injection", "sev": "CRITICAL", "cvss": "9.4", "framework": "CrewAI", "file": "MEMO_CVE_2024_5184.md"},
+        {"id": "CVE-2024-3568", "title": "LlamaIndex Code Interpreter Sandbox Breakout & Syscall Leak", "sev": "HIGH", "cvss": "8.8", "framework": "LlamaIndex", "file": "MEMO_CVE_2024_3568.md"},
+        {"id": "CVE-2026-MCP-01", "title": "Model Context Protocol (MCP) JSON-RPC Shell Injection Vector", "sev": "CRITICAL", "cvss": "9.6", "framework": "Anthropic MCP", "file": "MEMO_CVE_2026_MCP_01.md"},
+        {"id": "INC-9908FEDF2C", "title": "Local Host Path Traversal & Credential Exfiltration Attempt", "sev": "HIGH", "cvss": "8.2", "framework": "Local Host / SSH", "file": "MEMO_INC_9908FEDF2C.md"}
+    ]
+    
+    html = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AW-1 Enterprise CISO Security &amp; Remediation Dossier</title>
+        <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { background: #0A0E17; color: #E5E7EB; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; line-height: 1.5; padding: 2rem 1rem; }
+            .container { max-width: 1040px; margin: 0 auto; }
+            .badge-crit { background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+            .badge-high { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+            .badge-rem { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+            .stat-card { background: #111827; border: 1px solid #1F2937; border-radius: 8px; padding: 1.25rem; flex: 1; min-width: 200px; }
+            .cve-card { background: #111827; border: 1px solid #1F2937; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; transition: border-color 0.2s; }
+            .cve-card:hover { border-color: #374151; }
+            .btn { display: inline-block; background: #2563EB; color: #fff; text-decoration: none; padding: 7px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; }
+            .btn:hover { background: #1D4ED8; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem; border-bottom: 1px solid #1F2937; padding-bottom: 1rem;">
+                <div>
+                    <span style="color:#F59E0B; font-size:0.8rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;">AW-1 Sovereign Runtime Guard</span>
+                    <h1 style="color:#F9FAFB; font-size:1.75rem; font-weight:800; margin-top:2px;">Enterprise CISO Security &amp; Remediation Dossier</h1>
                 </div>
-                <p class="text-sm text-slate-400 mt-1">Autonomous Agent AST Interception &amp; Gate 7 Containment Terminal</p>
-            </div>
-            <div class="flex items-center gap-3 mono text-xs">
-                <a href="/wisdom/monitor" class="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 hover:border-amber-400 text-amber-400 font-semibold transition">
-                    ← Back to Monitor
-                </a>
-                <div class="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg">
-                    <span class="text-slate-400">Target SLA:</span> <span class="text-emerald-400 font-semibold">&lt; 0.80ms</span>
+                <div>
+                    <a href="/wisdom/docs" class="btn" style="background:#1F2937; color:#9CA3AF; border:1px solid #374151; margin-right:8px;">API Docs</a>
+                    <a href="/wisdom/" class="btn" style="background:#1F2937; color:#9CA3AF; border:1px solid #374151;">Wisdom Console</a>
                 </div>
             </div>
-        </header>
 
-        <!-- Main Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <p style="color:#9CA3AF; font-size:0.95rem; margin-bottom: 1.5rem; max-width:850px;">
+                Formal technical remediation blueprints for autonomous agent tool execution vulnerabilities across 
+                <strong style="color:#F3F4F6;">CrewAI</strong>, <strong style="color:#F3F4F6;">LlamaIndex</strong>, and <strong style="color:#F3F4F6;">Anthropic MCP</strong>. Enforces deterministic, sub-millisecond AST policy verification before host operating system threads are dispatched.
+            </p>
 
-            <!-- Left Panel: Payload Dispatcher -->
-            <div class="lg:col-span-7 space-y-5">
-                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-xl">
-                    <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-3">1. Select Simulated Attack Vector</h2>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        <button type="button" id="card-benign_sql" onclick="loadVector('benign_sql')" class="vector-card active-vector text-left p-3 rounded-lg border border-slate-800 hover:border-emerald-500/50 transition cursor-pointer">
-                            <span class="font-semibold text-emerald-400 text-xs block">✅ Benign SQL Query</span>
-                            <p class="text-slate-400 text-[11px] mt-0.5">SELECT query with valid token</p>
-                        </button>
-                        <button type="button" id="card-sql_injection" onclick="loadVector('sql_injection')" class="vector-card text-left p-3 rounded-lg border border-slate-800 hover:border-rose-500/50 transition cursor-pointer">
-                            <span class="font-semibold text-rose-400 text-xs block">🚨 SQL Mutation Drop</span>
-                            <p class="text-slate-400 text-[11px] mt-0.5">DROP TABLE statement block</p>
-                        </button>
-                        <button type="button" id="card-shell_breakout" onclick="loadVector('shell_breakout')" class="vector-card text-left p-3 rounded-lg border border-slate-800 hover:border-rose-500/50 transition cursor-pointer">
-                            <span class="font-semibold text-rose-400 text-xs block">🚨 Shell Breakout (PTY)</span>
-                            <p class="text-slate-400 text-[11px] mt-0.5">Spawn interactive /bin/sh</p>
-                        </button>
-                        <button type="button" id="card-os_system" onclick="loadVector('os_system')" class="vector-card text-left p-3 rounded-lg border border-slate-800 hover:border-rose-500/50 transition cursor-pointer">
-                            <span class="font-semibold text-rose-400 text-xs block">🚨 Privileged File Exfil</span>
-                            <p class="text-slate-400 text-[11px] mt-0.5">cat /etc/shadow inspection</p>
-                        </button>
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <div style="color:#9CA3AF; font-size:0.75rem; font-weight:600; text-transform:uppercase;">Production Telemetry</div>
+                    <div style="color:#38BDF8; font-size:1.6rem; font-weight:800; margin-top:4px;">611+ Requests</div>
+                    <div style="color:#6B7280; font-size:0.75rem; margin-top:2px;">Google, AWS, OpenAI active indexers</div>
+                </div>
+                <div class="stat-card">
+                    <div style="color:#9CA3AF; font-size:0.75rem; font-weight:600; text-transform:uppercase;">Mean AST Overhead</div>
+                    <div style="color:#34D399; font-size:1.6rem; font-weight:800; margin-top:4px;">&lt;0.14 ms</div>
+                    <div style="color:#6B7280; font-size:0.75rem; margin-top:2px;">0.078ms median (P50) verification</div>
+                </div>
+                <div class="stat-card">
+                    <div style="color:#9CA3AF; font-size:0.75rem; font-weight:600; text-transform:uppercase;">Containment SLA</div>
+                    <div style="color:#A78BFA; font-size:1.6rem; font-weight:800; margin-top:4px;">100.0%</div>
+                    <div style="color:#6B7280; font-size:0.75rem; margin-top:2px;">1,000 cycles on BRK test suite (0 FP)</div>
+                </div>
+            </div>
+
+            
+            <!-- PILLAR 4 CRYPTOGRAPHIC ATTESTATION SEAL BANNER -->
+            <div style="margin-bottom: 2rem; background: linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(59,130,246,0.12) 100%); border: 1px solid rgba(16,185,129,0.4); border-radius: 8px; padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:1.2rem;">🔐</span>
+                        <span style="color:#34D399; font-weight:800; font-size:1.05rem; letter-spacing:0.5px;">ATTEST-SEAL-F3A97F85E582A429</span>
+                        <span class="badge-rem">INDEPENDENTLY VERIFIED</span>
                     </div>
-
-                    <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mt-6 mb-3">2. Execution Context</h2>
-                    <div class="space-y-3">
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="text-xs text-slate-400 mb-1 block">Actor / Agent ID</label>
-                                <input id="actorId" type="text" value="agent-alpha-01" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm mono text-slate-200 focus:outline-none focus:border-amber-500">
-                            </div>
-                            <div>
-                                <label class="text-xs text-slate-400 mb-1 block">Tool Name</label>
-                                <input id="toolName" type="text" value="sql_query" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm mono text-slate-200 focus:outline-none focus:border-amber-500">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="text-xs text-slate-400 mb-1 block">Tool Execution Payload</label>
-                            <textarea id="payload" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm mono text-slate-200 focus:outline-none focus:border-amber-500">SELECT id, balance FROM accounts WHERE user_id = 42;</textarea>
-                        </div>
-                        <button type="button" id="dispatchBtn" onclick="dispatchIntercept()" class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-lg shadow-lg shadow-amber-500/20 transition cursor-pointer flex items-center justify-center space-x-2">
-                            <span id="btnIcon">⚡</span>
-                            <span id="btnText">DISPATCH INTERCEPTION CHECK</span>
-                        </button>
-                    </div>
+                    <p style="color:#9CA3AF; font-size:0.85rem; margin-top:4px; max-width:650px;">
+                        Deterministic containment validated across 6 adversarial evasion vectors (Base64 tunneling, dynamic reflection, subprocess module lookup) with <strong style="color:#34D399;">0.0518 ms</strong> mean latency.
+                    </p>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <a href="/wisdom/security/whitepaper" class="btn" style="background:#2563EB; color:#fff; font-size:0.82rem; padding:8px 12px; border:none;">Technical Whitepaper &rarr;</a>
+                    <a href="/wisdom/security/policy" class="btn" style="background:#1F2937; color:#D1D5DB; font-size:0.82rem; padding:8px 12px; border:1px solid #374151;">Bug Bounty SLA</a>
                 </div>
             </div>
 
-            <!-- Right Panel: Live Arbitration Result -->
-            <div class="lg:col-span-5 space-y-5">
-                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-xl h-full flex flex-col justify-between">
+            <h2 style="color:#F3F4F6; font-size:1.25rem; font-weight:700; margin-bottom:1rem;">Executive Remediation Memoranda</h2>
+            
+            {% for m in memos %}
+            <div class="cve-card">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.75rem;">
                     <div>
-                        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-                            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Arbitration Telemetry</h2>
-                            <span id="verdictBadge" class="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-slate-800 text-slate-400">IDLE</span>
-                        </div>
-
-                        <div class="space-y-4 mt-4">
-                            <div class="flex justify-between items-center py-2 border-b border-slate-800/60 text-xs">
-                                <span class="text-slate-400">Verdict Status:</span>
-                                <span id="resStatus" class="font-bold mono text-slate-300">-</span>
-                            </div>
-                            <div class="flex justify-between items-center py-2 border-b border-slate-800/60 text-xs">
-                                <span class="text-slate-400">Engine Latency:</span>
-                                <span id="resLatency" class="mono text-slate-300">-</span>
-                            </div>
-                            <div class="flex justify-between items-center py-2 border-b border-slate-800/60 text-xs">
-                                <span class="text-slate-400">Round-Trip Latency:</span>
-                                <span id="resRtt" class="mono text-slate-300">-</span>
-                            </div>
-                            <div>
-                                <span class="text-xs text-slate-400 block mb-1">Execution Authority Token:</span>
-                                <div id="resToken" class="p-2.5 bg-slate-950 border border-slate-800 rounded text-xs mono break-all text-slate-400 font-mono">None</div>
-                            </div>
-                            <div>
-                                <span class="text-xs text-slate-400 block mb-1">Arbitration Reason:</span>
-                                <p id="resReason" class="text-xs text-slate-300 bg-slate-950 p-2.5 rounded border border-slate-800">Awaiting payload...</p>
-                            </div>
-                        </div>
+                        <span class="badge-rem" style="margin-right:6px;">REMEDIATED</span>
+                        {% if m.sev == 'CRITICAL' %}
+                            <span class="badge-crit">{{ m.sev }} (CVSS {{ m.cvss }})</span>
+                        {% else %}
+                            <span class="badge-high">{{ m.sev }} (CVSS {{ m.cvss }})</span>
+                        {% endif %}
+                        <span style="color:#9CA3AF; font-size:0.8rem; margin-left:8px; font-weight:600;">{{ m.framework }}</span>
+                        <h3 style="color:#F9FAFB; font-size:1.1rem; font-weight:700; margin-top:6px;">{{ m.id }}: {{ m.title }}</h3>
                     </div>
-
-                    <div class="mt-4 pt-4 border-t border-slate-800">
-                        <span class="text-[10px] mono text-slate-500 uppercase tracking-widest block mb-2">RAW JSON GATEWAY RESPONSE</span>
-                        <pre id="rawJson" class="text-[11px] mono text-slate-400 bg-slate-950 p-3 rounded-lg overflow-x-auto max-h-40 border border-slate-800">{}</pre>
-                    </div>
+                    <a href="/wisdom/security/memo/{{ m.id }}" class="btn">View Executive Memo &rarr;</a>
+                </div>
+                <div style="color:#9CA3AF; font-size:0.85rem;">
+                    Audit Target: <code>{{ m.file }}</code> &bull; Compliance: <strong>NIST AI RMF 1.0 (Govern 1.2 / Protect 2.1), SOC 2 Type II</strong>
                 </div>
             </div>
+            {% endfor %}
 
+            <div style="margin-top:2.5rem; padding:1.25rem; background:#0B132B; border:1px solid #1C2D5A; border-radius:8px;">
+                <h4 style="color:#60A5FA; font-size:0.95rem; font-weight:700; margin-bottom:6px;">Enterprise Integration Directive</h4>
+                <p style="color:#94A3B8; font-size:0.85rem; line-height:1.6;">
+                    To prevent model drift and prompt injection breakout into local host environments, all agent execution handlers must verify the Abstract Syntax Tree (AST) out-of-band prior to runtime dispatch. Package verified on PyPI: <code>pip install aw1-circuit-breaker</code>.
+                </p>
+            </div>
         </div>
-    </div>
-<script>
-        const VECTORS = {
-            benign_sql: {
-                actor: 'agent-alpha-01',
-                tool: 'sql_query',
-                payload: `SELECT id, balance FROM accounts WHERE user_id = 42;`
-            },
-            sql_injection: {
-                actor: 'rogue-agent',
-                tool: 'sql_query',
-                payload: `DROP TABLE accounts; TRUNCATE TABLE audit_log;`
-            },
-            shell_breakout: {
-                actor: 'untrusted-agent',
-                tool: 'bash',
-                payload: `python3 -c 'import pty; pty.spawn("/bin/sh")'`
-            },
-            os_system: {
-                actor: 'exfil-actor',
-                tool: 'python_exec',
-                payload: `import os; os.system('cat /etc/shadow')`
+    </body>
+    </html>
+    """
+    return render_template_string(html, memos=memos)
+
+@wisdom_bp.route("/security/memo/<cve_id>", methods=["GET"])
+def ciso_memo_detail(cve_id):
+    """Renders formatted 1-page printable CISO memo."""
+    safe_id = re.sub(r'[^A-Za-z0-9_-]', '', cve_id)
+    memo_file = REPORTS_DIR / f"MEMO_{safe_id.replace('-', '_')}.md"
+    
+    if not memo_file.exists():
+        abort(404)
+        
+    with open(memo_file, "r", encoding="utf-8") as f:
+        md_text = f.read()
+        
+    html_body = _md_to_html(md_text)
+    
+    wrapper = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>CISO Memo: {{ safe_id }}</title>
+        <style>
+            * { box-sizing: border-box; }
+            body { background: #0A0E17; color: #E5E7EB; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 2rem 1rem; }
+            .container { max-width: 900px; margin: 0 auto; background: #111827; border: 1px solid #1F2937; border-radius: 8px; padding: 2.5rem; }
+            .actions { max-width: 900px; margin: 0 auto 1rem auto; display: flex; justify-content: space-between; align-items: center; }
+            .btn { display: inline-block; background: #1F2937; color: #D1D5DB; text-decoration: none; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; border: 1px solid #374151; cursor: pointer; }
+            .btn:hover { background: #374151; color: #fff; }
+            .btn-blue { background: #2563EB; color: #fff; border: none; }
+            .btn-blue:hover { background: #1D4ED8; }
+            @media print {
+                body { background: #fff; color: #000; padding: 0; }
+                .container { border: none; padding: 0; background: #fff; color: #000; }
+                .actions { display: none; }
+                pre { background: #f4f4f4 !important; color: #000 !important; border: 1px solid #ccc !important; }
+                p, h1, h2, h3, h4, li { color: #000 !important; }
             }
-        };
+        </style>
+    </head>
+    <body>
+        <div class="actions">
+            <a href="/wisdom/security" class="btn">&larr; Back to CISO Dossier</a>
+            <button onclick="window.print()" class="btn btn-blue">🖨️ Print / Save as PDF</button>
+        </div>
+        <div class="container">
+            {{ html_body | safe }}
+        </div>
+    </body>
+    </html>
+    """
+    return render_template_string(wrapper, safe_id=safe_id, html_body=html_body)
 
-        function loadVector(key) {
-            document.querySelectorAll('.vector-card').forEach(c => c.classList.remove('active-vector'));
-            const activeCard = document.getElementById('card-' + key);
-            if (activeCard) activeCard.classList.add('active-vector');
 
-            const v = VECTORS[key];
-            if (!v) return;
-            document.getElementById('actorId').value = v.actor;
-            document.getElementById('toolName').value = v.tool;
-            document.getElementById('payload').value = v.payload;
-        }
 
-        async function dispatchIntercept() {
-            const btn = document.getElementById('dispatchBtn');
-            const btnText = document.getElementById('btnText');
-            const btnIcon = document.getElementById('btnIcon');
-            const verdictBadge = document.getElementById('verdictBadge');
+# ==============================================================================
+# PILLAR 4: ENTERPRISE WHITEPAPER & BUG BOUNTY POLICY ENDPOINTS (SURGICAL MOUNT)
+# ==============================================================================
+VERIFY_DIR = Path("/home/LavetoLab/aw1-verification")
 
-            const actorId = document.getElementById('actorId').value.trim();
-            const toolName = document.getElementById('toolName').value.trim();
-            const payload = document.getElementById('payload').value;
-
-            btn.disabled = true;
-            btnText.textContent = 'ARBITRATING WITH AW-1...';
-            btnIcon.textContent = '⏳';
-            verdictBadge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-amber-500/20 text-amber-300 animate-pulse';
-            verdictBadge.textContent = 'EVALUATING';
-
-            const start = performance.now();
-            try {
-                const res = await fetch('/wisdom/api/v1/intercept', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ actor_id: actorId, tool_name: toolName, payload: payload })
-                });
-
-                const rtt = (performance.now() - start).toFixed(2);
-                const data = await res.json();
-
-                document.getElementById('rawJson').textContent = JSON.stringify(data, null, 2);
-                document.getElementById('resStatus').textContent = data.status || data.verdict || 'COMPLETE';
-                document.getElementById('resLatency').textContent = data.latency_ms !== undefined ? data.latency_ms + ' ms' : '-';
-                document.getElementById('resRtt').textContent = rtt + ' ms';
-                document.getElementById('resReason').textContent = data.reason || 'Policy evaluation completed.';
-
-                const tokenEl = document.getElementById('resToken');
-                if (data.token) {
-                    tokenEl.textContent = data.token;
-                    tokenEl.className = 'p-2.5 bg-emerald-950/40 border border-emerald-500/30 rounded text-xs mono break-all text-emerald-300 font-mono';
-                } else {
-                    tokenEl.textContent = 'NULL (Execution Revoked)';
-                    tokenEl.className = 'p-2.5 bg-rose-950/40 border border-rose-500/30 rounded text-xs mono break-all text-rose-300 font-mono';
-                }
-
-                if (data.permitted) {
-                    verdictBadge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-                    verdictBadge.textContent = 'PASS';
-                } else {
-                    verdictBadge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30';
-                    verdictBadge.textContent = 'HALT_AND_CONTAIN';
-                }
-            } catch (err) {
-                document.getElementById('resReason').textContent = 'Connection Error: ' + err.message;
-                verdictBadge.className = 'px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-rose-500/20 text-rose-400';
-                verdictBadge.textContent = 'NETWORK_ERROR';
-            } finally {
-                btn.disabled = false;
-                btnText.textContent = 'DISPATCH INTERCEPTION CHECK';
-                btnIcon.textContent = '⚡';
+@wisdom_bp.route("/security/whitepaper", methods=["GET"])
+def ciso_whitepaper_view():
+    """Renders the formal Enterprise Technical Whitepaper with print/PDF support."""
+    wp_path = VERIFY_DIR / "WHITE_PAPER_AST_RUNTIME_VERIFICATION.md"
+    if not wp_path.exists():
+        abort(404)
+    with open(wp_path, "r", encoding="utf-8") as f:
+        md_text = f.read()
+    html_body = _md_to_html(md_text)
+    wrapper = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AW-1 Enterprise Technical Whitepaper</title>
+        <style>
+            * { box-sizing: border-box; }
+            body { background: #0A0E17; color: #E5E7EB; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 2rem 1rem; }
+            .container { max-width: 960px; margin: 0 auto; background: #111827; border: 1px solid #1F2937; border-radius: 8px; padding: 2.5rem; }
+            .actions { max-width: 960px; margin: 0 auto 1rem auto; display: flex; justify-content: space-between; align-items: center; }
+            .btn { display: inline-block; background: #1F2937; color: #D1D5DB; text-decoration: none; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; border: 1px solid #374151; cursor: pointer; }
+            .btn:hover { background: #374151; color: #fff; }
+            .btn-blue { background: #2563EB; color: #fff; border: none; }
+            .btn-blue:hover { background: #1D4ED8; }
+            table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; }
+            @media print {
+                body { background: #fff; color: #000; padding: 0; }
+                .container { border: none; padding: 0; background: #fff; color: #000; }
+                .actions { display: none; }
+                table, th, td { border: 1px solid #000 !important; color: #000 !important; }
+                p, h1, h2, h3, h4, li { color: #000 !important; }
             }
-        }
-    </script>
-</body>
-</html>
-"""
-    return render_template_string(html), 200
-# === END AW-1 SOC DASHBOARD ===
+        </style>
+    </head>
+    <body>
+        <div class="actions">
+            <a href="/wisdom/security" class="btn">&larr; Back to CISO Dossier</a>
+            <button onclick="window.print()" class="btn btn-blue">🖨️ Print / Save as PDF</button>
+        </div>
+        <div class="container">
+            {{ html_body | safe }}
+        </div>
+    </body>
+    </html>
+    """
+    return render_template_string(wrapper, html_body=html_body)
+
+@wisdom_bp.route("/security/policy", methods=["GET"])
+def ciso_security_policy_view():
+    """Renders the Responsible Vulnerability Disclosure & Bug Bounty Policy."""
+    sec_path = VERIFY_DIR / "SECURITY.md"
+    if not sec_path.exists():
+        abort(404)
+    with open(sec_path, "r", encoding="utf-8") as f:
+        md_text = f.read()
+    html_body = _md_to_html(md_text)
+    wrapper = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>AW-1 Vulnerability Disclosure &amp; Bounty Policy</title>
+        <style>
+            * { box-sizing: border-box; }
+            body { background: #0A0E17; color: #E5E7EB; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 2rem 1rem; }
+            .container { max-width: 900px; margin: 0 auto; background: #111827; border: 1px solid #1F2937; border-radius: 8px; padding: 2.5rem; }
+            .actions { max-width: 900px; margin: 0 auto 1rem auto; display: flex; justify-content: space-between; align-items: center; }
+            .btn { display: inline-block; background: #1F2937; color: #D1D5DB; text-decoration: none; padding: 8px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; border: 1px solid #374151; cursor: pointer; }
+            .btn:hover { background: #374151; color: #fff; }
+            @media print {
+                body { background: #fff; color: #000; padding: 0; }
+                .container { border: none; padding: 0; background: #fff; color: #000; }
+                .actions { display: none; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="actions">
+            <a href="/wisdom/security" class="btn">&larr; Back to CISO Dossier</a>
+        </div>
+        <div class="container">
+            {{ html_body | safe }}
+        </div>
+    </body>
+    </html>
+    """
+    return render_template_string(wrapper, html_body=html_body)

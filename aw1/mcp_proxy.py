@@ -2,6 +2,20 @@ import json
 from typing import Dict, Any, Callable, Optional
 from aw1.circuit import ExecutionBreaker
 
+def _extract_val(obj, key, default=None):
+    if hasattr(obj, key):
+        val = getattr(obj, key)
+        if val is not None:
+            return val
+    if isinstance(obj, dict) or hasattr(obj, "__getitem__"):
+        try:
+            val = obj[key]
+            if val is not None:
+                return val
+        except (KeyError, TypeError, IndexError):
+            pass
+    return default
+
 class AW1MCPInterceptor:
     """
     Model Context Protocol (MCP) execution circuit breaker proxy.
@@ -14,7 +28,7 @@ class AW1MCPInterceptor:
         self,
         request: Dict[str, Any],
         actor_id: str = "mcp_agent_default",
-        execution_handler: Optional[Callable[[Dict[str, Any]], Any]] = None
+        execution_handler: Optional[Callable[..., Any]] = None
     ) -> Dict[str, Any]:
         """
         Intercepts an incoming MCP 'tools/call' JSON-RPC payload.
@@ -31,7 +45,6 @@ class AW1MCPInterceptor:
         tool_name = params.get("name", "unknown_tool")
         arguments = params.get("arguments", {})
         
-        # Serialize arguments to inspect primitives
         payload_str = json.dumps(arguments)
         
         # Extract value/amount if present in arguments
@@ -52,7 +65,25 @@ class AW1MCPInterceptor:
             amount=amount
         )
 
-        if verdict["status"] == "BLOCKED":
+        status = _extract_val(verdict, "status", "")
+        decision = _extract_val(verdict, "decision", "")
+        token = _extract_val(verdict, "token", None)
+
+        # Zero-Trust Fail-Closed rule:
+        # Block if explicitly halted/contained, or if an execution token was not minted
+        is_blocked = (
+            status in ("BLOCKED", "HALT", "HALT_AND_CONTAIN") or
+            "HALT" in str(decision) or
+            "CONTAIN" in str(decision) or
+            token is None
+        )
+
+        if is_blocked:
+            reason = (
+                _extract_val(verdict, "containment_reason") or
+                _extract_val(verdict, "reason") or
+                "Zero-Trust containment triggered"
+            )
             return {
                 "jsonrpc": "2.0",
                 "id": request.get("id"),
@@ -60,25 +91,26 @@ class AW1MCPInterceptor:
                     "code": -32000,
                     "message": "EXECUTION_REVOKED_BY_CIRCUIT_BREAKER",
                     "data": {
-                        "containment_reason": verdict["containment_reason"],
-                        "ast_primitives": verdict["ast_primitives"],
-                        "latency_ms": verdict["latency_ms"],
-                        "sha256_dossier": verdict["sha256_dossier"]
+                        "status": status,
+                        "containment_reason": reason,
+                        "ast_primitives": _extract_val(verdict, "ast_primitives", []),
+                        "latency_ms": _extract_val(verdict, "latency_ms", 0.0),
+                        "sha256_dossier": _extract_val(verdict, "sha256_dossier", "") or _extract_val(verdict, "dossier_hash", "")
                     }
                 }
             }
 
-        # Approved: Forward request with execution token metadata
+        # Approved: Forward request with execution token
         if execution_handler:
-            return execution_handler(request, execution_token=verdict["token"])
+            return execution_handler(request, execution_token=token)
 
         return {
             "jsonrpc": "2.0",
             "id": request.get("id"),
             "result": {
                 "status": "APPROVED",
-                "token": verdict["token"],
-                "latency_ms": verdict["latency_ms"],
-                "sha256_dossier": verdict["sha256_dossier"]
+                "token": token,
+                "latency_ms": _extract_val(verdict, "latency_ms", 0.0),
+                "sha256_dossier": _extract_val(verdict, "sha256_dossier", "") or _extract_val(verdict, "dossier_hash", "")
             }
         }

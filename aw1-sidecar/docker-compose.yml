@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  aw1-sidecar:
+    build: .
+    image: aw1-circuit-breaker-sidecar:latest
+    container_name: aw1-sidecar
+    restart: unless-stopped
+    ports:
+      - "9099:9099"
+    environment:
+      - AW1_PORT=9099
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9099/healthz')"]
+      interval: 5s
+      timeout: 2s
+      retries: 3
