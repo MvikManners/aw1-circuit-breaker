@@ -22,3 +22,10 @@ dist/
 build/
 *.tar.gz
 mcp-publisher
+
+EMERGENCY_RECOVERY.txt
+Monthly_Summary.txt
+archives/
+**/archives/**
+app_old.py
+agmin_report.py

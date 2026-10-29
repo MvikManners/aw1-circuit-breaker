@@ -40,7 +40,7 @@ app = Flask(__name__, template_folder=template_dir)
 
 # --- CONFIGURATION ---
 app.config.update(
-    SECRET_KEY='Laveto_Sovereign_OS_Master_Key_2026',
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me"),
     SESSION_COOKIE_SECURE=False,
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE='Lax',
@@ -200,7 +200,7 @@ def get_laveto_ai_response(user_input):
     except Exception as e: return f"LAVETO DIAGNOSTICS OFFLINE // System Error: {str(e)}"
 
 # 📡 TELEGRAM INTERCEPT PROTOCOL
-TELEGRAM_TOKEN = "8635200479:AAGCIeRa_doRyHVH_tpj5WsKJZJsc-IZAqg"
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
 TELEGRAM_CHAT_ID = "1054436202"
 
 def fire_telegram_alert(message):
