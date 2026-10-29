@@ -1,8 +1,8 @@
 {
   "version": "1.0.0",
   "repository": "https://github.com/MvikManners/aw1-circuit-breaker",
-  "commit_sha": "00adf7a7dd833dd50e1793b4a3f6b72013a8c2f5",
-  "release_tag": "v2.1.2",
+  "commit_sha": "59225c12f9280e08a4e8e6fedcdde214b13c5a7e",
+  "release_tag": "v2.1.3",
   "verified_components": {
     "claude_plugin": {
       "path": ".claude-plugin/plugin.json",
