@@ -191,3 +191,8 @@ Dockerfilev
 *.bak
 *.bak.*
 *.backup
+
+fix_db.py
+*.bak
+*.bak.*
+*.backup

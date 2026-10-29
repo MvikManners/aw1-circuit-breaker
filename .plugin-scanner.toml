@@ -1,17 +1,14 @@
-# HOL Plugin Scanner Configuration
 [scanner]
 profile = "default"
 ignore_paths = [
   "laveto_wisdom/*",
   "laveto_wisdom/**",
-  "aw1-verification/*",
-  "aw1-verification/**",
-  "tests/*",
-  "tests/**",
-  "test/*",
-  "test/**",
-  "docs/*",
   "*.bak*",
   "**/*.bak*",
-  "*.md"
+  "tests/*",
+  "tests/**",
+  "aw1-verification/*",
+  "aw1-verification/**",
+  "docs/*",
+  "fix_db.py"
 ]
