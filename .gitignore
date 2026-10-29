@@ -196,3 +196,9 @@ fix_db.py
 *.bak
 *.bak.*
 *.backup
+*_keys.json
+*config*.json
+enclave_vault.enc
+solve.py
+dossiers/
+iso20022_messages/

@@ -1,8 +1,0 @@
-{
-  "backend": "mysql",
-  "host": "LavetoLab.mysql.pythonanywhere-services.com",
-  "user": "LavetoLab",
-  "password": "LavetoLabsBotswana2026",
-  "database": "LavetoLab$default",
-  "port": 3306
-}
