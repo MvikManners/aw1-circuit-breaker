@@ -106,6 +106,6 @@ class Config:
 
     TELEGRAM_TOKEN = os.environ.get(
         'TELEGRAM_TOKEN',
-        '8635200479:AAGCIeRa_doRyHVH_tpj5WsKJZJsc-IZAqg'
+        'TELEGRAM_BOT_TOKEN_PLACEHOLDER'
     )
     TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID', '1054436202')

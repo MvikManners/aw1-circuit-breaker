@@ -29,3 +29,11 @@ archives/
 **/archives/**
 app_old.py
 agmin_report.py
+EMERGENCY_RECOVERY.txt
+Monthly_Summary.txt
+archives/
+**/archives/**
+app_old.py
+agmin_report.py
+.profile
+.vimrc

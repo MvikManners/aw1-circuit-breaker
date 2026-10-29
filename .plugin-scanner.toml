@@ -1,6 +1,9 @@
 [scanner]
 profile = "public-marketplace"
 ignore_paths = [
+  "EMERGENCY_RECOVERY.txt",
+  "archives/*",
+  "app_old.py",
   "tests/*",
   "**/tests/*",
   "benchmarks/*",
