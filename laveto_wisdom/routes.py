@@ -12448,7 +12448,7 @@ agent = initialize_agent(
 # Zero-dependency client library using Python's standard urllib
 client = LavetoWisdomClient(
     base_url="https://p20.laveto.net/wisdom",
-    api_key="AW1-CC89066DF7D007F8"
+    api_key=os.environ.get("AW1_API_KEY", "")
 )
 
 # Executes Decision Assurance audit (automatically triggers 20% AWT Buyback-and-Burn)

@@ -1,0 +1,17 @@
+{
+  "COMPLIANCE_OFFICER_01": {
+    "name": "Head of Regulatory Oversight",
+    "public_key_hex": "21e44524b74a1758bb7b29185d50e90c4925dcc71e2bc5df41a928d7dcae4bce",
+    "active": true,
+    "spending_limit_bwp": 500000.0,
+    "hsm_enclave_protected": true
+  },
+  "COMPLIANCE_OFFICER_02": {
+    "name": "Junior Settlements Officer",
+    "public_key_hex": "aafbcae6dfa64afd5069305d7211da0a2bbae90979dfd047d43658afe322b11d",
+    "spending_limit_bwp": 50000.0,
+    "active": true,
+    "created_at": 1792361094.5315976,
+    "hsm_enclave_protected": true
+  }
+}

@@ -29,7 +29,7 @@ if PROJECT_ROOT not in sys.path:
 
 DB_PATH = "/home/LavetoLab/lvt_backend/lvt_database.db"
 FALLBACK_DB_PATH = "/home/LavetoLab/laveto_wisdom/wisdom.db"
-LAVETO_API_KEY = "lvt-sec-wisdom-live-2026"
+LAVETO_API_KEY = os.environ.get("LAVETO_API_KEY", "")
 
 # 35 Statutory Citizen Reserved Sectors under PPA 2022 / EIA 2021
 CITIZEN_RESERVED_SECTORS = {

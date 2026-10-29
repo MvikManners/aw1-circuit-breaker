@@ -1,0 +1,16 @@
+{
+  "dossier_hash": "2cafc193b8ed952a1c807d680d7fe200d7ee0be1a50f70fea135f910e250984e",
+  "timestamp": 1792366165.224233,
+  "actor_id": "mcp_agent_default",
+  "tool_name": "treasury_transfer",
+  "amount": 75000.0,
+  "decision": "\ud83d\uded1 HALT_AND_CONTAIN",
+  "status": "HALT_AND_CONTAIN",
+  "containment_reason": "VELOCITY_SPIKE_DETECTED (1.5x threshold limit)",
+  "ast_primitives": [],
+  "latency_ms": 0.1517,
+  "payload": {
+    "amount": 75000.0,
+    "recipient": "BW-AUDIT-TEST"
+  }
+}

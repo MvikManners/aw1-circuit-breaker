@@ -1,0 +1,18 @@
+{
+  "dossier_hash": "a272e8c6e27893ddb651ce424e1c9ec5de6108ca8fd3092cb29d3876576aec80",
+  "timestamp": 1792367235.0938265,
+  "actor_id": "mcp_agent_default",
+  "tool_name": "cross_border_transfer",
+  "amount": 272108.84,
+  "decision": "\ud83d\uded1 HALT_AND_CONTAIN",
+  "status": "HALT_AND_CONTAIN",
+  "containment_reason": "VELOCITY_SPIKE_DETECTED (6.2x threshold limit)",
+  "ast_primitives": [],
+  "latency_ms": 0.1944,
+  "payload": {
+    "amount": 272108.84,
+    "source_currency": "USD",
+    "target_currency": "USD",
+    "recipient": "US-CORP-SETTLE-01"
+  }
+}

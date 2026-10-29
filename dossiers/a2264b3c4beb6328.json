@@ -1,0 +1,25 @@
+{
+  "dossier_hash": "a2264b3c4beb6328e80a15d263f51da604f86c844df6756c135b1bd2f2431b11",
+  "timestamp": 1792379044.4979384,
+  "actor_id": "mcp_agent_default",
+  "tool_name": "cross_border_transfer",
+  "amount": 3401.36,
+  "decision": "\ud83d\uded1 HALT_AND_CONTAIN",
+  "status": "HALT_AND_CONTAIN",
+  "containment_reason": "CRITICAL_AST_PRIMITIVE_DETECTED ([HIGH_VALUE_ONE_WAY_DOOR])",
+  "ast_primitives": [
+    "[HIGH_VALUE_ONE_WAY_DOOR]"
+  ],
+  "latency_ms": 0.2949,
+  "payload": {
+    "amount": 3401.36,
+    "source_currency": "USD",
+    "target_currency": "USD",
+    "recipient": "US-PARTNER-NODE-09",
+    "caller_id": "settlement-node-01",
+    "fiduciary_cosignature": {
+      "key_id": "AW1-TREASURY-ED25519-MASTER",
+      "signature_b64": "x8qSYCSHqok2IvGFe188eK9G1wAW5pVRdxKosGyGcZ0UqzukG45stPwb0AuqyxIonFpvA7FRlMQ68Ys4cD8WDg=="
+    }
+  }
+}

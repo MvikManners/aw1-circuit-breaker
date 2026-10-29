@@ -1,0 +1,18 @@
+{
+  "dossier_hash": "79723c7818c661d7eb6d9cda5005f910f908537168dee7a7bc470d73edd9fd37",
+  "timestamp": 1792377881.3128145,
+  "actor_id": "mcp_agent_default",
+  "tool_name": "sql_query",
+  "amount": 0.0,
+  "decision": "\ud83d\uded1 HALT_AND_CONTAIN",
+  "status": "HALT_AND_CONTAIN",
+  "containment_reason": "CRITICAL_AST_PRIMITIVE_DETECTED ([HIGH_VALUE_ONE_WAY_DOOR])",
+  "ast_primitives": [
+    "[HIGH_VALUE_ONE_WAY_DOOR]"
+  ],
+  "latency_ms": 0.1502,
+  "payload": {
+    "query": "SELECT balance_bwp FROM accounts WHERE account_id = 'STATUTORY_RESERVE_USD';",
+    "caller_id": "swarm-worker-0"
+  }
+}

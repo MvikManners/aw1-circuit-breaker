@@ -1,0 +1,21 @@
+{
+  "dossier_hash": "e25f30d8a0b3ec65b13acff6ac563b0979ede4c0b23680402f9b17cc7ba97de0",
+  "timestamp": 1792361094.6184766,
+  "actor_id": "mcp_agent_default",
+  "tool_name": "treasury_transfer",
+  "amount": 140000.0,
+  "decision": "\ud83d\uded1 HALT_AND_CONTAIN",
+  "status": "RELEASED_BY_OVERRIDE",
+  "containment_reason": "VELOCITY_SPIKE_DETECTED (2.8x threshold limit)",
+  "ast_primitives": [],
+  "latency_ms": 0.2029,
+  "payload": {
+    "amount": 140000.0,
+    "recipient": "BW-ACC-9921"
+  },
+  "override_token": "AW1-OVERRIDE-ED25519-849d7fe27784686e",
+  "released_by": "COMPLIANCE_OFFICER_02",
+  "ed25519_signature": "dda01eef8f3b7a131bfd90095823805c8a8058434fb646d71822767b5fb1e36da24bde83a7ccd4f9e033df17e6279be7cda44c7ff24eaebf566ca01715ebfc08",
+  "override_timestamp": 1792361094.8904166,
+  "ledger_entry_id": 5
+}

@@ -1,0 +1,22 @@
+{
+  "dossier_hash": "4ebb12df975c8024d600fe958e8c8a617276b0e29ff2b2a4e07d9ad9ac62c516",
+  "timestamp": 1792366458.3198614,
+  "actor_id": "mcp_agent_default",
+  "tool_name": "treasury_transfer",
+  "amount": 75000.0,
+  "decision": "\ud83d\uded1 HALT_AND_CONTAIN",
+  "status": "RELEASED_BY_OVERRIDE",
+  "containment_reason": "VELOCITY_SPIKE_DETECTED (1.5x threshold limit)",
+  "ast_primitives": [],
+  "latency_ms": 0.1469,
+  "payload": {
+    "amount": 75000.0,
+    "recipient": "BW-AUDIT-TEST"
+  },
+  "override_token": "AW1-OVERRIDE-KMS-8b58d3ee6fdd764a",
+  "released_by": "COMPLIANCE_OFFICER_01",
+  "ed25519_signature": "6826104a75fc33e51e78ee2acc0394e8da30886c0e9d3de9c8e2861e3c8ad1b72636047f344333f48de73d3c0e0b53c6c1901c69f181f1fc501c3c86f402ad01",
+  "override_timestamp": 1792366458.768925,
+  "ledger_entry_id": 9,
+  "kms_mode": "AES-256-GCM_ENCLAVE"
+}

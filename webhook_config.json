@@ -1,0 +1,5 @@
+{
+  "webhook_url": "",
+  "enabled": true,
+  "log_file": "/home/LavetoLab/aw1-breaker/dossiers/webhook_audit.log"
+}
