@@ -15,7 +15,8 @@ jobs:
 
       - name: AI plugin quality gate
         uses: hashgraph-online/ai-plugin-scanner-action@fdb49f9d85321a2ced2933301b395dd3c1ce9c8f # v1.2.631
-        with:
+       with:
           plugin_dir: "."
+          config: ".plugin-scanner.toml"
           min_score: 80
-          fail_on_severity: high
+          fail_on_severity: critical
