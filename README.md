@@ -135,3 +135,17 @@ except CircuitBreakerException as blocked:
 ## License
 
 Licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0). See [LICENSE](LICENSE) for details.
+
+
+---
+
+## 💳 Cloud Gateway & Commercial Licensing
+
+While the open-source AST circuit breaker runs entirely local with sub-0.2ms overhead, enterprise teams and autonomous agent labs can connect to the hosted **AW-1 Sovereign Cloud Gateway** at `https://p20.laveto.net` for centralized policy orchestration, statutory audit compliance (BoB & Botswana DPA 2018), and hardware TEE attestation tokens.
+
+| Tier | Price | Monthly Quota | Features | Checkout |
+| :--- | :--- | :--- | :--- | :--- |
+| **Developer Tier** | **$49 / mo** (P690 BWP) | 50,000 Verified Audits | Cloud Telemetry, HMAC API Keys, Slack/Webhook Alerts | [👉 Subscribe Now](https://p20.laveto.net/wisdom/buy) |
+| **Enterprise / Sovereign** | Custom / SLA | Unlimited | Dedicated TEE Node, Statutory Defense Matrix, Custom Audits | [Contact Enterprise](mailto:command@laveto.net) |
+
+*Self-hosted open-source circuit breaking remains 100% free under the Apache-2.0 license.*
