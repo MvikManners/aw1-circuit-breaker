@@ -173,3 +173,17 @@ app_old.py
 approve_loan.py
 archives/
 Dockerfilev
+
+app.py
+app_old.py
+admin_report.py
+agmin_report.py
+approve_loan.py
+archives/
+EMERGENCY_RECOVERY.txt
+Monthly_Summary.txt
+README.txt
+Dockerfilev
+.profile
+.pythonstartup.py
+.vimrc
