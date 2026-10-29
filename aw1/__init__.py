@@ -12,6 +12,9 @@ from aw1.unpacker import ASTSymbolicUnpacker
 from aw1.memory import StatefulCausalMemory
 from aw1.mcp_proxy import AW1MCPInterceptor
 from aw1.reversibility import ReversibilityRouter, DoorType, ReversibilityDecision
+from aw1.dossier import DecisionAssuranceDossier, AssuranceEngine
+from aw1.regulatory import RegulatoryComplianceEngine, StatutoryStandard
+from aw1.trust_reconciliation import TrustAccountReconciliationEngine
 
 # Backwards compatibility alias
 MCPContractGuard = AW1MCPInterceptor
@@ -75,30 +78,3 @@ try:
     __all__ = list(__all__) + ["Verdict", "PolicyConfig", "protect_tool"]
 except NameError:
     __all__ = ["ASTCircuitBreaker", "ExecutionBreaker", "Verdict", "PolicyConfig", "protect_tool"]
-
-from aw1.guard import EnterpriseGuard, SecurityViolationError
-
-from aw1.adapters.decorator import guard
-
-try:
-    from aw1.dossier import DecisionAssuranceDossier, AssuranceEngine
-except ImportError:
-    class DecisionAssuranceDossier: pass
-    class AssuranceEngine: pass
-
-try:
-    from aw1.regulatory import RegulatoryComplianceEngine, StatutoryStandard
-except ImportError:
-    class RegulatoryComplianceEngine: pass
-    class StatutoryStandard: pass
-
-try:
-    from aw1.loan_gateway import LoanGateway
-except ImportError:
-    class LoanGateway: pass
-
-try:
-    from aw1.trust_reconciliation import TrustReconciliation
-except ImportError:
-    class TrustReconciliation: pass
-

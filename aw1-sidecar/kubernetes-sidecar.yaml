@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: enterprise-agent-workload
+  namespace: ai-workloads
+  labels:
+    app.kubernetes.io/name: autonomous-agent
+    security.laveto.net/gate: aw1-protected
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: enterprise-agent
+  template:
+    metadata:
+      labels:
+        app: enterprise-agent
+    spec:
+      volumes:
+        - name: aw1-ipc-socket
+          emptyDir:
+            medium: Memory
+
+      containers:
+        # 1. Primary AI Agent Container (CrewAI, LangChain, or MCP server)
+        - name: agent-core
+          image: python:3.12-slim
+          command: ["sh", "-c", "sleep 3600"]
+          env:
+            - name: AW1_SECURITY_GATEWAY
+              value: "http://127.0.0.1:9099/v1/verify"
+          volumeMounts:
+            - name: aw1-ipc-socket
+              mountPath: /var/run/aw1
+
+        # 2. AW-1 Out-of-Band Security Sidecar (<0.14ms Latency)
+        - name: aw1-circuit-breaker
+          image: ghcr.io/mvikmanners/aw1-circuit-breaker-sidecar:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9099
+              name: http-verify
+          env:
+            - name: AW1_PORT
+              value: "9099"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              cpu: 50m
+              memory: 32Mi
+          securityContext:
+            runAsUser: 10001
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: aw1-ipc-socket
+              mountPath: /var/run/aw1
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 9099
+            initialDelaySeconds: 2
+            periodSeconds: 10

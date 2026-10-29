@@ -1,0 +1,253 @@
+/* ==========================================
+   LAVETO COMMAND WALL - CORE STYLESHEET
+   ========================================== */
+
+:root {
+    /* Core System Variables - Do not alter without Architect approval */
+    --background-deep: #050505;
+    --background-panel: #111111;
+    --text-main: #e0e0e0;
+    --text-muted: #888888;
+    
+    /* Tactical Colors (Matches Backend Telemetry) */
+    --sanctified-blue: #00d2ff;
+    --integrity-green: #00ff66;
+    --critical-red: #ff3333;
+    --integrity-gold: #ffcc00;
+    
+    /* Structural */
+    --border-glow: rgba(0, 210, 255, 0.15);
+    --panel-border: 1px solid #222;
+}
+
+/* ------------------------------------------
+   GLOBAL RESET & TYPOGRAPHY
+------------------------------------------ */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--background-deep);
+    color: var(--text-main);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Courier New', Courier, monospace; /* Terminal feel for headers */
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #ffffff;
+    margin-bottom: 1rem;
+}
+
+/* ------------------------------------------
+   NAVIGATION / TOP BAR
+------------------------------------------ */
+.navbar {
+    background-color: #000000;
+    border-bottom: 1px solid var(--sanctified-blue);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 0 20px var(--border-glow);
+}
+
+.navbar a {
+    color: var(--text-main);
+    text-decoration: none;
+    margin-right: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    transition: color 0.3s;
+}
+
+.navbar a:hover {
+    color: var(--sanctified-blue);
+    text-shadow: 0 0 8px var(--border-glow);
+}
+
+/* ------------------------------------------
+   LAYOUT CONTAINERS & PANELS
+------------------------------------------ */
+.container {
+    max-width: 1400px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.panel {
+    background-color: var(--background-panel);
+    border: var(--panel-border);
+    border-radius: 4px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+}
+
+/* ------------------------------------------
+   BUTTONS & CONTROLS
+------------------------------------------ */
+.btn, button, input[type="submit"] {
+    background: transparent;
+    color: var(--text-main);
+    border: 1px solid #444;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.btn:hover, button:hover {
+    background: #222;
+    border-color: var(--text-main);
+}
+
+/* The Matrix/System Buttons */
+.btn-update, .btn-primary {
+    background: rgba(0, 210, 255, 0.05);
+    color: var(--sanctified-blue);
+    border: 1px solid var(--sanctified-blue);
+}
+
+.btn-update:hover, .btn-primary:hover {
+    background: var(--sanctified-blue);
+    color: #000;
+    box-shadow: 0 0 15px var(--sanctified-blue);
+}
+
+.btn-danger {
+    color: var(--critical-red);
+    border-color: var(--critical-red);
+}
+
+.btn-danger:hover {
+    background: var(--critical-red);
+    color: #000;
+    box-shadow: 0 0 15px var(--critical-red);
+}
+
+.btn-success {
+    color: var(--integrity-green);
+    border-color: var(--integrity-green);
+}
+
+.btn-success:hover {
+    background: var(--integrity-green);
+    color: #000;
+    box-shadow: 0 0 15px var(--integrity-green);
+}
+
+/* ------------------------------------------
+   TABLES (LEDGER / SILK ROAD)
+------------------------------------------ */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color: var(--background-panel);
+}
+
+th, td {
+    padding: 14px 15px;
+    text-align: left;
+    border-bottom: 1px solid #222;
+}
+
+th {
+    background-color: #0a0a0a;
+    color: var(--sanctified-blue);
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* ------------------------------------------
+   FORMS & INPUTS
+------------------------------------------ */
+input, select, textarea {
+    width: 100%;
+    padding: 12px 15px;
+    background-color: #000;
+    border: 1px solid #333;
+    color: #fff;
+    margin-bottom: 15px;
+    font-family: inherit;
+    border-radius: 2px;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--sanctified-blue);
+    box-shadow: 0 0 8px var(--border-glow);
+}
+
+/* ------------------------------------------
+   SYSTEM ALERTS & FLASH MESSAGES
+------------------------------------------ */
+.flash-messages {
+    margin-bottom: 20px;
+}
+
+.flash {
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    border-left: 4px solid;
+    background: #0f0f0f;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+.flash.success {
+    border-color: var(--integrity-green);
+    color: var(--integrity-green);
+}
+
+.flash.error {
+    border-color: var(--critical-red);
+    color: var(--critical-red);
+}
+
+.flash.info {
+    border-color: var(--sanctified-blue);
+    color: var(--sanctified-blue);
+}
+
+.flash.warning {
+    border-color: var(--integrity-gold);
+    color: var(--integrity-gold);
+}
+
+/* ------------------------------------------
+   STATUS BADGES
+------------------------------------------ */
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 2px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-family: 'Courier New', monospace;
+    border: 1px solid;
+    letter-spacing: 0.5px;
+}
+
+.status-stable { color: var(--integrity-green); border-color: var(--integrity-green); background: rgba(0, 255, 102, 0.05); }
+.status-pending { color: var(--integrity-gold); border-color: var(--integrity-gold); background: rgba(255, 204, 0, 0.05); }
+.status-critical { color: var(--critical-red); border-color: var(--critical-red); background: rgba(255, 51, 51, 0.05); }

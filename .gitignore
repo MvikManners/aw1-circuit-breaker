@@ -1,130 +1,198 @@
-__pycache__/
-*.py[cod]
-*$py.class
-*.egg-info/
-dist/
-build/
-*.csv
-token.json
+# === System & Shell User Files ===
+.bashrc
+.bash_profile
+.bash_history
+.lesshst
+.viminfo
+.config/
+.local/
+
+# === Production Secrets, Keystores & Environment ===
+google_key.json
 credentials.json
-*.zip
-.env
-.venv
-env/
-
-# Security & Private Keys (NEVER COMMIT)
-*.pem
+.git-credentials
 *.key
-*.enc
-*_keys.json
-mcp_api_keys.json
-compliance_keys.json
-db_config.json
-webhook_config.json
-
-# Local Ledgers & Runtime Audit Artifacts
-*.db
-dossiers/
-iso20022_messages/
-
-# Backup and Temporary Artifacts
-*.bak*
-
-# Internal Proprietary Engines & Regulatory Modules
-aw1_governor.py
-aw1_breaker/aw1_governor.py
-crypto_engine.py
-iso20022_engine.py
-manage_keys.py
-release_dossier.py
-velocity_governor.py
-# Secrets and environment files
+*.pem
+*.pfx
+*.secret
 .env
 *.env
-*secret*
-*credentials*
+*.env.*
 
-# Python bytecode and caches
+# === Databases & Wal Files ===
+*.db
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+lvt_database.db
+lvt_backend/
+
+# === Logs & Runtime Buffers ===
+*.log
+logs/
+cleanup.log
+out/
+archive/
+scratch/
+artifacts/
+snapshots/
+
+# === Python Caches & Build Artifacts ===
 __pycache__/
 *.py[cod]
-*$py.class
-.pytest_cache/
+*.pyo
+*.egg-info/
+build/
+dist/
+.cache/
 
-# Local IDE and Client configs
-.vscode/
-.cursor/
-*.mjs
-# Environment and secrets
-# Python bytecode & caches
-# Local IDE & bridge configs
-.idea/
-hcs_worker.log
+# === Ephemeral Patches & Sample Data ===
+patch_*.py
+fix_*.py
+deploy_*.py
+sync_*.py
+run_block*.py
+*.bak*
+*.orig
+*.pre_*
+sample_tender_bid.txt
+sample_*.txt
+*.pdf
 
-# Sensitive configs & keys
-hcs_config.json
-*.key
+# === System Archives & Full Snapshots ===
+*.tar.gz
+*.zip
+backups/
+backup_extracted/
+extracted_backup/
+pay_release_extracted/
+
+# === Server & Database Access Credentials ===
+.my.cnf
+.gitconfig
+
+# === Symlinks & Root Mirror Mirrors ===
+aw1/aw1
+aw1_pure_public/
+awesome-mcp-servers/
+
+# === Scratch Simulation & Diagnostic Scripts ===
+verify_*.py
+test_*.py
+tests/
+run_*.py
+run_*.sh
+setup_*.sh
+simulate_*.py
+sanitize_*.py
+calibrate_*.py
+build_*.py
+mail_broadcast_queue.jsonl
+
+# Sensitive credentials & tokens
+client_secrets.json
+token.json
+*.env*
+
+# Databases and Backups
+*.db
+*.sqlite3
+*.tar.gz
+*.zip
+
+# Financial & PII Ledgers
+*.csv
+
+# Shell & SQL history
+.*_history
+
+# Virtualenvs & Caches
+.virtualenvs/
+.cache/
+.ipython/
+__pycache__/
+# Secrets and Credentials
+.ssh/
 *.pem
-*.priv
+*.key
+*.env
+generate_secrets_engine.py
+
+# Memory & Caches
+dump.rdb
+redis.pid
+redis_spawn.lock
+__pycache__/
+*.pyc
+
+# Backups and Local Dumps
+*.bak*
+*.broken_backup
+recovery_templates_oct02/
+.aw1_alerted_events.json
+# ==============================================================================
+# AW-1 SOVEREIGN MOAT: AIR-GAP EXCLUSIONS (NEVER PUSH TO GITHUB)
+# ==============================================================================
+# 1. Databases & Ledgers
+*.db
+*.db-journal
+*.sqlite*
+lvt_database.db
+lvt_payment_gateway.db
+
+# 2. Sovereign Backend Engines & Secrets
 .env*
-!release_signer_ed25519.pub
+*.env
+laveto_wisdom/
+lvt_backend/
+.env.wisdom
 
-# Internal scratch & migration tools
-tools/scratch/
-patch_tsk*.py
-execute_tsk*.py
-inspect_tsk*.py
+# 3. Logs, Shell Traps & Supervisors
+logs/
+*.log
+scripts/keep_tracker_running.sh
+scripts/aw1_live_sentinel.py
+scripts/track_aw1_global_reach.py
 
-# Internal operations and server configs
-approve_loan.py
-deposit_repayment.py
-payout_control.py
-ledger*
-member_*
-supplier_*
-sync_*
-drive_handler.py
-forge_key.py
-reset_pass.py
-force_*
-get_token.py
-*.txt
+# 4. Cache & Virtual Environments
+__pycache__/
+*.pyc
+venv/
+.venv/
 .profile
 .pythonstartup.py
 .vimrc
-instance/
-mysite/
-migrations/
-laveto_wisdom/
-*.db
-*.sqlite3
-*.env*
-lvt_*
-private/
+EMERGENCY_RECOVERY.txt
+Monthly_Summary.txt
+README.txt
+admin_report.py
+agmin_report.py
+app.py
+app_old.py
+approve_loan.py
+archives/
+Dockerfilev
 
-# Proprietary Business Logic & Sovereign Vault
-aw1/loan_gateway.py
-aw1/regulatory.py
-aw1/trust_reconciliation.py
-aw1/dossier.py
-aw1/memory.py
-*.pdf
+app.py
+app_old.py
+admin_report.py
+agmin_report.py
+approve_loan.py
+archives/
+EMERGENCY_RECOVERY.txt
+Monthly_Summary.txt
+README.txt
+Dockerfilev
+.profile
+.pythonstartup.py
+.vimrc
 
-# Build & packaging artifacts
-*.egg-info/
-build/
-dist/
-hcs_config*.json
-iso20022_engine.py
-aw1_hcs_worker.py
-tools/scratch/
 *.bak
-generate_manifest.py
-aw1_hcs_worker.py
+*.bak.*
+*.backup
 
-# Cryptographic Keys & Secrets
-*.key
-*.pem
-
-# Cryptographic Keys & Secrets
-*.key
-*.pem
+fix_db.py
+*.bak
+*.bak.*
+*.backup

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Government Stop Order Mandate</title>
+    <style>
+        /* Strict A4 Print Styling */
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #000;
+            background: #fff;
+            margin: 0;
+            padding: 40px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .header h2 {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            font-weight: normal;
+        }
+        .info-grid {
+            display: table;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        .info-row {
+            display: table-row;
+        }
+        .info-cell {
+            display: table-cell;
+            padding: 10px 0;
+            border-bottom: 1px dashed #ccc;
+        }
+        .info-label {
+            font-weight: bold;
+            width: 40%;
+        }
+        .info-value {
+            width: 60%;
+            font-family: monospace;
+            font-size: 16px;
+        }
+        .declaration {
+            margin-top: 40px;
+            padding: 20px;
+            border: 1px solid #000;
+            background-color: #f9f9f9;
+            font-size: 13px;
+            text-align: justify;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>REPUBLIC OF BOTSWANA</h1>
+        <h2>ACCOUNTANT GENERAL - PAYROLL DEDUCTION MANDATE</h2>
+    </div>
+
+    <div style="margin-bottom: 30px;">
+        <p><strong>To:</strong> The Accountant General, Government of Botswana</p>
+        <p><strong>From:</strong> {{ member_name }}</p>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-row">
+            <div class="info-cell info-label">Ministry / Department:</div>
+            <div class="info-cell info-value">{{ department }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-cell info-label">Omang Number:</div>
+            <div class="info-cell info-value">{{ omang }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-cell info-label">Employee / Payroll Number:</div>
+            <div class="info-cell info-value">{{ employee_number }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-cell info-label">Monthly Deduction Amount:</div>
+            <div class="info-cell info-value">P {{ "{:,.2f}".format(monthly_pledge|float) }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-cell info-label">Beneficiary / SACCO Name:</div>
+            <div class="info-cell info-value">LAVETO SYSTEM RESTORATION</div>
+        </div>
+    </div>
+
+    <div class="declaration">
+        <strong>AUTHORIZATION DECLARATION:</strong><br>
+        I, the undersigned employee, hereby authorize the Accountant General to deduct the specified monthly amount from my salary and remit it directly to Laveto System Restoration. I understand that this deduction will remain in effect until I provide formal written notice of cancellation.
+    </div>
+
+    <div style="margin-top: 60px; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div style="width: 45%;">
+            <p style="margin-bottom: 5px;"><strong>Employee Signature:</strong></p>
+            <div style="min-height: 80px; border-bottom: 1px solid #000; position: relative;">
+                {% if signature_path %}
+                <img src="{{ signature_path }}" style="max-height: 80px; position: absolute; bottom: 0; left: 0;">
+                {% endif %}
+            </div>
+            <p style="font-size: 10px; color: #555; margin-top: 5px;">Digitally Captured & Cryptographically Bound</p>
+        </div>
+
+        <div style="width: 30%;">
+            <p style="margin-bottom: 5px;"><strong>Date:</strong></p>
+            <div style="border-bottom: 1px solid #000; padding-top: 40px; text-align: center; font-family: monospace; font-size: 14px;">
+                {{ current_date }}
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

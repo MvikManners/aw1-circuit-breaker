@@ -49,32 +49,20 @@ def verify_code(code_str: str):
         sys.exit(0)
 
 def main():
-    import argparse
-    parser = argparse.ArgumentParser(description="AW-1 Circuit Breaker CLI")
-    parser.add_argument("command_or_code", nargs="*", help="Code snippet to evaluate, or 'verify' / '--demo'")
-    parser.add_argument("-c", "--code", type=str, help="Code snippet to evaluate")
-    parser.add_argument("--demo", action="store_true", help="Run simulated destructive breakout demonstration")
-    
-    args = parser.parse_args()
-    
-    if args.demo or (args.command_or_code and args.command_or_code[0] == "--demo"):
-        print("[AW-1] Running sandbox simulation...")
-        verify_code("subprocess.run(['rm', '-rf', '/'])")
-        return
-
-    if args.code:
-        verify_code(args.code)
-        return
-
-    if not args.command_or_code:
-        parser.print_help()
+    args = sys.argv[1:]
+    if not args or args[0] in ("-h", "--help"):
+        print("AW-1 Circuit Breaker CLI")
+        print("Usage: aw1 verify '<code_snippet>'")
+        print("       aw1 --demo")
         sys.exit(0)
 
-    # Handle 'verify' subcommand or direct positional code
-    if args.command_or_code[0] == "verify":
-        if len(args.command_or_code) > 1:
-            verify_code(" ".join(args.command_or_code[1:]))
-        else:
-            verify_code("x = 42; print('AW-1 operational')")
+    if args[0] == "--demo":
+        print("[AW-1] Running sandbox simulation...")
+        verify_code("subprocess.run(['rm', '-rf', '/'])")
+    elif args[0] == "verify" and len(args) > 1:
+        verify_code(args[1])
     else:
-        verify_code(" ".join(args.command_or_code))
+        verify_code(" ".join(args))
+
+if __name__ == "__main__":
+    main()

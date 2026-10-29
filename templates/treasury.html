@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .treasury-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+    .stat-card { background: white; padding: 30px; border-radius: 8px; border: 1px solid #ddd; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .stat-label { font-size: 0.75rem; color: #666; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+    .stat-value { font-size: 2.2rem; margin: 10px 0; font-weight: bold; color: #1072BA; }
+
+    table { width: 100%; background: white; border-radius: 8px; border-collapse: collapse; overflow: hidden; border: 1px solid #ddd; }
+    th { background: #f8f9fa; padding: 15px; text-align: left; color: #003366; font-size: 0.8rem; border-bottom: 2px solid #C5A059; }
+    td { padding: 15px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+</style>
+
+<div style="margin-bottom: 20px;">
+    <h2 style="color: #003366; margin: 0;">🏛️ CORPORATE TREASURY</h2>
+    <p style="color: #666; font-size: 0.8rem;">OFFICIAL RECORD OF COLLECTED SAAS REVENUE</p>
+</div>
+<div style="margin-top: 15px;">
+    <a href="{{ url_for('download_treasury_report') }}" style="background: #1A1A1A; color: #C5A059; text-decoration: none; padding: 10px 20px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; border: 1px solid #C5A059;">
+        📥 DOWNLOAD FINANCIAL STATEMENT (PDF)
+    </a>
+</div>
+<div class="treasury-grid">
+    <div class="stat-card" style="border-top: 5px solid #1072BA;">
+        <span class="stat-label">TOTAL LIFETIME EARNINGS</span>
+        <div class="stat-value">P{{ "{:,.2f}".format(history|sum(attribute='amount_withdrawn')) }}</div>
+    </div>
+    <div class="stat-card" style="border-top: 5px solid #4CAF50;">
+        <span class="stat-label">LAST COLLECTION</span>
+        {% if history %}
+            <div class="stat-value" style="color: #4CAF50;">P{{ "{:,.2f}".format(history[0].amount_withdrawn) }}</div>
+        {% else %}
+            <div class="stat-value">P0.00</div>
+        {% endif %}
+    </div>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>TIMESTAMP</th>
+            <th>ID</th>
+            <th>DESCRIPTION</th>
+            <th>AMOUNT</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in history %}
+        <tr>
+            <td>{{ entry.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>#LVT-{{ entry.id }}</td>
+            <td>{{ entry.description }}</td>
+            <td style="font-weight: bold; color: #1072BA;">+ P{{ "{:,.2f}".format(entry.amount_withdrawn) }}</td>
+        </tr>
+        {% endfor %}
+        {% if not history %}
+        <tr><td colspan="4" style="text-align: center; padding: 30px;">Vault is empty.</td></tr>
+        {% endif %}
+    </tbody>
+</table>
+{% endblock %}

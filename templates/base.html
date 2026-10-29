@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Laveto | System Restoration</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" href="data:,">
+
+    <style>
+        /* 1. THE OUTER VOID: Pushes everything away from screen edges */
+        html, body {
+            margin: 0 !important;
+            padding: 2vh 2vw !important; /* Creates top/bottom and left/right breathing room */
+            width: 100% !important;
+            height: 100vh !important; /* Locks the entire browser window height */
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important; /* Centers the fortress horizontally */
+            background-color: #050505 !important; /* Darker background outside the app */
+            color: #fff !important;
+            font-family: Arial, sans-serif !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important; /* Completely disables page-level scrolling */
+        }
+
+        /* 2. THE FORTRESS CONTAINER: Holds the actual app */
+        .laveto-fortress {
+            width: 100% !important;
+            max-width: 1600px !important; /* Prevents stretching on ultra-wide monitors */
+            height: 96vh !important; /* Locks dashboard height inside the void */
+            background-color: #0a0a0a !important; /* Dashboard background */
+            border: 1px solid #222 !important; /* Clean outer rim */
+            border-radius: 8px !important; /* Smooth corners */
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9) !important; /* Depth shadow */
+            overflow: hidden !important; /* Clips anything outside */
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            min-height: 0 !important; /* Ensures flex container can shrink properly */
+        }
+
+        /* Shielded Navigation Bar */
+        .master-top-nav {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            width: 100% !important;
+            background-color: #000 !important;
+            border-bottom: 2px solid #d4af37 !important;
+            padding: 15px 30px !important;
+            box-sizing: border-box !important;
+            flex-shrink: 0 !important; /* Prevents header from squishing */
+            z-index: 1000 !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8) !important;
+        }
+
+        .master-brand {
+            font-size: 1.5rem !important;
+            font-weight: 900 !important;
+            color: #fff !important;
+            text-decoration: none !important;
+            letter-spacing: 1px !important;
+        }
+
+        .master-brand span { color: #d4af37 !important; }
+
+        .master-nav-links {
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 20px !important;
+            align-items: center !important;
+            flex-wrap: wrap !important;
+        }
+
+        .master-nav-links a {
+            color: #fff !important;
+            text-decoration: none !important;
+            font-size: 0.85rem !important;
+            font-weight: bold !important;
+            display: flex !important;
+            align-items: center !important;
+            text-transform: uppercase !important;
+        }
+
+        .master-nav-links a:hover { color: #d4af37 !important; }
+
+        .master-logout {
+            color: #ff4c4c !important;
+            border: 1px solid #ff4c4c !important;
+            padding: 5px 12px !important;
+            border-radius: 4px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .master-logout:hover {
+            background-color: #ff4c4c !important;
+            color: #fff !important;
+        }
+
+        .master-badge {
+            background: #ff4c4c !important;
+            color: white !important;
+            padding: 2px 6px !important;
+            border-radius: 50% !important;
+            font-size: 0.7rem !important;
+            margin-left: 5px !important;
+            display: inline-block;
+        }
+
+        /* 🔔 RADAR NOTIFICATION HUB COMPONENT STYLES */
+        @keyframes radarPulseGlow {
+            0% { transform: scale(1); box-shadow: 0 0 4px #ff4c4c; }
+            100% { transform: scale(1.1); box-shadow: 0 0 12px #ff4c4c; }
+        }
+        .master-radar-container {
+            position: relative !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
+        }
+        .master-radar-btn {
+            background: transparent !important;
+            color: #fff !important;
+            border: 1px solid rgba(212, 175, 55, 0.4) !important;
+            padding: 6px 14px !important;
+            font-size: 0.8rem !important;
+            font-weight: bold !important;
+            border-radius: 4px !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            text-transform: uppercase !important;
+            gap: 6px !important;
+            font-family: Arial, sans-serif !important;
+            transition: all 0.2s ease !important;
+        }
+        .master-radar-btn:hover {
+            border-color: #d4af37 !important;
+            background: rgba(212, 175, 55, 0.05) !important;
+        }
+        .master-radar-drawer {
+            display: none;
+            position: absolute !important;
+            top: 135% !important;
+            right: 0 !important;
+            width: 320px;
+            background-color: #0a0a0a !important;
+            border: 1px solid #d4af37 !important;
+            border-radius: 4px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.95);
+            z-index: 999999 !important;
+            text-align: left;
+            overflow: hidden;
+        }
+
+        /* 🛡️ Tactical Sub-Nav Styling */
+        .admin-sub-nav-container { width: 100%; padding: 25px 30px 0 30px; box-sizing: border-box; flex-shrink: 0; }
+        .admin-sub-nav { background-color: #111; padding: 20px 25px; border-left: 6px solid #d4af37; border-radius: 2px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-top: 1px solid #222; border-right: 1px solid #222; border-bottom: 1px solid #222; }
+        .admin-sub-header { font-family: 'Courier New', monospace; font-size: 0.65rem; color: #cbd5e0; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 5px; }
+        .admin-sub-title { font-family: 'Arial Black', sans-serif; font-size: 1.4rem; color: #fff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; }
+        .admin-sub-title span { color: #d4af37; }
+        .admin-sub-buttons { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+        .admin-sub-buttons a { text-decoration: none; font-size: 0.75rem; font-weight: 800; padding: 8px 16px; border-radius: 3px; text-transform: uppercase; font-family: Arial, sans-serif; display: flex; align-items: center; gap: 5px; transition: all 0.2s ease; }
+        .btn-failed { background: #e60000; color: #fff; border: 1px solid #cc0000; box-shadow: 0 0 10px rgba(230,0,0,0.3); }
+        .btn-registry { background: #c5a059; color: #000; border: 1px solid #a38245; }
+        .btn-procurement { background: #222; color: #66b3ff; border: 1px solid #444; }
+        .btn-bay { background: #28a745; color: #fff; border: 1px solid #1e7e34; box-shadow: 0 0 10px rgba(40,167,69,0.3); }
+        .btn-treasury { background: #222; color: #eee; border: 1px solid #444; }
+        .btn-settings { background: #222; color: #aaa; border: 1px solid #444; }
+        .btn-payroll { background: #111; color: #28a745; border: 1px solid #28a745; }
+        .btn-logs { background: #1a1a1a; color: #d4af37; border: 1px solid #333; }
+        .btn-scripts { background: #000; color: #fff; border: 2px solid #333; font-family: 'Courier New', monospace; }
+        .btn-pin { background: #222; color: #d4af37; border: 1px solid #d4af37; }
+        .btn-photo { background: #222; color: #a38245; border: 2px dashed #d4af37; }
+        .btn-health { background: #111; color: #28a745; border: 1px solid #28a745; }
+        .btn-loans { background: #002244; color: #fff; border: 1px solid #001122; }
+        .btn-light { background: #222; color: #d4af37; border: 1px solid #444; }
+        .admin-sub-buttons a:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.5); filter: brightness(1.2); }
+
+        .flash-messages { width: 100% !important; text-align: center !important; padding: 10px !important; flex-shrink: 0 !important; }
+
+        /* 🚨 UNLOCKED SCROLLABLE CONTENT AREA */
+        .master-content-area {
+            width: 100% !important;
+            display: block !important;
+            padding: 20px 30px 30px 30px !important;
+            box-sizing: border-box !important;
+            flex: 1 1 auto !important; /* Replaces rigid grow to allow clean flexbox sizing */
+            min-height: 0 !important; /* Critical Fix: Allows content area to shrink below child height and scroll */
+            overflow-y: auto !important;
+        }
+
+        .master-content-area::-webkit-scrollbar { width: 8px; }
+        .master-content-area::-webkit-scrollbar-track { background: #0a0a0a; }
+        .master-content-area::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        .master-content-area::-webkit-scrollbar-thumb:hover { background: #d4af37; }
+
+        .action-panel { display: none; background: var(--input-bg); border: 1px solid var(--border-ui); padding: 15px; margin-top: 10px; border-radius: 2px; }
+        [id^="manual_upload_"] { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+    </style>
+</head>
+<body>
+
+    <div class="laveto-fortress">
+
+        <div class="master-top-nav">
+            <a href="{{ url_for('hangar.index') }}" style="text-decoration: none; display: inline-flex; align-items: center;">
+                <div style="font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1.2rem; letter-spacing: 2px;">
+                    <span style="color: #ffffff;">LAVETO</span><span style="color: var(--accent-gold, #f39c12);">LAB</span>
+                </div>
+            </a>
+            <div class="master-nav-links">
+                <a href="{{ url_for('hangar.index') }}">🏠 HOME</a>
+
+                {# RADAR INTEL DRAWER #}
+                <div class="master-radar-container">
+                    {% set intel_count = liq_count | default(0) %}
+                    <button type="button" id="masterRadarBtn" onclick="toggleRadarIntelDrawer()" class="master-radar-btn">
+                        <span>🔔 RADAR INTEL</span>
+                        <span id="masterRadarBadge" class="master-badge" style="{% if intel_count > 0 %}display: inline-block;{% else %}display: none;{% endif %} animation: radarPulseGlow 1.5s infinite alternate;">
+                            {{ intel_count }}
+                        </span>
+                    </button>
+
+                    <div id="masterRadarDrawer" class="master-radar-drawer">
+                        <div style="background-color: #000; padding: 10px 15px; border-bottom: 1px solid rgba(214, 175, 55, 0.2); display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: #ffffff; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Incoming Stream Registry</span>
+                            <span style="color: {% if intel_count > 0 %}#ff4d4d{% else %}#28a745{% endif %}; font-size: 0.6rem; font-family: monospace; font-weight: bold;">
+                                {% if intel_count > 0 %}⚠️ ALERTS DETECTED{% else %}SCANNING // LIVE{% endif %}
+                            </span>
+                        </div>
+
+                        <div id="masterRadarFeedRows" style="max-height: 400px; overflow-y: auto; background: #050505;">
+                            {% if intel_count == 0 %}
+                                <div style="padding: 30px 20px; text-align: center; color: #cbd5e0; font-size: 0.75rem; font-family: monospace;">
+                                    [ NETWORK LEAF STEADY // ZERO INTAKES ]
+                                </div>
+                            {% else %}
+
+                                {# ⚠️ EMERGENCY DEPLOYMENT #}
+                                {% for e in pending_deployments %}
+                                    <div style="padding: 15px; border-bottom: 1px solid rgba(255, 69, 0, 0.2); background: rgba(255, 69, 0, 0.05);">
+                                        <div style="color: #ff4500; font-family: 'Montserrat'; font-size: 0.7rem; font-weight: 900; text-transform: uppercase;">⚠️ Emergency Deployment</div>
+                                        <div style="color: #aaa; font-size: 0.6rem; font-family: monospace;">{{ e.details }}</div>
+                                    </div>
+                                {% endfor %}
+
+                                {# 🛞 TIRE HEALTH & REPLACEMENT #}
+                                {% for t in pending_tires %}
+                                    <div style="padding: 15px; border-bottom: 1px solid rgba(0, 188, 212, 0.2); background: rgba(0, 188, 212, 0.05);">
+                                        <div style="color: #00bcd4; font-family: 'Montserrat'; font-size: 0.7rem; font-weight: 900; text-transform: uppercase;">🛞 Tire Health: Critical</div>
+                                        <div style="color: #aaa; font-size: 0.6rem; font-family: monospace;">{{ t.vin_dna }} // Tread: {{ t.tread_depth }}mm</div>
+                                    </div>
+                                {% endfor %}
+
+                                {# 💎 VAULT FINANCIALS #}
+                                {% for v in vault_warnings %}
+                                    <div style="padding: 15px; border-bottom: 1px solid rgba(156, 39, 176, 0.2); background: rgba(156, 39, 176, 0.05);">
+                                        <div style="color: #ba68c8; font-family: 'Montserrat'; font-size: 0.7rem; font-weight: 900; text-transform: uppercase;">💎 Vault Financials: Alert</div>
+                                        <div style="color: #aaa; font-size: 0.6rem; font-family: monospace;">{{ v.intent }} // Bal: {{ v.running_balance }}</div>
+                                    </div>
+                                {% endfor %}
+
+                                {# ⚡ EMERGENCY LEVELS (FLICKERS) #}
+                                {% for f in pending_flickers %}
+                                    <div style="padding: 15px; border-bottom: 1px solid rgba(255, 165, 0, 0.2); background: rgba(255, 165, 0, 0.05);">
+                                        <div style="color: #ffa500; font-family: 'Montserrat'; font-size: 0.7rem; font-weight: 900; text-transform: uppercase;">⚡ Emergency Level: {{ f.severity }}</div>
+                                        <div style="color: #aaa; font-size: 0.6rem; font-family: monospace;">ID: {{ f.ledger_id }} // {{ f.timestamp.strftime('%H:%M:%S') }}</div>
+                                    </div>
+                                {% endfor %}
+
+                                {# 📅 WORKSHOP UPLINK #}
+                                {% for w in workshop_tasks %}
+                                    <div style="padding: 15px; border-bottom: 1px solid rgba(76, 175, 80, 0.2); background: rgba(76, 175, 80, 0.05);">
+                                        <div style="color: #66bb6a; font-family: 'Montserrat'; font-size: 0.7rem; font-weight: 900; text-transform: uppercase;">📅 Workshop Uplink</div>
+                                        <div style="color: #aaa; font-size: 0.6rem; font-family: monospace;">Task: {{ w.task_name }} // Due: {{ w.deadline }}</div>
+                                    </div>
+                                {% endfor %}
+
+                                {# 🏦 SOVEREIGN PAYROLL MATRIX #}
+                                {% for m in pending_mandates %}
+                                    <div style="padding: 15px; border-bottom: 1px solid rgba(214, 175, 55, 0.2); background: rgba(214, 175, 55, 0.05);">
+                                        <div style="color: var(--integrity-gold); font-family: 'Montserrat'; font-size: 0.7rem; font-weight: 900; text-transform: uppercase;">🏦 Payroll Matrix: P {{ "%.1f"|format(m.monthly_pledge) }}</div>
+                                        <div style="color: #aaa; font-size: 0.6rem; font-family: monospace;">{{ m.mandate_code }}</div>
+                                    </div>
+                                {% endfor %}
+
+                            {% endif %}
+                        </div>
+
+                        <div style="background: #000; padding: 10px; border-top: 1px solid rgba(214, 175, 55, 0.15); text-align: center;">
+                            <a href="{{ url_for('hangar.agent_terminal') }}" style="color: #d4af37 !important; font-size: 0.7rem !important; text-decoration: none !important;">Open Active Workspace ➔</a>
+                        </div>
+                    </div>
+                </div>
+
+                {# DYNAMIC NAV LINKS #}
+                {% if current_user.is_authenticated %}
+
+                    {# 🚨 THE UI IRON WALL: We strictly use the session role set securely in auth.py #}
+                    {% set safe_role = session.get('user_role', 'GUEST') | string | upper | trim %}
+
+                    {% if safe_role in ['ADMIN', 'ARCHITECT', 'MD'] %}
+                        <a href="{{ url_for('hangar.view_ledger') }}">📋 COMMAND WALL</a>
+                        <a href="{{ url_for('hangar.silk_road') }}">🌍 SILK ROAD</a>
+                        <a href="{{ url_for('hangar.corporate_treasury') }}">💰 TREASURY</a>
+                        <a href="{{ url_for('hangar.loan_terminal') }}">🏦 LOANS</a>
+                        <a href="{{ url_for('hangar.agent_terminal') }}">🛰️ HANGAR</a>
+
+                        <a href="{{ url_for('hangar.liquidation_view') }}">
+                            ⚖️ LIQUIDATION
+                            {% if (liq_count | default(0)) > 0 %}
+                                <span class="master-badge">{{ liq_count }}</span>
+                            {% endif %}
+                        </a>
+
+                        <a href="{{ url_for('hangar.audit_logs') }}">🔍 AUDIT</a>
+
+                    {% elif safe_role in ['WARDEN', 'AGENT'] %}
+                        <a href="{{ url_for('hangar.agent_terminal') }}">🛰️ HANGAR</a>
+                    {% else %}
+                        <a href="{{ url_for('hangar.agent_terminal') }}">🛰️ HANGAR</a>
+                    {% endif %}
+
+                    <a href="{{ url_for('auth.logout') }}" class="master-logout">🔒 LOGOUT</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" style="color: #d4af37;">🔐 ADMIN LOGIN</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div style="margin: 5px auto; max-width: 800px; padding: 10px; border-radius: 5px; background: #333; border-left: 4px solid #d4af37;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="master-content-area">
+
+            {# 🚨 THE PHASE III COMMAND NAVIGATION (Restricted to Command Staff) #}
+            {% if current_user.is_authenticated and session.get('user_role', 'GUEST') | string | upper | trim in ['ADMIN', 'ARCHITECT', 'MD'] %}
+            <div style="background: #111; padding: 15px 30px; border-radius: 8px; display: flex; gap: 20px; margin-bottom: 30px; border-left: 4px solid #d4af37; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                <div style="color: #cbd5e0; font-family: monospace; font-size: 0.85rem; display: flex; align-items: center; margin-right: auto;">
+                    PHASE III // SOVEREIGN 500 CONTROL
+                </div>
+                   <button type="button" onclick="safeExecuteThemeToggle()" id="themeToggleBtn" class="theme-toggle-command" style="background: var(--card-bg); border: 1px solid var(--border-ui); color: var(--text-main); padding: 9px 15px; border-radius: 4px; font-weight: 900; font-size: 0.7rem; cursor: pointer; text-transform: uppercase; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">☀️ LIGHT MODE</button>
+                <a href="{{ url_for('audit.inspection_manifest') }}" style="background: #d4af37; color: #000; text-decoration: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; transition: 0.3s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">
+                    🔍 Inspection Manifest
+                </a>
+                <a href="{{ url_for('hangar.verification_queue') }}" style="background: #ffc107; color: #000; text-decoration: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; transition: 0.3s;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='brightness(1)'">
+                    🛡️ Audit Queue
+                </a>
+                <a href="{{ url_for('hangar.active_roster') }}" style="background: #0033a0; color: white; text-decoration: none; padding: 8px 16px; border-radius: 4px; font-weight: bold; font-size: 0.9rem; border: 1px solid #0044cc; transition: 0.3s;" onmouseover="this.style.filter='brightness(1.2)'" onmouseout="this.style.filter='brightness(1)'">
+                    ⚙️ Active Roster (The 500)
+                </a>
+            </div>
+            {% endif %}
+
+            {# ONLY ONE CONTENT BLOCK ALLOWED #}
+            {% block content %}{% endblock %}
+
+            {# ONLY ONE FOOTER ALLOWED #}
+            <footer style="background-color: #050505; border-top: 2px solid #C5A059; padding: 40px 20px; color: #cbd5e0; font-family: 'Courier Prime', monospace; margin-top: 60px;">
+                <div style="max-width: 900px; margin: 0 auto;">
+
+                    <h3 style="color: #C5A059; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 20px;">
+                        LAVETO PTY LTD – OFFICIAL LEGAL DISCLAIMER & LIABILITY SHIELD
+                    </h3>
+
+                    <div style="font-size: 0.75rem; line-height: 1.6; color: #e2e8f0; text-align: justify;">
+                        <p><strong>1. Nature of Service (Not an Insurance Provider):</strong> Laveto Pty Ltd operates as a Sovereign SaaS & Logistics Guild providing Forensic Quality Management. Laveto does not indemnify loss, damage, or injury in the manner of an insurance carrier. While our strict inspection protocols drastically reduce mechanical risk, we cannot guarantee that a vehicle will never experience unforeseen mechanical failures.</p>
+
+                        <p><strong>2. Forensic Curator Status & Primary Liability:</strong> Laveto acts strictly as a digital service auditor and Forensic Curator. We do not perform physical labor, nor do we direct or execute the physical labor of the workshop mechanics. The third-party Certified Hub Partner (the workshop executing the labor) bears sole and exclusive liability for the quality of their workmanship, safety compliance, torque specifications, and any physical damage to the vehicle while in their care.</p>
+
+                        <p><strong>3. No Warranty of Roadworthiness:</strong> Laveto Pty Ltd expressly disclaims any and all warranties, express or implied, regarding the roadworthiness, safety, or fitness for purpose of any vehicle that has undergone restoration under our protocols. The Digital Safety Passport is a record of forensic verification, not a guarantee of future performance.</p>
+
+                        <p><strong>4. Member Indemnification & Duty of Care:</strong> The Member retains full responsibility for the safe operation of their vehicle, compliance with all applicable traffic and safety regulations, and regular inspection between restoration phases. By utilizing Laveto's digital platform and management services, users agree to indemnify and hold Laveto Pty Ltd harmless from any claims, damages, or liabilities arising from the physical condition of the vehicle, the manual labor performed by Hub Partners, or the use of the vehicle after repairs are completed.</p>
+                    </div>
+
+                    <div style="margin-top: 30px; font-size: 0.65rem; color: #a0a0a0; text-align: center; border-top: 1px solid #222; padding-top: 20px;">
+                        © 2026 Laveto Pty Ltd. All Forensic Rights Reserved. | Gaborone, Botswana
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+  <script>
+    // --- UI HELPERS ---
+    function toggleActionPanel(id) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+    }
+
+    function toggleBox(id) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+    }
+
+    // --- RADAR ENGINE ---
+    window.toggleRadarIntelDrawer = function() {
+        const drawer = document.getElementById('masterRadarDrawer');
+        const btn = document.getElementById('masterRadarBtn');
+        if (!drawer || !btn) return;
+        const isHidden = (drawer.style.display === 'none' || drawer.style.display === '');
+        drawer.style.display = isHidden ? 'block' : 'none';
+        btn.style.background = isHidden ? 'rgba(212, 175, 55, 0.15)' : 'transparent';
+    };
+
+    // --- NEW: ABORT PROTOCOL ---
+    window.abortRadarAlert = function(vin) {
+        if(confirm(`⚠️ COMMAND OVERRIDE: Are you sure you want to abort the MAYDAY alert for asset [${vin}]?`)) {
+            const badge = document.getElementById('masterRadarBadge');
+            const feedRows = document.getElementById('masterRadarFeedRows');
+
+            if (badge) badge.style.display = 'none';
+            if (feedRows) feedRows.innerHTML = '<div style="padding:30px 20px; text-align:center; color:#cbd5e0; font-size:0.75rem; font-family:monospace;">[ ALERT OVERRIDDEN // STANDING BY ]</div>';
+
+            fetch(`/api/resolve_alert/${vin}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json'
+                }
+            }).catch(err => console.error("Radar Sync Error:", err));
+        }
+    };
+
+    window.executeLiveRadarNetworkScan = function() {
+        const payloadEl = document.getElementById('radar-data-payload');
+        if (!payloadEl) return;
+
+        const data = JSON.parse(payloadEl.textContent);
+        const badge = document.getElementById('masterRadarBadge');
+        const feedRows = document.getElementById('masterRadarFeedRows');
+
+        if (data.triage_count > 0) {
+            badge.innerText = data.triage_count;
+            badge.style.display = 'inline-block';
+
+            let vinData = data.triage_vin || 'AWAITING VIN DNA...';
+            let nameData = data.triage_name || 'UNKNOWN CLIENT';
+            let triggerData = data.triage_trigger || 'SYSTEM CRITICAL EVENT';
+
+            let timeOpts = { timeZone: 'Africa/Gaborone', hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            let timeData = data.triage_time || new Date().toLocaleTimeString('en-US', timeOpts) + ' CAT';
+
+            let isIntake = triggerData.toUpperCase().includes('INTAKE');
+
+            if (isIntake) {
+                badge.style.background = '#66b3ff';
+                badge.style.boxShadow = '0 0 10px #66b3ff';
+
+                feedRows.innerHTML = `
+                    <div style="padding:15px; border-left: 3px solid #66b3ff; border-bottom: 1px solid #222; background: rgba(0, 51, 160, 0.1);">
+                        <div style="font-weight:900; color:#66b3ff; font-size:0.75rem; margin-bottom: 5px; display: flex; justify-content: space-between;">
+                            <span>📋 NEW ASSET: ${data.triage_count} PENDING</span>
+                            <span style="color: #aaa; font-family: monospace; font-size: 0.6rem;">${timeData}</span>
+                        </div>
+                        <div style="color: #d4af37; font-family: 'Courier Prime', monospace; font-size: 0.85rem; font-weight: bold; margin-bottom: 2px;">${vinData}</div>
+                        <div style="color: #888; font-family: sans-serif; font-size: 0.65rem; margin-bottom: 10px;">${nameData} | [ ${triggerData} ]</div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid #333;">
+                            <span style="color: #888; font-family: monospace; font-size: 0.7rem;">AWAITING COMMAND REVIEW</span>
+                            <button onclick="abortRadarAlert('${vinData}')" style="background: #222; border: 1px solid #444; color: #aaa; padding: 4px 8px; border-radius: 2px; font-size: 0.65rem; font-weight: bold; cursor: pointer; text-transform: uppercase; font-family: sans-serif; transition: 0.3s;" onmouseover="this.style.color='#fff'; this.style.borderColor='#66b3ff';" onmouseout="this.style.color='#aaa'; this.style.borderColor='#444';">DISMISS NOTIFICATION</button>
+                        </div>
+                    </div>
+                `;
+
+            } else {
+                badge.style.background = '#ff4c4c';
+                badge.style.boxShadow = '0 0 12px #ff4c4c';
+
+                let apiKey = "{{ config.GOOGLE_MAPS_API_KEY | default('', true) }}";
+                let mapSrc = apiKey
+                    ? `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${data.triage_lat},${data.triage_lon}`
+                    : `https://maps.google.com/maps?q=${data.triage_lat},${data.triage_lon}&hl=en&z=14&output=embed`;
+
+                let mapHtml = (data.triage_lat && data.triage_lon) ?
+                    `<iframe src="${mapSrc}" width="100%" height="150" style="border:0; margin-bottom: 10px;" allowfullscreen=""></iframe>`
+                    : '<div style="color:red; font-size:0.7rem; font-family:monospace; padding-bottom: 10px; border-bottom: 1px solid #333;">⚠️ NO GPS TELEMETRY AVAILABLE</div>';
+
+                let phoneData = data.triage_phone ? data.triage_phone.replace(/[^0-9]/g, '') : '';
+                let contactHtml = phoneData ?
+                    `<a href="https://wa.me/${phoneData}?text=🚨%20LAVETO%20COMMAND:%20Emergency%20beacon%20received.%20Field%20Agent%20dispatched." target="_blank" style="color: #ffcc00; text-decoration: none; font-family: monospace; font-size: 0.8rem; font-weight: bold;">🔔 PING MEMBER</a>`
+                    : `<span style="color: #888; font-family: monospace; font-size: 0.7rem;">NO CONTACT DATA - <a href="{{ url_for('hangar.agent_terminal') }}" style="color: #dc3545; text-decoration: none; font-weight: bold;">🕵️‍♂️ SCRAMBLE</a></span>`;
+
+                feedRows.innerHTML = `
+                    <div style="padding:15px; border-left: 3px solid #ff4c4c; border-bottom: 1px solid #222;">
+                        <div style="font-weight:900; color:#ff4c4c; font-size:0.75rem; margin-bottom: 5px; display: flex; justify-content: space-between;">
+                            <span>🚨 MAYDAY: ${data.triage_count} ACTIVE</span>
+                            <span style="color: #aaa; font-family: monospace; font-size: 0.6rem;">${timeData}</span>
+                        </div>
+                        <div style="color: #d4af37; font-family: 'Courier Prime', monospace; font-size: 0.85rem; font-weight: bold; margin-bottom: 2px;">${vinData}</div>
+                        <div style="color: #888; font-family: sans-serif; font-size: 0.65rem; margin-bottom: 10px;">${nameData} | [ ${triggerData} ]</div>
+                        ${mapHtml}
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid #333;">
+                            ${contactHtml}
+                            <button onclick="abortRadarAlert('${vinData}')" style="background: transparent; border: 1px solid #ff4c4c; color: #ff4c4c; padding: 4px 8px; border-radius: 2px; font-size: 0.65rem; font-weight: bold; cursor: pointer; text-transform: uppercase; font-family: sans-serif; transition: 0.3s;" onmouseover="this.style.background='rgba(255, 76, 76, 0.1)';" onmouseout="this.style.background='transparent';">🛑 ABORT</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+        } else {
+            badge.style.display = 'none';
+            feedRows.innerHTML = '<div style="padding:30px 20px; text-align:center; color:#cbd5e0; font-size:0.75rem; font-family:monospace;">[ NETWORK LEAF STEADY // ZERO INTAKES ]</div>';
+        }
+    };
+    {% include 'spark_drawer.html' %}
+<script src="{{ url_for('static', filename='js/spark_assistant.js') }}"></script>
+</script>
+</body>
+</html>

@@ -1,0 +1,376 @@
+{% set asset = asset if asset is defined and asset else (mandate.ledger if mandate is defined and mandate else None) %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A.G. Mandate - {{ asset.vin_dna if asset else 'Error' }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Montserrat:wght@400;700;900&display=swap');
+
+        /* A4 Paper Reset */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a0a;
+            font-family: 'Montserrat', sans-serif;
+            color: #111;
+        }
+
+        /* The physical "Paper" */
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 10mm auto;
+            border: 1px solid #D3D3D3;
+            border-radius: 5px;
+            background: white;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #C5A059;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .logo-img {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 900;
+            color: #0033a0;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 5px;
+            color: #C5A059;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .doc-id {
+            font-family: 'Courier Prime', monospace;
+            font-size: 10px;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .content {
+            font-size: 13px;
+            line-height: 1.8;
+            text-align: justify;
+            position: relative;
+            z-index: 10;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            background: white;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border: 1px solid #ccc;
+            font-size: 13px;
+        }
+
+        .data-table td.label {
+            font-weight: 700;
+            background-color: #f9f9f9;
+            width: 35%;
+            color: #333;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        .data-table td.value {
+            font-family: 'Courier Prime', monospace;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .covenant-box {
+            margin-top: 30px;
+            padding: 20px;
+            border-left: 4px solid #0033a0;
+            background-color: #f4f7fb;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .signatures {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .sig-line {
+            width: 45%;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            text-align: left;
+            position: relative;
+        }
+
+        .sig-line p {
+            margin: 0;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .sig-line span {
+            font-family: 'Courier Prime', monospace;
+            font-size: 10px;
+            color: #666;
+        }
+
+        .client-signature-img {
+            position: absolute;
+            bottom: 25px;
+            left: 0;
+            max-height: 70px;
+            width: auto;
+            mix-blend-mode: multiply;
+        }
+
+        /* Laveto Authority Wet Ink Stamp */
+        .official-stamp {
+            position: absolute;
+            bottom: 5px;
+            right: 15px;
+            width: 85px;
+            height: 85px;
+            border: 3px solid rgba(0, 51, 160, 0.75);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transform: rotate(-12deg);
+            opacity: 0.85;
+            mix-blend-mode: multiply;
+            pointer-events: none;
+        }
+
+        .official-stamp .stamp-text-top {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 8px;
+            color: rgba(0, 51, 160, 0.8);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .official-stamp .stamp-date {
+            font-family: 'Courier Prime', monospace;
+            font-size: 11px;
+            font-weight: bold;
+            color: rgba(197, 160, 89, 1);
+            border-top: 1px dotted rgba(0, 51, 160, 0.5);
+            border-bottom: 1px dotted rgba(0, 51, 160, 0.5);
+            margin: 4px 0;
+            padding: 2px 5px;
+        }
+
+        .official-stamp .stamp-text-bottom {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 8px;
+            color: rgba(0, 51, 160, 0.8);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 120px;
+            color: rgba(197, 160, 89, 0.08);
+            font-weight: 900;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .print-btn {
+            display: block;
+            width: 210mm;
+            margin: 20px auto;
+            background: #0033a0;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            transition: 0.3s;
+        }
+
+        .print-btn:hover {
+            background: #002266;
+            box-shadow: 0 0 15px rgba(0, 51, 160, 0.5);
+        }
+
+        .error-box {
+            width: 210mm;
+            margin: 50px auto;
+            background: #ffebeb;
+            border: 1px solid #ff4444;
+            color: #cc0000;
+            padding: 30px;
+            border-radius: 4px;
+            font-family: 'Montserrat', sans-serif;
+            text-align: center;
+        }
+
+        /* Hide elements when actually printing */
+        @media print {
+            body { background: white; }
+            .page { margin: 0; border: none; box-shadow: none; padding: 0; }
+            .print-btn { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    {% if message %}
+        <div class="error-box">
+            <h2 style="margin-top: 0; font-weight: 900; letter-spacing: 1px;">🚨 SYSTEM NOTIFICATION</h2>
+            <p style="font-family: 'Courier Prime', monospace;">{{ message }}</p>
+            <a href="/hangar/forge-payroll-mandate" style="display: inline-block; margin-top: 20px; background: #cc0000; color: white; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 2px;">RETURN TO DASHBOARD</a>
+        </div>
+
+    {% elif mandate and asset %}
+        <!-- 🧭 SMART NAVIGATION HEADER -->
+<div style="display: flex; gap: 15px; max-width: 800px; margin: 20px auto; flex-wrap: wrap; box-sizing: border-box; padding: 0 15px;">
+
+    <!-- Extract the VIN directly from the current URL to guarantee perfect routing -->
+    {% set target_vin = request.path.split('/')[-1] %}
+
+    {% if current_user.is_authenticated and current_user.role == 'admin' %}
+        <!-- ADMIN ROUTE: Returns Commander to the Clearinghouse/Ledger -->
+        <a href="{{ url_for('hangar.clearinghouse') }}" style="flex: 1; min-width: 200px; text-align: center; text-decoration: none; background: #111; border: 1px solid var(--border-ui, #30363d); color: var(--text-muted, #8b949e); padding: 15px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px; transition: 0.3s; box-sizing: border-box;" onmouseover="this.style.borderColor='var(--integrity-gold, #ffd700)'; this.style.color='var(--integrity-gold, #ffd700)';" onmouseout="this.style.borderColor='var(--border-ui, #30363d)'; this.style.color='var(--text-muted, #8b949e)';">
+            ⬅ RETURN TO COMMAND
+        </a>
+    {% else %}
+        <!-- PILOT ROUTE: Returns Asset Owner to the Client Vault -->
+        <a href="{{ url_for('hangar.client_vault', asset_id=target_vin) }}" style="flex: 1; min-width: 200px; text-align: center; text-decoration: none; background: #111; border: 1px solid var(--border-ui, #30363d); color: var(--text-muted, #8b949e); padding: 15px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; border-radius: 4px; transition: 0.3s; box-sizing: border-box;" onmouseover="this.style.borderColor='var(--integrity-gold, #ffd700)'; this.style.color='var(--integrity-gold, #ffd700)';" onmouseout="this.style.borderColor='var(--border-ui, #30363d)'; this.style.color='var(--text-muted, #8b949e)';">
+            ⬅ RETURN TO VAULT
+        </a>
+    {% endif %}
+
+    <!-- EXISTING PRINT BUTTON -->
+    <button onclick="window.print()" style="flex: 2; min-width: 250px; background: var(--sanctified-blue, #0033a0); color: white; border: none; padding: 15px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border-radius: 4px; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,51,160,0.4); box-sizing: border-box;" onmouseover="this.style.background='#0040cc'" onmouseout="this.style.background='var(--sanctified-blue, #0033a0)'">
+        🖨️ PRINT OFFICIAL MANDATE TO PDF
+    </button>
+</div>
+
+        <div class="page">
+            <div class="watermark">LAVETO VERIFIED</div>
+
+            <div class="header">
+                <img src="{{ url_for('static', filename='Laveto_logo-01.png') }}" alt="Laveto Crest" class="logo-img">
+                <div class="logo-text">LAVETO SYSTEM RESTORATION</div>
+                <div class="title">Sovereign Payroll Deduction Mandate</div>
+                <div class="doc-id">DOC ID: {{ mandate.mandate_code }} // REF: {{ mandate.date_issued.strftime('%Y%m%d') if mandate.date_issued else 'N/A' }}</div>
+            </div>
+
+            <div class="content">
+                <p><strong>TO: THE ACCOUNTANT GENERAL, GOVERNMENT OF BOTSWANA.</strong></p>
+                <p>I hereby authorize the periodic deduction of capital from my salary as specified below, for allocation into my secure Sovereign OS Asset Maintenance Vault managed by Laveto Pty Ltd.</p>
+
+                <table class="data-table">
+                    <tr>
+                        <td class="label">Sovereign Member (Pilot)</td>
+                        <td class="value">{{ asset.member_name|upper }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Vehicle VIN (DNA)</td>
+                        <td class="value">{{ asset.vin_dna }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Employer</td>
+                        <td class="value">{{ mandate.employer_name|upper if mandate.employer_name else 'GOVERNMENT OF BOTSWANA' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Ministry / Department</td>
+                        <td class="value">{{ mandate.department|upper }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Omang Number</td>
+                        <td class="value">{{ mandate.omang_number }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Employee / Payroll ID</td>
+                        <td class="value">{{ mandate.employee_number }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Monthly Allocation</td>
+                        <td class="value" style="color: #0033a0; font-size: 18px;">P {{ "{:,.2f}".format((mandate.monthly_pledge or 0) | float) }}</td>
+                    </tr>
+                </table>
+
+                <div class="covenant-box">
+                    <strong>LEGAL COVENANT:</strong> I acknowledge that 100% of my monthly deposit is allocated to my personal reservoir (60% Compounding Yield Pool / 40% Shield Reservoir). This mandate remains active and locked under the jurisdiction of the Sovereign OS Hangar 01 framework.
+                </div>
+
+                <div class="signatures">
+                    <div class="sig-line">
+                        <br><br><br>
+                        {% if mandate.signature_data %}
+                            <img src="{{ mandate.signature_data }}" alt="Digital Signature" class="client-signature-img">
+                        {% endif %}
+                        <p>MEMBER SIGNATURE</p>
+                        <span>Pilot: {{ asset.member_name|upper }}</span>
+                    </div>
+
+                    <div class="sig-line">
+                        <br><br><br>
+                        <div class="official-stamp">
+                            <span class="stamp-text-top">LAVETO SYSTEM</span>
+                            <span class="stamp-date">{{ mandate.date_issued.strftime('%Y-%m-%d') if mandate.date_issued else 'VERIFIED' }}</span>
+                            <span class="stamp-text-bottom">AUTHORITY</span>
+                        </div>
+
+                        <p>COMMAND AUTHORIZATION</p>
+                        <span>Laveto System Restoration</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <div class="error-box" style="border-color: #ffaa00; background: #fffcf0; color: #cc8800;">
+            <h2 style="margin-top: 0; font-weight: 900; letter-spacing: 1px;">⚠️ ASSET LINK BROKEN</h2>
+            <p style="font-family: 'Courier Prime', monospace;">The mandate was found, but the Sovereign Ledger connection could not be resolved. The document cannot render without Asset DNA.</p>
+            <a href="/hangar/forge-payroll-mandate" style="display: inline-block; margin-top: 20px; background: #ffaa00; color: #000; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 2px;">RETURN TO DASHBOARD</a>
+        </div>
+    {% endif %}
+
+</body>
+</html>

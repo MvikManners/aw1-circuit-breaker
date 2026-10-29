@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Laveto Manifesto // System Restoration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@1,400;1,700&family=Courier+Prime:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0A0A0A;
+            --text-color: #F9F9F9;
+            --sanctified-blue: #003366;
+            --integrity-gold: #C5A059;
+            --border-color: #222222;
+        }
+
+        html, body {
+            margin: 0; padding: 0; background-color: var(--bg-color);
+            color: var(--text-color); font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        /* --- CYBER GRID BACKGROUND --- */
+        .manifesto-container {
+            min-height: 100vh;
+            position: relative;
+            padding: 80px 10%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .cyber-grid {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            overflow: hidden; pointer-events: none; z-index: 0;
+        }
+        .cyber-grid::before {
+            content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background-image: linear-gradient(var(--integrity-gold) 1px, transparent 1px),
+                              linear-gradient(90deg, var(--integrity-gold) 1px, transparent 1px);
+            background-size: 80px 80px; opacity: 0.05;
+        }
+
+        /* --- CONTENT ARCHITECTURE --- */
+        .content-layer { position: relative; z-index: 1; max-width: 900px; width: 100%; }
+
+        .manifesto-header { border-bottom: 2px solid var(--integrity-gold); padding-bottom: 40px; margin-bottom: 60px; text-align: left; }
+        .manifesto-header h1 {
+            font-family: 'Montserrat', sans-serif; font-size: 3.5rem; text-transform: uppercase;
+            letter-spacing: 5px; margin: 0; line-height: 0.9;
+        }
+        .manifesto-header p {
+            font-family: 'Courier Prime', monospace; color: var(--integrity-gold);
+            font-size: 0.9rem; margin-top: 20px; text-transform: uppercase;
+        }
+
+        .doctrine-section { margin-bottom: 80px; }
+        .doctrine-section h2 {
+            font-family: 'Montserrat', sans-serif; color: var(--integrity-gold);
+            font-size: 1.2rem; letter-spacing: 3px; text-transform: uppercase;
+            margin-bottom: 25px; border-left: 4px solid var(--integrity-gold); padding-left: 20px;
+        }
+        .doctrine-section p {
+            font-size: 1.25rem; line-height: 1.8; color: #ccc; font-weight: 300; margin-bottom: 30px;
+        }
+
+        .highlight-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            margin: 40px 0;
+            border-radius: 4px;
+        }
+        .highlight-box strong { color: white; display: block; margin-bottom: 10px; font-family: 'Montserrat'; }
+
+        /* 🏛️ FOUNDER SECTION STYLING */
+        .founder-message {
+            background: rgba(197, 160, 89, 0.03);
+            border: 1px solid var(--integrity-gold);
+            padding: 60px;
+            margin-top: 100px;
+            position: relative;
+        }
+        .founder-message h2 { border: none; padding: 0; margin-bottom: 40px; text-align: center; }
+        .founder-message p { font-style: italic; font-size: 1.1rem; text-align: center; color: #eee; }
+
+        .signature-block {
+            margin-top: 50px;
+            text-align: center;
+        }
+        .signature-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            color: var(--integrity-gold);
+            font-style: italic;
+        }
+        .founder-title {
+            font-family: 'Courier Prime';
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 10px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .btn-return {
+            display: inline-block;
+            margin-top: 60px;
+            padding: 15px 30px;
+            border: 1px solid #444;
+            color: #666;
+            text-decoration: none;
+            font-family: 'Montserrat';
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.3s;
+        }
+        .btn-return:hover { border-color: var(--integrity-gold); color: var(--integrity-gold); }
+
+        @media (max-width: 768px) {
+            .manifesto-header h1 { font-size: 2.2rem; }
+            .manifesto-container { padding: 40px 5%; }
+            .founder-message { padding: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cyber-grid"></div>
+
+    <div class="manifesto-container">
+        <div class="content-layer">
+
+            <header class="manifesto-header">
+                <p>🛰️ Core Directive 001</p>
+                <h1>The Laveto <br>Manifesto.</h1>
+            </header>
+
+            <section class="doctrine-section">
+                <h2>I. The Death of Depreciation</h2>
+                <p>For decades, the automotive repair industry has trained the public to accept <strong>unpredictable breakdowns</strong> and hidden costs as an inevitable part of owning a car. We are told that a vehicle is a "depreciating liability"—a machine destined to drain your wallet.</p>
+                <p>Laveto System Restoration rejects this premise. Through disciplined engineering and transparent service history, we transform the vehicle into a <strong>Managed Asset</strong>: a reliable machine that holds its value through undeniable proof of care.</p>
+            </section>
+
+            <div class="highlight-box">
+                <strong>THE 15% RESALE PREMIUM</strong>
+                <p style="font-size: 1rem; color: #888;">Vehicles maintained within the Laveto System do not compete with the standard used car market. They exist in an elite tier of verified reliability. This documented history commands a proven 15% valuation premium when it is time to sell.</p>
+            </div>
+
+            <section class="doctrine-section">
+                <h2>II. Verified Restoration</h2>
+                <p>We do not perform "quick fixes." Quick fixes are temporary patches applied to symptoms. We perform <strong>Verified Restoration</strong>.</p>
+                <p>Restoration is the process of rescuing a vehicle from unregulated garages and returning it to factory standards. Every part, every fluid, and every inspection photo is permanently logged in the <strong>Digital Service Record</strong>.</p>
+            </section>
+
+            <section class="doctrine-section">
+                <h2>III. The Maintenance Fund</h2>
+                <p>A vehicle without a repair budget is a liability. A vehicle backed by a <strong>Maintenance Fund</strong> is secure.</p>
+                <p>By attaching a dedicated savings account directly to your vehicle's VIN, we ensure its future is already paid for. You no longer need to fear unexpected breakdowns; the vehicle is self-sustaining, actively earning interest, and always ready for the road.</p>
+            </section>
+
+            <!-- 🛑 SURGICAL WELD: FOUNDER'S VISION SECTION -->
+            <section class="founder-message">
+                <h2>IV. A Message from the Architect</h2>
+                <p>
+                    "I built Laveto because Gaborone is full of 'Sharks.' I watched too many people pay the 'Teacher Tax'—a premium charged to those who don't understand engines, resulting in unverified parts and vague promises.
+                </p>
+                <p>
+                    This system was not built to be a high-volume garage. It was built to be a sanctuary. We have capped our membership at exactly 500 vehicles because true mechanical integrity and zero-trust verification cannot be mass-produced.
+                </p>
+                <p>
+                    When you enter the Laveto System, you are choosing to exit the cycle of repair chaos and enter a world of mathematical certainty. I personally guarantee that every bolt tightened and every Pula saved is protected by the architecture of Gospel OS."
+                </p>
+
+                <div class="signature-block">
+                    <div class="signature-text">Manners Vela Ikhutseng</div>
+                    <div class="founder-title">Founder & Chief Architect</div>
+                </div>
+            </section>
+
+            <footer style="text-align: center;">
+                <a href="{{ url_for('hangar.index') }}" class="btn-return">← Return to Laveto Hub</a>
+            </footer>
+
+        </div>
+    </div>
+
+</body>
+</html>

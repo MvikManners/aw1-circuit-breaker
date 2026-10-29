@@ -1,0 +1,44 @@
+<div class="intake-zone" style="margin-bottom: 25px;">
+    <div class="zone-label">Member Identity Link</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="member_name_input">MEMBER FULL NAME</label>
+            <input type="text" id="member_name_input" name="member_name" class="fat-input" placeholder="ENTER FULL NAME" required autocomplete="off">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="member_phone_input">CONTACT NUMBER</label>
+            <input type="text" id="member_phone_input" name="member_phone" class="fat-input" placeholder="E.G. +267 XXXXXXXX" required autocomplete="off">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="member_email_input">MEMBER EMAIL ADDRESS</label>
+            <input type="email" id="member_email_input" name="member_email" class="fat-input" placeholder="NAME@DOMAIN.COM" required autocomplete="off">
+        </div>
+    </div>
+</div>
+
+<div class="intake-zone">
+    <div class="zone-label">Asset DNA Classification</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="vehicle_make_input">1. MAKE</label>
+            <select id="vehicle_make_input" name="vehicle_make" required onchange="handleMakeChange()">
+                <option value="">-- SELECT MAKE --</option>
+                <option value="TOYOTA">TOYOTA</option>
+                <option value="BMW">BMW</option>
+            </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="vehicle_model_input">2. MODEL</label>
+            <select id="vehicle_model_input" name="vehicle_model" required disabled onchange="handleModelChange()">
+                <option value="">-- SELECT MODEL --</option>
+            </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label for="vehicle_year_input">3. YEAR</label>
+            <select id="vehicle_year_input" name="vehicle_year" required disabled onchange="handleYearChange()">
+                <option value="">-- SELECT YEAR --</option>
+            </select>
+        </div>
+    </div>
+    <input type="hidden" name="vehicle_class" id="classSelect" value="">
+</div>

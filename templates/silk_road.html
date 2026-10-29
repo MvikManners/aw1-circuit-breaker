@@ -1,0 +1,998 @@
+{% extends "base.html" %}
+{% block content %}
+
+<a href="{{ url_for('auth.logout') }}" style="position: fixed; top: 20px; right: 30px; background-color: #8B0000; color: #ffffff; padding: 12px 24px; text-decoration: none; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; border-radius: 3px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); z-index: 9999; border: 1px solid #ff4444; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#550000'" onmouseout="this.style.backgroundColor='#8B0000'">
+    ⏏️ SECURE EGRESS
+</a>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+    :root {
+        /* 🎨 BRAND COLORS */
+        --sanctified-blue: #003366;
+        --integrity-gold: #C5A059;
+        --integrity-green: #28a745;
+        --critical-red: #ff0000;
+        --bg-main: #0a0a0a;
+        --panel-bg: #111111;
+        --border-ui: #333333;
+        --whatsapp-green: #25D366;
+        --text-main: #f9f9f9;
+        --card-bg: #1a1a1a;
+        --input-bg: #000000;
+        --gold-text: #C5A059;
+    }
+
+    [data-theme="light"] {
+        --bg-main: #f4f6f8;
+        --text-main: #1a1a1a;
+        --panel-bg: #ffffff;
+        --card-bg: #ffffff;
+        --border-ui: #dddddd;
+        --input-bg: #f9f9f9;
+        --gold-text: #A37A2C;
+    }
+    body { background-color: var(--bg-main); color: var(--text-main); font-family: 'Inter', sans-serif; transition: background-color 0.4s ease, color 0.4s ease; }
+
+    .header-panel { background: var(--panel-bg); border-left: 5px solid var(--integrity-gold); padding: 20px; border-radius: 6px; border: 1px solid var(--border-ui); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; transition: 0.3s; }
+
+    .theme-toggle-btn {
+        background: transparent; border: 1px solid var(--integrity-gold);
+        color: var(--integrity-gold); padding: 5px 12px; border-radius: 2px;
+        font-size: 0.65rem; font-weight: bold; cursor: pointer; text-transform: uppercase;
+        font-family: 'Montserrat', sans-serif; transition: 0.3s; margin-left: 15px;
+    }
+    .theme-toggle-btn:hover { background: var(--integrity-gold); color: #000; }
+
+    .ghost-card { background: var(--card-bg); border: 1px solid var(--border-ui); border-radius: 6px; padding: 20px; margin-bottom: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: 0.3s; position: relative; }
+    .ghost-card:hover { border-color: var(--integrity-gold); }
+
+    .status-AWAITING { border-left: 5px solid var(--critical-red) !important; }
+    .status-CLEARED { border-left: 5px solid var(--integrity-gold) !important; }
+    .status-TRANSIT { border-left: 5px solid var(--sanctified-blue) !important; }
+    .status-DELIVERED { border-left: 5px solid var(--integrity-green) !important; }
+    .status-PENDING { border-left: 5px solid #555 !important; }
+
+    .tag { font-family: 'Courier Prime', monospace; font-size: 0.65rem; font-weight: bold; padding: 4px 8px; border-radius: 3px; letter-spacing: 1px; display: inline-block; }
+    .input-field { background: var(--input-bg); border: 1px solid var(--border-ui); color: var(--text-main); padding: 8px; font-family: 'Courier Prime', monospace; font-size: 0.8rem; border-radius: 3px; width: 100%; box-sizing: border-box; margin-bottom: 5px; transition: 0.3s; }
+    .btn-update { background: var(--integrity-gold); color: #000; border: none; padding: 8px; font-weight: 900; cursor: pointer; border-radius: 3px; width: 100%; font-size: 0.7rem; text-transform: uppercase; transition: 0.3s; }
+
+    .data-label { font-size: 0.6rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; font-weight: bold; }
+    .data-value { font-size: 1.1rem; font-weight: 900; font-family: 'Courier Prime', monospace; color: var(--text-main); }
+
+    /* ROLODEX STYLES */
+    .rolodex-panel { background: var(--panel-bg); border: 1px solid var(--border-ui); border-radius: 6px; padding: 25px; margin-bottom: 40px; display: grid; grid-template-columns: 1fr 2fr; gap: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); transition: 0.3s; }
+    .supplier-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-height: 450px; overflow-y: auto; padding-right: 10px; }
+    .supplier-card { background: var(--input-bg); border: 1px solid var(--border-ui); border-left: 4px solid var(--integrity-gold); padding: 15px; border-radius: 4px; position: relative; transition: 0.3s; }
+    .supplier-card h4 { margin: 0; color: var(--integrity-gold); font-family: 'Montserrat', sans-serif; font-size: 0.9rem; text-transform: uppercase; }
+    .supplier-card p { margin: 10px 0; font-family: 'Courier Prime', monospace; font-size: 0.75rem; color: #888; }
+
+    .btn-wa-template { display: block; text-align: center; background: var(--whatsapp-green); color: black; text-decoration: none; padding: 8px; border-radius: 3px; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; margin-top: 10px; }
+    .btn-wa-template:hover { background: #128C7E; color: white; }
+
+    .supplier-grid::-webkit-scrollbar { width: 6px; }
+    .supplier-grid::-webkit-scrollbar-track { background: var(--panel-bg); }
+    .supplier-grid::-webkit-scrollbar-thumb { background: var(--integrity-gold); border-radius: 3px; }
+
+    .rfq-checkbox { transform: scale(1.4); margin-right: 15px; cursor: pointer; accent-color: var(--integrity-gold); }
+    .rfq-checkbox:disabled { cursor: not-allowed; opacity: 0.5; }
+
+    @keyframes pulse-alert {
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.8; transform: scale(1.05); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes critical-blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+    .zone-header { padding: 15px 20px; font-family: 'Montserrat', sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; font-size: 1rem; color: #fff; border-radius: 4px; margin: 40px 0 20px 0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+
+    @media screen and (max-width: 768px) {
+        .rolodex-panel { grid-template-columns: 1fr; }
+        .supplier-grid { grid-template-columns: 1fr; }
+        .header-panel { flex-direction: column; align-items: flex-start; gap: 20px; }
+        .header-panel > div:last-child { flex-direction: column; text-align: left; }
+        .header-panel > div:last-child > div { border-left: none !important; padding-left: 0 !important; }
+        .ghost-card form[style*="grid-template-columns"] {
+            grid-template-columns: 1fr !important;
+            display: flex !important;
+            flex-direction: column;
+            gap: 20px;
+        }
+    }
+</style>
+
+{# 🛡️ GOSPEL OS - HIGH COMMAND ADMINISTRATIVE LINK LOCKOUT GATE #}
+{% if (current_user.is_authenticated and current_user.role in ['admin', 'ADMIN', 'ARCHITECT', 'MD']) or session.get('is_architect') %}
+<div class="dashboard-header" style="background: var(--card-bg); border: 1px solid var(--border-ui); border-left: 5px solid var(--integrity-gold); padding: 15px 25px; border-radius: 2px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-sizing: border-box; width: 100%;">
+    <div style="display: flex; flex-direction: column;">
+        <span style="font-family: 'Courier Prime', monospace; font-size: 0.65rem; color: var(--text-muted); letter-spacing: 3px; text-transform: uppercase;">Laveto Internal // Admin Hub</span>
+        <h2 style="color: var(--text-main); margin: 5px 0 0 0; font-family: 'Montserrat', sans-serif; font-size: 1.4rem; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;">ADMIN <span style="color: var(--gold-text);">// DASHBOARD</span></h2>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <a href="{{ url_for('hangar.registry') }}" style="background: var(--panel-bg); color: var(--text-main); border: 1px solid var(--border-ui); padding: 8px 15px; border-radius: 2px; text-decoration: none; font-weight: bold; font-size: 0.7rem; text-transform: uppercase;">📋 REGISTRY</a>
+        <a href="{{ url_for('hangar.silk_road') }}" style="background: var(--integrity-gold); color: black; padding: 8px 15px; border-radius: 2px; text-decoration: none; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; transition: 0.3s;">🌍 PROCUREMENT</a>
+        <a href="{{ url_for('hangar.open_bay_01') }}" style="background: var(--integrity-green); color: white; border: 1px solid var(--integrity-green); padding: 8px 15px; border-radius: 2px; text-decoration: none; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; transition: 0.3s; box-shadow: 0 0 10px rgba(40, 167, 69, 0.4);">🔧 OPEN BAY 01</a>
+        <a href="{{ url_for('hangar.corporate_treasury') }}" style="background: var(--panel-bg); border: 1px solid var(--border-ui); color: var(--text-main); padding: 8px 15px; border-radius: 2px; text-decoration: none; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; transition: 0.3s;">💰 TREASURY</a>
+        <a href="{{ url_for('hangar.settings') }}" style="background: var(--panel-bg); border: 1px solid var(--border-ui); color: var(--text-muted); padding: 8px 15px; border-radius: 2px; text-decoration: none; font-weight: bold; font-size: 0.7rem; text-transform: uppercase;">⚙️ SETTINGS</a>
+        <a href="{{ url_for('hangar.payroll_matrix') }}" style="background: var(--input-bg); border: 1px solid var(--whatsapp-green); color: var(--whatsapp-green); padding: 8px 15px; border-radius: 2px; text-decoration: none; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; transition: 0.3s;">🏢 B2B PAYROLL</a>
+        <a href="{{ url_for('hangar.audit_logs') }}" style="background: var(--panel-bg); border: 1px solid var(--border-ui); color: var(--text-main); padding: 8px 15px; border-radius: 2px; text-decoration: none; font-weight: bold; font-size: 0.7rem; text-transform: uppercase;">📜 LOGS</a>
+        <a href="{{ url_for('hangar.loan_terminal') }}" style="background: var(--sanctified-blue); color: white; border: 1px solid var(--sanctified-blue); padding: 8px 15px; border-radius: 2px; text-decoration: none; font-weight: bold; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">🏦 LOANS</a>
+        <button onclick="toggleSilkRoadTheme()" id="themeToggleBtnTop" class="theme-toggle-btn" style="margin-left:0;">☀️ LIGHT MODE</button>
+    </div>
+</div>
+{% endif %}
+
+<div class="header-panel" style="margin-bottom: 20px;">
+    <div>
+        <span style="font-family: 'Courier Prime', monospace; font-size: 0.65rem; color: #888; letter-spacing: 3px;">GLOBAL PROCUREMENT MATRIX</span>
+        <div style="display: flex; align-items: center;">
+            <h2 style="margin: 5px 0 0 0; font-family: 'Montserrat', sans-serif; font-size: 1.6rem; font-weight: 900; letter-spacing: 2px;">THE SILK ROAD <span style="color: var(--integrity-gold);">TERMINAL</span></h2>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 20px; text-align: right;">
+        <div>
+            <div class="data-label">TOTAL TOLLS</div>
+            <div class="data-value" style="color: var(--integrity-gold);">P{{ "{:,.2f}".format((total_tolls or 0)|float) }}</div>
+        </div>
+        <div>
+            <div class="data-label">Total Wholesale Outflow</div>
+            <div class="data-value" style="color: var(--critical-red);">P{{ "{:,.2f}".format((total_wholesale or 0)|float) }}</div>
+        </div>
+        <div style="border-left: 1px dashed #333; padding-left: 20px;">
+            <div class="data-label">ARBITRAGE PROFIT</div>
+            <div class="data-value" style="color: var(--integrity-green); font-size: 1.5rem;">P{{ "{:,.2f}".format((arbitrage_profit or 0)|float) }}</div>
+        </div>
+    </div>
+</div>
+
+{# SAFE INITIALIZATION: PRESERVE PASSED ACTIVE_ORDERS FROM PYTHON #}
+{% if not active_orders %}
+    {% set active_orders = orders if orders else [] %}
+{% endif %}
+
+{% if target_vin %}
+<div style="background-color: rgba(255, 68, 68, 0.05); border: 1px dashed var(--critical-red); border-left: 5px solid var(--critical-red); padding: 15px 25px; margin-bottom: 30px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(255,0,0,0.1);">
+    <div>
+        <span style="color: var(--critical-red); font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; animation: critical-blink 2s infinite;">
+            🎯 ISOLATED PROCUREMENT TARGET:
+        </span>
+        <span style="color: var(--text-main); font-family: 'Courier Prime', monospace; font-size: 1.2rem; font-weight: bold; margin-left: 10px;">{{ target_vin }}</span>
+    </div>
+    <a href="{{ url_for('hangar.silk_road') }}" style="background: var(--critical-red); color: white; padding: 10px 20px; text-decoration: none; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; border-radius: 2px; transition: 0.3s;" onmouseover="this.style.background='#cc0000'" onmouseout="this.style.background='var(--critical-red)'">
+        ✖ CLEAR FILTER
+    </a>
+</div>
+{% endif %}
+
+<div class="rolodex-panel" style="margin-bottom: 20px; display: block;">
+    <div>
+        <h3 style="margin: 0; font-family: 'Montserrat', sans-serif; color: var(--integrity-gold); text-transform: uppercase;">🧠 SILK ROAD AI FEED & PREDICTIVE RADAR</h3>
+        <p style="font-size: 0.7rem; color: #888; font-family: 'Courier Prime', monospace; margin: 5px 0 0 0;">Live quotes & anticipatory fleet wear-and-tear scanning.</p>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: 15px; margin-bottom: 15px;">
+        <form action="{{ url_for('hangar.run_anticipatory_scan') }}" method="POST" style="display: inline-block;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" style="background: var(--integrity-gold); color: black; border: none; padding: 12px 20px; font-family: 'Montserrat', sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; border-radius: 3px; transition: 0.3s;">⚡ RUN PREDICTIVE SCAN</button>
+        </form>
+
+        <form action="{{ url_for('hangar.sync_dropzone') }}" method="POST" style="display: inline-block; margin: 0;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" style="background: var(--sanctified-blue); color: white; border: 1px solid #66b3ff; padding: 12px 20px; font-family: 'Montserrat', sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; border-radius: 3px; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s;" onmouseover="this.style.background='#004080'; this.style.boxShadow='0 0 15px rgba(102,179,255,0.4)';" onmouseout="this.style.background='var(--sanctified-blue)'; this.style.boxShadow='none';">
+                🔄 SYNC DROP-ZONE EMAIL
+            </button>
+        </form>
+    </div>
+
+    <div style="margin-top: 10px; margin-bottom: 20px; font-family: 'Courier Prime', monospace; font-size: 0.7rem; color: #555;">
+        DEBUG LINK: <a href="{{ url_for('hangar.run_anticipatory_scan') }}" style="color: var(--sanctified-blue);">Click to test the route</a>
+    </div>
+
+    <!-- 🟢 Order Placement Form Native Integration -->
+    <form action="{{ url_for('hangar.place_order') }}" method="POST" style="background: var(--input-bg); padding: 20px; border: 1px dashed var(--integrity-gold); border-radius: 6px; margin-bottom: 25px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <h3 style="margin: 0 0 15px 0; font-family: 'Montserrat', sans-serif; color: var(--integrity-gold); text-transform: uppercase; font-size: 0.9rem;">🛒 DIRECT PROCUREMENT DIRECTIVE</h3>
+
+        <div style="margin-bottom: 15px;">
+            <label class="data-label" style="display: block;">Select Asset Node (VIN DNA):</label>
+            <select name="vin_dna" class="input-field" style="appearance: auto; cursor: pointer;" required>
+                <option value="" disabled selected style="background: #111; color: #888;">-- SELECT ASSET NODE --</option>
+                {% for node in nodes %}
+                    <option value="{{ node.vin_dna }}" style="background: #111; color: #fff;">
+                        {{ node.member_name }} ({{ node.vin_dna }})
+                    </option>
+                {% else %}
+                    <option value="" disabled style="background: #111; color: #ff0000;">
+                        ⚠️ NO ASSETS DETECTED IN LEDGER
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label class="data-label" style="display: block;">Item / Service Description:</label>
+            <input type="text" name="item_description" class="input-field" placeholder="e.g., Solar Inverter Replacement Parts" required>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label class="data-label" style="display: block;">Amount (Pula):</label>
+            <input type="number" step="0.01" name="amount_pula" class="input-field" placeholder="1500.00" required>
+        </div>
+
+        <button type="submit" class="btn-update" style="margin-top: 5px;">⚡ SUBMIT ORDER DIRECTIVE</button>
+    </form>
+
+    <div style="max-height: 250px; overflow-y: auto;">
+        <table style="width: 100%; text-align: left; border-collapse: collapse; font-family: 'Courier Prime', monospace; font-size: 0.75rem;">
+            <thead>
+                <tr style="background: var(--input-bg); color: #888;">
+                    <th style="padding: 10px; border-bottom: 1px solid var(--border-ui);">DATE</th>
+                    <th style="padding: 10px; border-bottom: 1px solid var(--border-ui);">SUPPLIER</th>
+                    <th style="padding: 10px; border-bottom: 1px solid var(--border-ui);">PART DETAILS</th>
+                    <th style="padding: 10px; border-bottom: 1px solid var(--border-ui);">PRICE (P)</th>
+                    <th style="padding: 10px; border-bottom: 1px solid var(--border-ui);">ETA (DAYS)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for quote in ai_quotes %}
+                <tr style="border-bottom: 1px dashed var(--border-ui); transition: 0.3s;" onmouseover="this.style.background='var(--input-bg)'" onmouseout="this.style.background='transparent'">
+                    <td style="padding: 10px; color: #666;">{{ quote.date_logged.strftime('%d %b %H:%M') if quote.date_logged else 'UNKNOWN' }}</td>
+                    <td style="padding: 10px; color: var(--text-main); font-weight: bold;">{{ quote.supplier_name }}</td>
+                    <td style="padding: 10px;">{{ quote.part_name }} <br><span style="color: var(--integrity-gold);">#{{ quote.part_number or 'N/A' }}</span></td>
+                    <td style="padding: 10px; color: var(--integrity-green); font-size: 0.9rem; font-weight: bold;">{{ "{:,.2f}".format((quote.price_pula or 0)|float) }}</td>
+                    <td style="padding: 10px; font-weight: bold; color: var(--sanctified-blue);">{{ quote.lead_time_days }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="padding: 20px; text-align: center; color: #666; font-size: 0.85rem;">[ 📭 NO AI QUOTES DETECTED. CLICK SYNC TO READ UNREAD EMAILS. ]</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% set new_requests = active_orders|selectattr("status", "equalto", "PENDING PAYLOAD")|list|length if active_orders else 0 %}
+{% if new_requests > 0 %}
+<div style="background: rgba(255, 0, 0, 0.1); border: 2px solid var(--critical-red); color: var(--text-main); padding: 20px; border-radius: 6px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 0 20px rgba(255,0,0,0.2);">
+    <div>
+        <h3 style="margin: 0 0 5px 0; font-family: 'Montserrat'; font-weight: 900; letter-spacing: 2px; color: var(--critical-red);">🚨 ACTION REQUIRED: {{ new_requests }} NEW REQUEST(S) DETECTED</h3>
+        <p style="margin: 0; font-family: 'Courier Prime'; font-size: 0.75rem; color: #aaa;">A Founder has authorized procurement. Lock payload and supplier data below to proceed.</p>
+    </div>
+    <a href="#zone-1" style="background: var(--critical-red); color: white; padding: 12px 25px; text-decoration: none; font-family: 'Montserrat'; font-weight: 900; font-size: 0.8rem; border-radius: 2px; text-transform: uppercase;">PROCESS NOW ⬇</a>
+</div>
+{% endif %}
+
+<div class="rolodex-panel">
+    <div>
+        <h3 style="margin: 0 0 5px 0; font-family: 'Montserrat', sans-serif; color: var(--text-main); text-transform: uppercase;">📇 Sovereign Rolodex</h3>
+        <p style="font-size: 0.7rem; color: #888; font-family: 'Courier Prime', monospace; margin-bottom: 20px;">Log trusted wholesalers. Tap to send auto-templated RFQs or access their B2B Portals.</p>
+
+        <form action="{{ url_for('hangar.add_supplier') }}" method="POST" style="background: var(--input-bg); padding: 15px; border: 1px dashed var(--integrity-gold); border-radius: 4px; transition: 0.3s;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <input type="text" name="name" id="add_supplier_name" class="input-field" placeholder="Supplier Name (e.g. Gaborone Auto)" required>
+
+            <input type="email" name="email" id="add_email" class="input-field" placeholder="Dispatch Email (For AI Negotiator)">
+            <input type="text" name="phone" id="add_phone" class="input-field" placeholder="WhatsApp Number (e.g. +267...)">
+            <input type="text" name="specialty" id="add_specialty" class="input-field" placeholder="Specialty (e.g. German Suspension)">
+
+            <select class="input-field" style="color: var(--integrity-gold);" onchange="handlePresetSelection(this, 'add_portal_url', 'add_supplier_name', 'add_email', 'add_phone', 'add_specialty')">
+    <option value="">-- SELECT PRESET PORTAL / POWERHOUSE --</option>
+
+    <optgroup label="🌍 REGIONAL POWERHOUSES (AFRICA)">
+        <option value="https://www.motovac.com" data-email="sales@motovac.com" data-spec="General Auto Spares (HQ BW)">Motovac HQ</option>
+        <option value="https://www.masterparts.com" data-email="saleshp@masterparts.com" data-spec="Engine & Suspension (JHB)">Masterparts JHB</option>
+        <option value="https://www.masterparts.com" data-email="salesdb@masterparts.com" data-spec="Tier-1 OEM Parts (CPT)">Masterparts CPT</option>
+        <option value="https://www.validtradesa.co.za" data-email="info@validtradesa.co.za" data-spec="Wholesaler / Bulk Supply">Validtrade SA</option>
+        <option value="http://www.partsmall.co.bw" data-email="sales1@partsmall.co.bw" data-spec="Korean/Japanese OEM">Parts Mall BW</option>
+        <option value="https://www.volkspares.co.za" data-email="shop@volkspares.co.za" data-spec="VW/Audi Specialist">Volkspares JHB</option>
+        <option value="https://www.goldwagen.com" data-email="john.doe@goldwagen.com" data-spec="German & Euro Specialist">Goldwagen HQ</option>
+        <option value="https://b2b.autoboys.co.za" data-email="b2b@autoboys.co.za" data-spec="Glass, Collision & OEM">Autoboys B2B</option>
+        <option value="https://www.startmycar.co.za" data-email="sales@startmycar.co.za" data-spec="General Service Parts (RSA)">Start My Car (RSA)</option>
+    </optgroup>
+
+    <optgroup label="🛞 TIRE WHOLESALERS & DISTRIBUTORS (REGIONAL & GLOBAL)">
+        <option value="https://www.stamford.co.za" data-email="telesales@stamford.co.za" data-spec="Falken & Sumo Firenza Wholesale (RSA/BW)">Stamford Tyres Africa</option>
+        <option value="https://www.supertyres.co.bw" data-email="supertyresgaborone@gmail.com" data-spec="Commercial & Passenger Tires (Gaborone)">Super Tyres BW</option>
+        <option value="https://www.tredcor.co.za" data-email="info@tredcor.co.za" data-spec="Commercial & Truck Fleet Tires">Tredcor / Dunlop Zone RSA</option>
+        <option value="https://www.auto-tyre.co.za" data-email="wholesale@auto-tyre.co.za" data-spec="Passenger & 4x4 Bulk Distribution">Auto Tyre Wholesale (RSA)</option>
+        <option value="https://tiautoinvestments.co.za" data-email="marketing@tiautoinvestments.co.za" data-spec="Tiger Wheel & Tyre / Tyres & More Bulk">TiAuto Wholesale (Tiger Wheel Group)</option>
+        <option value="https://www.simpletire.com" data-email="b2b@simpletire.com" data-spec="Global Tire Aggregator & Export">SimpleTire B2B (USA/Global)</option>
+        <option value="https://www.tyres-pneus-online.com" data-email="contact@tyres-pneus-online.com" data-spec="European Tire Wholesaler Aggregator">Pneus Online B2B (EU)</option>
+    </optgroup>
+
+    <optgroup label="🌐 GLOBAL WHOLESALE NODES (INTERNATIONAL)">
+        <option value="https://www.autodoc.co.uk/" data-email="offers@news.autodoc.eu" data-spec="Parts deals">Europe</option>
+        <option value="https://partsouq.com" data-email="info@partsouq.com" data-spec="Genuine OEM Asian (UAE Fast Shipping)">PartsSouq (UAE)</option>
+        <option value="https://www.autodoc.pro" data-email="b2b@autodoc.eu" data-spec="Massive Euro Spares Aggregator">AutoDoc Pro (Europe)</option>
+        <option value="https://www.megazip.net" data-email="sales@megazip.net" data-spec="Genuine JDM & Korean OEM">Megazip (Japan/USA)</option>
+        <option value="https://www.ecstuning.com" data-email="wholesale@ecstuning.com" data-spec="VW/Audi/BMW Specialist">ECS Tuning (Global)</option>
+        <option value="https://www.amayama.com/en" data-email="sales@amayama.com" data-spec="Genuine JDM & UAE Direct (Toyota/Nissan)">Amayama (Japan/UAE)</option>
+        <option value="https://ssg.asia/" data-email="sales@ssg.asia" data-spec="Global OEM Export (Dubai/Asia)">SSG Asia</option>
+        <option value="https://www.fcpeuro.com" data-email="wholesale@fcpeuro.com" data-spec="Genuine & OEM European Parts">FCP Euro (Global B2B)</option>
+        <option value="https://www.pelicanparts.com" data-email="b2b@pelicanparts.com" data-spec="Porsche/BMW/Merc Specialist">Pelican Parts (Global)</option>
+        <option value="https://www.worldpac.com" data-email="wholesale_inquiries@worldpac.com" data-spec="Global OEM & Aftermarket">Worldpac (Global)</option>
+        <option value="https://pro.rockauto.com" data-email="service@rockauto.com" data-spec="Mass Auto Parts Export">RockAuto Pro</option>
+        <option value="https://vehicleaftermarket.skf.com" data-email="aftermarket@skf.com" data-spec="Bearings & Hubs (Global)">SKF Vehicle Aftermarket</option>
+        <option value="https://www.denso-am.eu" data-email="b2b@denso.com" data-spec="Injection, AC & Electronics">Denso Aftermarket</option>
+        <option value="https://www.boschaftermarket.com" data-email="b2b@bosch.com" data-spec="Injection & Electronics">Bosch Mobility Aftermarket</option>
+        <option value="https://nmsdparts.com/?utm_source=Pinterest&utm_medium=organic" data-email="sales@nmsdparts.com" data-spec="Car Spare Parts">Nojoom Sindabaad Trading</option>
+        <option value="https://www.bpautosparesindia.com" data-email="info@bpimpex.in" data-spec="Spare Parts">Mahindra Spare Parts</option>
+        <option value="https://www.startmycar.co.za/" data-email="info@startmycar.co.za" data-spec="Spare Parts">Mahindra Spare Parts</option>
+
+    </optgroup>
+</select>
+
+            <input type="url" name="portal_url" id="add_portal_url" class="input-field" placeholder="B2B Portal Link (Auto-fills or type custom)">
+            <button type="submit" class="btn-update" style="margin-top: 10px;">➕ ADD TO ROLODEX</button>
+        </form>
+    </div>
+
+    <div style="height: 100%; max-height: 450px; overflow-y: auto; padding-right: 10px;">
+        {% if suppliers %}
+            <div class="supplier-grid">
+                {% for s in suppliers %}
+                    <div class="supplier-card">
+                        <div id="supplier_view_{{ s.id }}">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <h4>{{ s.name }}</h4>
+                                <div style="display: flex; gap: 5px;">
+                                    <button type="button" onclick="toggleEditSupplier('{{ s.id }}')" style="background: var(--sanctified-blue); color: white; border: 1px solid var(--integrity-gold); padding: 4px 8px; border-radius: 3px; font-size: 0.6rem; cursor: pointer; font-weight: bold;">✏️ EDIT</button>
+
+                                    <form action="{{ url_for('hangar.delete_supplier', supplier_id=s.id) }}" method="POST" style="margin: 0;" onsubmit="return confirm('Remove supplier from network?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" style="background: var(--critical-red); color: white; border: 1px solid darkred; padding: 4px 8px; border-radius: 3px; font-size: 0.6rem; cursor: pointer; font-weight: bold;">✖ DEL</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <p>
+                                📍 {{ s.specialty or 'N/A' }}<br>
+                                📞 {{ s.phone or 'N/A' }}<br>
+                                <span style="color: #66b3ff;">📧 {{ s.email or 'AWAITING EMAIL' }}</span>
+                            </p>
+
+                            <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                                {% if s.portal_url %}
+                                    <a href="{{ s.portal_url }}" target="_blank" style="flex: 1; display: inline-block; background: transparent; color: var(--integrity-gold); border: 1px solid var(--integrity-gold); padding: 6px 8px; border-radius: 3px; text-align: center; font-size: 0.6rem; font-weight: bold; text-transform: uppercase; text-decoration: none; transition: 0.3s;" onmouseover="this.style.background='var(--integrity-gold)'; this.style.color='black';" onmouseout="this.style.background='transparent'; this.style.color='var(--integrity-gold)';">
+                                        🌐 OPEN PORTAL
+                                    </a>
+                                {% endif %}
+
+                                {% set clean_phone = s.phone|replace(' ', '')|replace('+', '') if s.phone else '' %}
+                                {% if clean_phone and clean_phone != 'N/A' and 'EMAILONLY' not in clean_phone %}
+                                    <a href="https://wa.me/{{ clean_phone }}" target="_blank" class="btn-wa-template" style="flex: 1; margin-top: 0; padding: 6px 8px;">📲 CHAT</a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div id="supplier_edit_{{ s.id }}" style="display: none; background: var(--panel-bg); padding: 5px; transition: 0.3s;">
+                            <form action="{{ url_for('hangar.edit_supplier', supplier_id=s.id) }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                                <div style="margin-bottom: 8px;">
+                                    <label style="font-size: 0.6rem; color: var(--integrity-gold); font-weight: bold; text-transform: uppercase; font-family: 'Montserrat';">Supplier Name</label>
+                                    <input type="text" name="name" class="input-field" value="{{ s.name }}" required style="padding: 6px; font-size: 0.75rem;">
+                                </div>
+                                <div style="margin-bottom: 8px;">
+                                    <label style="font-size: 0.6rem; color: #66b3ff; font-weight: bold; text-transform: uppercase; font-family: 'Montserrat';">Dispatch Email</label>
+                                    <input type="email" name="email" class="input-field" value="{{ s.email or '' }}" style="padding: 6px; font-size: 0.75rem;">
+                                </div>
+                                <div style="margin-bottom: 8px;">
+                                    <label style="font-size: 0.6rem; color: var(--whatsapp-green); font-weight: bold; text-transform: uppercase; font-family: 'Montserrat';">WhatsApp</label>
+                                    <input type="text" name="phone" class="input-field" value="{{ s.phone or '' }}" style="padding: 6px; font-size: 0.75rem; border: 1px solid var(--whatsapp-green);">
+                                </div>
+                                <div style="margin-bottom: 8px;">
+                                    <label style="font-size: 0.6rem; color: #888; font-weight: bold; text-transform: uppercase; font-family: 'Montserrat';">Specialty</label>
+                                    <input type="text" name="specialty" class="input-field" value="{{ s.specialty or '' }}" style="padding: 6px; font-size: 0.75rem;">
+                                </div>
+                                <div style="margin-bottom: 8px;">
+                                    <label style="font-size: 0.6rem; color: #888; font-weight: bold; text-transform: uppercase; font-family: 'Montserrat';">Portal Link</label>
+                                    <input type="url" name="portal_url" class="input-field" value="{{ s.portal_url or '' }}" style="padding: 6px; font-size: 0.75rem;">
+                                </div>
+                                <div style="display: flex; gap: 5px; margin-top: 12px;">
+                                    <button type="submit" class="btn-update" style="background: var(--integrity-green); color: white; padding: 10px;">💾 SAVE</button>
+                                    <button type="button" class="btn-update" style="background: var(--border-ui); color: white; padding: 10px;" onclick="toggleEditSupplier('{{ s.id }}')">CANCEL</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 50px; background: rgba(0,0,0,0.2); border: 1px dashed var(--border-ui); color: #888; font-family: 'Courier Prime', monospace; width: 100%; box-sizing: border-box;">
+                [ ROLODEX EMPTY. ADD FIRST SUPPLIER. ]
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div id="zone-1" class="zone-header" style="background: var(--critical-red);">
+    <div>🚨 ZONE 1: AWAITING DISPATCH & FUNDING</div>
+    <button onclick="dispatchMasterRFQ()" style="background: var(--whatsapp-green); color: black; border: none; padding: 6px 15px; border-radius: 3px; font-weight: 900; font-size: 0.75rem; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.4); transition: 0.3s;">
+        📲 BATCH RFQ DISPATCH
+    </button>
+</div>
+
+{# 1. RENDER ALL ACTIVE GHOST ORDERS FIRST #}
+{% if active_orders %}
+    {% for order in active_orders %}
+    {% if not order.status or order.status in ['PENDING ORDER', 'PENDING PAYLOAD', 'AWAITING FUNDS', 'FUNDS CLEARED', 'APPROVED'] %}
+    {% set nav_vin = order.ledger.vin_dna if order.ledger else '5555485HB79546222' %}
+    {% set nav_bay = order.ledger.bay_assignment if order.ledger else 'UNASSIGNED BAY' %}
+
+    <div class="ghost-card status-CLEARED" style="border: 1px solid var(--integrity-gold); background: #111; padding: 20px; margin-bottom: 15px; border-radius: 4px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-ui); padding-bottom: 10px; margin-bottom: 15px;">
+            <div style="display: flex; align-items: center;">
+                <input type="checkbox" class="rfq-checkbox" id="chk_{{ order.id }}" value="{{ order.id }}" data-vin="{{ nav_vin }}" data-comp="{{ order.component_name }}" disabled>
+                <div>
+                    <span class="data-label">ASSET DNA / BAY</span>
+                    <span class="data-value" style="color: var(--integrity-gold); margin-right: 15px;">{{ nav_vin }}</span>
+                    <span class="tag" style="background: var(--panel-bg); color: var(--text-main); border: 1px solid var(--border-ui);">{{ nav_bay }}</span>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <span class="data-label">COMPONENT / PROCUREMENT NODE</span>
+                <span class="data-value" id="comp_name_{{ order.id }}">{{ order.component_name }}</span>
+            </div>
+        </div>
+
+        <form action="{{ url_for('hangar.update_ghost_order', order_id=order.id) }}" method="POST" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="background: rgba(197, 160, 89, 0.05); padding: 15px; border-radius: 4px; border: 1px solid var(--integrity-gold);">
+                <div class="data-label" style="color: var(--integrity-gold); margin-bottom: 10px;">📦 DATA PAYLOAD LOCK</div>
+                <input type="text" name="oem_part_number" id="oem_{{ order.id }}" value="{{ order.oem_part_number or '' }}" class="input-field" placeholder="OEM Part #" oninput="validatePayload({{ order.id }})">
+                <select name="tier1_brand" id="brand_{{ order.id }}" class="input-field" onchange="validatePayload({{ order.id }})">
+                    <option value="">-- SELECT TIER 1 BRAND --</option>
+                    <option value="Lemförder" {% if order.tier1_brand == 'Lemförder' %}selected{% endif %}>Lemförder</option>
+                    <option value="KYB" {% if order.tier1_brand == 'KYB' %}selected{% endif %}>KYB</option>
+                    <option value="TRW" {% if order.tier1_brand == 'TRW' %}selected{% endif %}>TRW</option>
+                    <option value="555" {% if order.tier1_brand == '555' %}selected{% endif %}>555</option>
+                    <option value="BOSCH" {% if order.tier1_brand == 'BOSCH' %}selected{% endif %}>BOSCH</option>
+                    <option value="Genuine OEM" {% if order.tier1_brand == 'Genuine OEM' %}selected{% endif %}>Genuine OEM</option>
+                </select>
+            </div>
+
+            <div style="padding: 15px; border-radius: 4px; border: 1px solid var(--border-ui);">
+                <div class="data-label" style="margin-bottom: 10px;">🌍 GLOBAL ROUTING</div>
+                <input type="text" name="supplier" id="supplier_{{ order.id }}" value="{{ order.supplier or '' }}" class="input-field" list="rolodex-list" placeholder="Supplier Name" autocomplete="off" oninput="validatePayload({{ order.id }})">
+                <select name="shipping_routing" id="shipping_{{ order.id }}" class="input-field">
+                    <option value="DHL Priority" {% if order.shipping_routing == 'DHL Priority' %}selected{% endif %}>DHL Priority</option>
+                    <option value="Local Supplier (Gaborone)" {% if order.shipping_routing == 'Local Supplier (Gaborone)' %}selected{% endif %}>Local Supplier (Gaborone)</option>
+                    <option value="Cross-Border Runner (RSA)" {% if order.shipping_routing == 'Cross-Border Runner (RSA)' %}selected{% endif %}>Cross-Border Runner (RSA)</option>
+                </select>
+            </div>
+
+            <div style="padding: 15px; border-radius: 4px; border: 1px solid var(--border-ui);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div class="data-label" style="margin-bottom: 0;">💸 FINANCIALS & EXECUTION</div>
+                    <div style="font-family: 'Courier Prime', monospace; font-size: 0.65rem; color: var(--integrity-green); background: rgba(40, 167, 69, 0.1); border: 1px solid var(--integrity-green); padding: 3px 6px; border-radius: 2px; font-weight: bold;">
+                        🎯 CEILING: P{{ "{:,.2f}".format((order.estimated_cost or 0)|float) }}
+                    </div>
+                </div>
+                <input type="number" step="0.01" name="wholesale_cost" value="{{ order.wholesale_cost or '' }}" class="input-field" placeholder="Wholesale Cost (P)">
+                <select name="status" id="status_{{ order.id }}" class="input-field" style="margin-bottom: 10px;">
+                    <option value="PENDING ORDER" {% if order.status == 'PENDING ORDER' %}selected{% endif %}>⚫ PENDING ORDER</option>
+                    <option value="PENDING PAYLOAD" {% if order.status == 'PENDING PAYLOAD' %}selected{% endif %}>⚪ PENDING PAYLOAD</option>
+                    <option value="FUNDS CLEARED" {% if order.status == 'FUNDS CLEARED' %}selected{% endif %}>🟡 FUNDS CLEARED</option>
+                    <option value="IN TRANSIT" {% if order.status == 'IN TRANSIT' %}selected{% endif %}>🔵 IN TRANSIT</option>
+                </select>
+                <div style="display: flex; gap: 5px;">
+                    <button type="submit" id="btn_commit_{{ order.id }}" class="btn-update">💾 LOCK</button>
+                    <button type="button" id="btn_rfq_{{ order.id }}" class="btn-update" onclick="dispatchRFQ({{ order.id }}, '{{ nav_vin }}', '{{ order.component_name }}')">📲 SEND RFQ</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+    {% endfor %}
+{% endif %}
+
+{# 2. RENDER UNLINKED FUNDED ASSETS (SUMMARY CARDS) #}
+{% if assets %}
+    {% set claimed_ledger_ids = active_orders|map(attribute='ledger_id')|list if active_orders else [] %}
+    {% for asset in assets %}
+    {% if asset.id not in claimed_ledger_ids %}
+    <div class="ghost-card status-CLEARED" style="border: 1px solid var(--integrity-green); background: #0d110e; padding: 20px; margin-bottom: 15px; border-radius: 4px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1a261c; padding-bottom: 10px; margin-bottom: 15px;">
+            <div>
+                <span class="data-label">ASSET DNA / BAY</span>
+                <span class="data-value" style="color: var(--integrity-gold); margin-right: 15px;">{{ asset.vin_dna }}</span>
+                <span class="tag" style="background: var(--panel-bg); color: var(--text-main); border: 1px solid var(--border-ui);">{{ asset.bay_assignment or 'UNASSIGNED BAY' }}</span>
+            </div>
+            <span style="background: rgba(40, 167, 69, 0.2); color: var(--integrity-green); border: 1px solid var(--integrity-green); font-family: 'Courier Prime', monospace; font-size: 0.75rem; padding: 4px 10px; font-weight: bold; border-radius: 2px;">
+                ✅ FULLY FUNDED (P{{ "{:,.2f}".format((asset.shield_reservoir or 0)|float) }})
+            </span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <div style="font-family: 'Montserrat', sans-serif; font-weight: 900; color: #fff; font-size: 1rem;">
+                    🏎️ {{ asset.vehicle_year or '' }} {{ asset.vehicle_make or '' }} {{ asset.vehicle_model or 'SOVEREIGN ASSET' }}
+                </div>
+                <div style="font-family: 'Courier Prime', monospace; font-size: 0.8rem; color: var(--integrity-gold); margin-top: 5px;">
+                    TARGET REPAIR ESTIMATE: P{{ "{:,.2f}".format((asset.target_repair_cost or 0)|float) }}
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <a href="{{ url_for('hangar.client_dossier', vin_dna=asset.vin_dna, source='silk_road') }}" class="btn-update" style="background: var(--panel-bg); color: var(--integrity-gold); border: 1px solid var(--integrity-gold); text-decoration: none; padding: 8px 14px; font-weight: 900; font-size: 0.75rem; border-radius: 3px; white-space: nowrap;">
+                    🔍 DOSSIER
+                </a>
+
+                <form action="{{ url_for('hangar.override_asset') }}" method="POST" style="margin: 0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="entry_id" value="{{ asset.id }}">
+                    <input type="hidden" name="status" value="APPROVED">
+                    <input type="hidden" name="next" value="{{ url_for('hangar.silk_road') }}">
+                    <button type="submit" style="background: var(--integrity-gold); color: black; border: none; padding: 9px 16px; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.75rem; border-radius: 3px; cursor: pointer; text-transform: uppercase; white-space: nowrap;">
+                        ⚡ GENERATE SOURCING PAYLOAD ➡
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% if not active_orders and not assets %}
+<div style="text-align: center; padding: 30px; background: var(--panel-bg); border: 1px dashed var(--border-ui); border-radius: 6px; font-family: 'Courier Prime', monospace; color: var(--text-muted);">
+    [ NO PAYLOADS PENDING ]
+</div>
+{% endif %}
+
+<div id="zone-2" class="zone-header" style="background: var(--sanctified-blue);">
+    <div>🚚 ZONE 2: IN TRANSIT (TEMPORAL TRACKING ACTIVE)</div>
+</div>
+
+{% set zone2_orders = active_orders|selectattr("status", "equalto", "IN TRANSIT")|list if active_orders else [] %}
+{% for order in zone2_orders %}
+<div class="ghost-card status-TRANSIT">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-ui); padding-bottom: 10px; margin-bottom: 15px;">
+        <div style="display: flex; align-items: center;">
+            <div>
+                <span class="data-label">ASSET DNA / BAY</span>
+                <span class="data-value" style="color: var(--integrity-gold); margin-right: 15px;">{{ order.ledger.vin_dna if order.ledger else 'NO VIN' }}</span>
+                <span class="tag" style="background: var(--panel-bg); color: var(--text-main); border: 1px solid var(--border-ui);">{{ order.ledger.bay_assignment if order.ledger else 'UNASSIGNED BAY' }}</span>
+                {% set clean_member_phone = order.ledger.member_phone|replace(' ', '')|replace('+', '') if order.ledger and order.ledger.member_phone else '' %}
+                {% if clean_member_phone %}
+                    <a href="https://wa.me/{{ clean_member_phone }}" target="_blank" class="tag" style="background: rgba(37, 211, 102, 0.1); color: var(--whatsapp-green); border: 1px solid var(--whatsapp-green); margin-left: 5px; text-decoration: none; transition: 0.3s;" onmouseover="this.style.background='var(--whatsapp-green)'; this.style.color='black';" onmouseout="this.style.background='rgba(37, 211, 102, 0.1)'; this.style.color='var(--whatsapp-green)';">📲 CHAT FOUNDER</a>
+                {% endif %}
+            </div>
+        </div>
+        <div style="text-align: right;">
+            <span class="data-label">COMPONENT / PROCUREMENT NODE</span>
+            <span class="data-value">{{ order.component_name }}</span>
+        </div>
+    </div>
+
+    <form action="{{ url_for('hangar.update_ghost_order', order_id=order.id) }}" method="POST" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div style="padding: 15px; border-radius: 4px; border: 1px solid var(--border-ui);">
+            <div class="data-label" style="color: #888; margin-bottom: 10px;">📦 DATA PAYLOAD LOCK</div>
+            <input type="text" name="oem_part_number" value="{{ order.oem_part_number or '' }}" class="input-field" readonly style="color: #888;">
+            <input type="text" name="tier1_brand" value="{{ order.tier1_brand or '' }}" class="input-field" readonly style="color: #888;">
+        </div>
+
+        <div style="padding: 15px; border-radius: 4px; border: 1px solid var(--sanctified-blue); background: rgba(0, 51, 102, 0.05);">
+            <div class="data-label" style="color: var(--sanctified-blue); margin-bottom: 10px;">🌍 GLOBAL ROUTING</div>
+            <input type="text" name="supplier" value="{{ order.supplier or '' }}" class="input-field" readonly style="color: #888;">
+            <input type="text" name="shipping_routing" value="{{ order.shipping_routing or '' }}" class="input-field" readonly style="color: #888;">
+            {% if order.estimated_arrival %}
+            <div style="background: #000; border: 1px solid var(--sanctified-blue); padding: 10px; margin-top: 15px; border-radius: 2px; text-align: center;">
+                <span style="font-size: 0.65rem; color: #888; font-family: 'Courier Prime'; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 5px;">Logistics Telemetry</span>
+                <div class="eta-display" data-eta="{{ order.estimated_arrival.strftime('%Y-%m-%dT%H:%M:%S') }}" style="font-size: 1.2rem; font-family: 'Courier Prime'; font-weight: 900; color: var(--integrity-gold);">
+                    CALCULATING...
+                </div>
+                <div style="font-size: 0.65rem; color: var(--text-main); font-family: 'Montserrat'; text-transform: uppercase; font-weight: bold; margin-top: 4px;">
+                    {{ order.estimated_arrival.strftime('%d %B %Y') }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div style="padding: 15px; border-radius: 4px; border: 1px solid var(--border-ui);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div class="data-label" style="margin-bottom: 0;">💸 FINANCIALS & EXECUTION</div>
+                <div style="font-family: 'Courier Prime', monospace; font-size: 0.65rem; color: var(--integrity-green); background: rgba(40, 167, 69, 0.1); border: 1px solid var(--integrity-green); padding: 3px 6px; border-radius: 2px; font-weight: bold; letter-spacing: 1px;" title="Retail Capital Extracted">
+                    🎯 CEILING: P{{ "{:,.2f}".format((order.estimated_cost or 0)|float) }}
+                </div>
+            </div>
+            <input type="number" step="0.01" name="wholesale_cost" value="{{ order.wholesale_cost }}" class="input-field" readonly style="color: #888;">
+            <select name="status" class="input-field" style="margin-bottom: 10px; color: var(--sanctified-blue); font-weight: bold;">
+                <option value="IN TRANSIT" selected>🔵 IN TRANSIT</option>
+                <option value="DELIVERED TO BAY">🟢 MARK DELIVERED TO BAY</option>
+            </select>
+            <button type="submit" class="btn-update" style="background: var(--integrity-green); color: white;">💾 UPDATE STATUS</button>
+        </div>
+    </form>
+</div>
+{% else %}
+<div style="text-align: center; padding: 30px; background: var(--panel-bg); border: 1px dashed var(--border-ui); border-radius: 6px; font-family: 'Courier Prime', monospace; color: var(--text-muted);">
+    [ NO ASSETS IN TRANSIT ]
+</div>
+{% endfor %}
+
+<div id="zone-3" class="zone-header" style="background: var(--integrity-green);">
+    <div>✅ ZONE 3: DELIVERED TO BAY (READY FOR ASSEMBLY)</div>
+</div>
+
+{% set zone3_orders = active_orders|selectattr("status", "equalto", "DELIVERED TO BAY")|list if active_orders else [] %}
+{% for order in zone3_orders %}
+<div class="ghost-card status-DELIVERED" style="opacity: 0.85;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center;">
+            <div>
+                <span class="data-label">ASSET DNA / BAY</span>
+                <span class="data-value" style="color: var(--integrity-gold); margin-right: 15px;">{{ order.ledger.vin_dna if order.ledger else 'NO VIN' }}</span>
+                <span class="tag" style="background: var(--panel-bg); color: var(--text-main); border: 1px solid var(--border-ui);">{{ order.ledger.bay_assignment if order.ledger else 'UNASSIGNED BAY' }}</span>
+                {% set clean_member_phone = order.ledger.member_phone|replace(' ', '')|replace('+', '') if order.ledger and order.ledger.member_phone else '' %}
+                {% if clean_member_phone %}
+                    <a href="https://wa.me/{{ clean_member_phone }}" target="_blank" class="tag" style="background: rgba(37, 211, 102, 0.1); color: var(--whatsapp-green); border: 1px solid var(--whatsapp-green); margin-left: 5px; text-decoration: none; transition: 0.3s;" onmouseover="this.style.background='var(--whatsapp-green)'; this.style.color='black';" onmouseout="this.style.background='rgba(37, 211, 102, 0.1)'; this.style.color='var(--whatsapp-green)';">📲 CHAT FOUNDER</a>
+                {% endif %}
+            </div>
+        </div>
+        <div style="text-align: right;">
+            <span class="data-label">COMPONENT / PROCUREMENT NODE</span>
+            <span class="data-value">{{ order.component_name }}</span>
+        </div>
+    </div>
+
+    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-ui); font-family: 'Courier Prime'; font-size: 0.8rem; color: #888; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+            Supplied by <strong>{{ order.supplier }}</strong> | Cost: <strong>P{{ "{:,.2f}".format((order.wholesale_cost or 0)|float) }}</strong>
+        </div>
+
+        <!-- ⚡ DISCHARGE / COMPLETE ACTION BUTTON -->
+        <form action="{{ url_for('hangar.complete_order', order_id=order.id) }}" method="POST" style="margin: 0;">
+            <button type="submit" style="background: var(--integrity-green); color: #000000; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.75rem; padding: 8px 16px; border: none; border-radius: 2px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                ⚡ MARK ASSEMBLED & CLEAR
+            </button>
+        </form>
+    </div>
+</div>
+{% else %}
+<div style="text-align: center; padding: 30px; background: var(--panel-bg); border: 1px dashed var(--border-ui); border-radius: 6px; font-family: 'Courier Prime', monospace; color: var(--text-muted);">
+    [ RECEIVING DOCK EMPTY ]
+</div>
+{% endfor %}
+
+<script>
+    {% if not current_user.is_authenticated and not session.get('warden_logged_in') and not session.get('is_architect') %}
+        window.location.href = "{{ url_for('auth.login') }}";
+    {% endif %}
+
+    function copyVinToClipboard(vinText, btnElement) {
+        navigator.clipboard.writeText(vinText).then(() => {
+            const originalText = btnElement.innerHTML;
+            btnElement.innerHTML = "✓ COPIED";
+            btnElement.style.background = "var(--integrity-gold)";
+            btnElement.style.color = "#000";
+            setTimeout(() => {
+                btnElement.innerHTML = originalText;
+                btnElement.style.background = "var(--panel-bg)";
+                btnElement.style.color = "var(--integrity-gold)";
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy VIN: ', err);
+            alert("Clipboard access denied. Please copy manually.");
+        });
+    }
+
+    const supplierPhones = {
+        {% for s in suppliers %}
+        "{{ s.name|replace('\"', '')|replace('\'', '') }}": "{{ s.phone|replace(' ', '')|replace('+', '') }}",
+        {% endfor %}
+    };
+
+    function toggleSilkRoadTheme() {
+        const body = document.body;
+        const currentTheme = body.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        body.setAttribute('data-theme', newTheme);
+        localStorage.setItem('silkroad-theme', newTheme);
+    }
+
+    function toggleEditSupplier(id) {
+        var view = document.getElementById('supplier_view_' + id);
+        var edit = document.getElementById('supplier_edit_' + id);
+        if (edit.style.display === 'none' || edit.style.display === '') {
+            view.style.display = 'none';
+            edit.style.display = 'block';
+        } else {
+            view.style.display = 'block';
+            edit.style.display = 'none';
+        }
+    }
+
+    function handlePresetSelection(dropdown, urlInputId, nameInputId, emailInputId, phoneInputId, specInputId) {
+        const urlBox = document.getElementById(urlInputId);
+        const nameBox = document.getElementById(nameInputId);
+        const emailBox = document.getElementById(emailInputId);
+        const phoneBox = document.getElementById(phoneInputId);
+        const specBox = document.getElementById(specInputId);
+
+        const selectedOption = dropdown.options[dropdown.selectedIndex];
+
+        if (urlBox) {
+            urlBox.value = dropdown.value;
+        }
+
+        if (dropdown.value !== "") {
+            if (nameBox) {
+                const rawName = selectedOption.text;
+                nameBox.value = rawName.split(' (')[0];
+            }
+
+            if (emailBox && selectedOption.getAttribute('data-email')) {
+                emailBox.value = selectedOption.getAttribute('data-email');
+            }
+
+            if (specBox && selectedOption.getAttribute('data-spec')) {
+                specBox.value = selectedOption.getAttribute('data-spec');
+            }
+
+            if (phoneBox && phoneBox.value.trim() === "") {
+                phoneBox.value = "N/A - DISPATCH EMAIL ONLY";
+            }
+        }
+    }
+
+    async function dispatchRFQ(id, vin, compName) {
+        const oem = document.getElementById('oem_' + id).value.trim();
+        const brand = document.getElementById('brand_' + id).value.trim();
+        const rawSupplierName = document.getElementById('supplier_' + id).value.trim();
+        const supplierName = rawSupplierName.replace(/["']/g, "");
+        const shipping = document.getElementById('shipping_' + id).value;
+
+        if(!supplierName) { alert("🚨 PLEASE TYPE OR SELECT A SUPPLIER FIRST."); return; }
+
+        let phone = supplierPhones[supplierName];
+        let hasNumbers = /\d/.test(phone);
+
+        if (!phone || phone === "undefined" || !hasNumbers) {
+            let manualPhone = prompt(`⚠️ ${supplierName} does not have a valid WhatsApp number on file.\n\nEnter WhatsApp number (e.g. 26771234567):`);
+            if (!manualPhone) { alert("🚨 RFQ Aborted."); return; }
+            phone = manualPhone.replace(/\+/g, '').replace(/ /g, '');
+        }
+
+        let msg = `*LAVETO SOVEREIGN COMMAND (Procurement Div)*\n*URGENT RFQ:* Requesting immediate wholesale quote.\n\n*VIN:* ${vin}\n*COMPONENT:* ${compName}\n*OEM #:* ${oem}\n*BRAND:* ${brand}\n*SHIPPING:* ${shipping}\n\nPlease advise on pricing and ETA.`;
+
+        const response = await fetch('/hangar/log_rfq_dispatch', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}'},
+            body: JSON.stringify({
+                order_id: id,
+                supplier_name: supplierName,
+                message_content: msg
+            })
+        });
+
+        if (response.ok) {
+            const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+        } else {
+            alert("🚨 RFQ Log failed. Dispatch aborted for safety.");
+        }
+    }
+
+    async function dispatchRFQ(id, vin, compName) {
+    const oem = document.getElementById('oem_' + id).value.trim();
+    const brand = document.getElementById('brand_' + id).value.trim();
+    const rawSupplierName = document.getElementById('supplier_' + id).value.trim();
+    const supplierName = rawSupplierName.replace(/["']/g, "");
+    const shipping = document.getElementById('shipping_' + id).value;
+
+    if(!supplierName) { alert("🚨 PLEASE TYPE OR SELECT A SUPPLIER FIRST."); return; }
+
+    let phone = supplierPhones[supplierName];
+    let hasNumbers = /\d/.test(phone);
+
+    if (!phone || phone === "undefined" || !hasNumbers) {
+        let manualPhone = prompt(`⚠️ ${supplierName} does not have a valid WhatsApp number on file.\n\nEnter WhatsApp number (e.g. 26771234567):`);
+        if (!manualPhone) { alert("🚨 RFQ Aborted."); return; }
+        phone = manualPhone.replace(/\+/g, '').replace(/ /g, '');
+    }
+
+    let msg = `*LAVETO SOVEREIGN COMMAND (Procurement Div)*\n*URGENT RFQ:* Requesting immediate wholesale quote.\n\n*VIN:* ${vin}\n*COMPONENT:* ${compName}\n*OEM #:* ${oem}\n*BRAND:* ${brand}\n*SHIPPING:* ${shipping}\n\nPlease advise on pricing and ETA.`;
+
+    try {
+        await fetch("{{ url_for('hangar.log_rfq_dispatch') }}", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}'},
+            body: JSON.stringify({
+                order_id: id,
+                supplier_name: supplierName,
+                message_content: msg
+            })
+        });
+    } catch(err) {
+        console.warn("RFQ logging failed, proceeding to dispatch:", err);
+    }
+
+    const url = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(msg)}`;
+    window.open(url, '_blank');
+}
+
+    function validatePayload(id) {
+        const compElement = document.getElementById('comp_name_' + id);
+        const compName = compElement ? compElement.innerText.trim() : "";
+        const isRegulatory = compName.includes("Dept of Transport");
+
+        const oemEl = document.getElementById('oem_' + id);
+        const brandEl = document.getElementById('brand_' + id);
+        const supplierEl = document.getElementById('supplier_' + id);
+
+        if (!oemEl || !brandEl || !supplierEl) return;
+
+        const oem = oemEl.value.trim();
+        const brand = brandEl.value.trim();
+        const supplierName = supplierEl.value.trim();
+
+        const btnCommit = document.getElementById('btn_commit_' + id);
+        const btnRfq = document.getElementById('btn_rfq_' + id);
+        const statusSelect = document.getElementById('status_' + id);
+        const optAwaiting = document.getElementById('opt_awaiting_' + id);
+        const chkbox = document.getElementById('chk_' + id);
+
+        const isReady = isRegulatory ? true : (oem !== "" && brand !== "");
+
+        if (isReady) {
+            if (btnCommit) {
+                btnCommit.disabled = false;
+                btnCommit.style.background = "var(--integrity-gold)";
+                btnCommit.style.color = "black";
+                btnCommit.style.cursor = "pointer";
+            }
+
+            if (btnRfq) {
+                btnRfq.disabled = false;
+                btnRfq.style.background = "var(--whatsapp-green)";
+                btnRfq.style.color = "black";
+                btnRfq.style.cursor = "pointer";
+            }
+
+            if (optAwaiting) optAwaiting.disabled = false;
+            if(statusSelect && statusSelect.value === 'PENDING PAYLOAD') statusSelect.value = 'AWAITING FUNDS';
+
+            const cleanSupplierName = supplierName.replace(/["']/g, "");
+            if (cleanSupplierName !== "") {
+                if (chkbox) chkbox.disabled = false;
+            } else {
+                if (chkbox) { chkbox.disabled = true; chkbox.checked = false; }
+            }
+        } else {
+            if (btnCommit) {
+                btnCommit.disabled = true;
+                btnCommit.style.background = "var(--border-ui)";
+                btnCommit.style.color = "#666";
+                btnCommit.style.cursor = "not-allowed";
+            }
+
+            if (btnRfq) {
+                btnRfq.disabled = true;
+                btnRfq.style.background = "var(--border-ui)";
+                btnRfq.style.color = "#666";
+                btnRfq.style.cursor = "not-allowed";
+            }
+
+            if (optAwaiting) optAwaiting.disabled = true;
+            if(statusSelect && statusSelect.value === 'AWAITING FUNDS') statusSelect.value = 'PENDING PAYLOAD';
+            if (chkbox) { chkbox.disabled = true; chkbox.checked = false; }
+        }
+    }
+
+    function dispatchMasterRFQ() {
+        const checkboxes = document.querySelectorAll('.rfq-checkbox:checked');
+        if (checkboxes.length === 0) {
+            alert("🚨 SELECT AT LEAST ONE GHOST ORDER. (Ensure Data Payload and Supplier are locked).");
+            return;
+        }
+
+        let targetSupplier = null;
+        let targetPhone = null;
+        let itemsText = "";
+
+        for (let i = 0; i < checkboxes.length; i++) {
+            const id = checkboxes[i].value;
+            const vin = checkboxes[i].getAttribute('data-vin');
+            const compName = checkboxes[i].getAttribute('data-comp');
+
+            const oemEl = document.getElementById('oem_' + id);
+            const brandEl = document.getElementById('brand_' + id);
+            const supplierEl = document.getElementById('supplier_' + id);
+            const shippingEl = document.getElementById('shipping_' + id);
+
+            if (!oemEl || !brandEl || !supplierEl || !shippingEl) continue;
+
+            const oem = oemEl.value.trim();
+            const brand = brandEl.value.trim();
+            const rawSupplierName = supplierEl.value.trim();
+            const supplierName = rawSupplierName.replace(/["']/g, "");
+            const shipping = shippingEl.value;
+
+            if (targetSupplier === null) {
+                targetSupplier = supplierName;
+                targetPhone = supplierPhones[supplierName];
+            } else if (targetSupplier !== supplierName) {
+                alert("🚨 MASTER RFQ ABORTED: All selected parts must be assigned to the exact SAME supplier.");
+                return;
+            }
+
+            itemsText += `-- 📦 ITEM ${i + 1} --\n*VIN:* ${vin}\n*COMPONENT:* ${compName}\n*OEM #:* ${oem}\n*BRAND:* ${brand}\n*SHIPPING:* ${shipping}\n\n`;
+        }
+
+        let hasNumbers = /\d/.test(targetPhone);
+        if (!targetPhone || targetPhone === "undefined" || !hasNumbers) {
+            let manualPhone = prompt(`⚠️ ${targetSupplier} does not have a valid WhatsApp number on file.\n\nEnter WhatsApp number (e.g. 26771234567):`);
+            if (!manualPhone) { alert("🚨 RFQ Aborted."); return; }
+            targetPhone = manualPhone.replace(/\+/g, '').replace(/ /g, '');
+        }
+
+        let msg = `*LAVETO SOVEREIGN COMMAND (Procurement Div)*\n*URGENT MASTER BATCH RFQ:* Requesting immediate quote for ${checkboxes.length} item(s).\n\n*TARGET SUPPLIER:* ${targetSupplier}\n\n${itemsText}Please advise on bundled pricing and dispatch ETA.`;
+        const url = `https://api.whatsapp.com/send?phone=${targetPhone}&text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('silkroad-theme') || 'dark';
+        document.body.setAttribute('data-theme', savedTheme);
+
+        {% if active_orders %}
+        {% for order in active_orders %}
+            {% if order.status in ['PENDING ORDER', 'PENDING PAYLOAD', 'AWAITING FUNDS', 'FUNDS CLEARED'] %}
+                validatePayload({{ order.id }});
+            {% endif %}
+        {% endfor %}
+        {% endif %}
+
+        document.querySelectorAll('.eta-display').forEach(el => {
+            const etaDate = new Date(el.getAttribute('data-eta') + 'Z');
+            const now = new Date();
+            const diffTime = Math.ceil((etaDate - now) / (1000 * 60 * 60 * 24));
+
+            if (diffTime > 0) {
+                el.innerText = `T-MINUS ${diffTime} DAYS`;
+            } else if (diffTime === 0) {
+                el.innerText = `LANDING TODAY`;
+                el.style.color = 'var(--integrity-green)';
+                el.style.animation = 'pulse-alert 2s infinite';
+            } else {
+                el.innerText = `OVERDUE (${Math.abs(diffTime)} DAYS)`;
+                el.style.color = 'var(--critical-red)';
+            }
+        });
+    });
+
+    document.querySelectorAll('.ghost-card form').forEach(form => {
+        form.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('change', function() {
+                if (this.name === 'status') return;
+
+                const formData = new FormData(form);
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                }).then(response => response.json())
+                  .then(data => {
+                    const originalBorder = this.style.borderColor;
+                    this.style.borderColor = 'var(--integrity-green)';
+                    this.style.boxShadow = '0 0 8px rgba(40, 167, 69, 0.4)';
+                    setTimeout(() => {
+                        this.style.borderColor = originalBorder;
+                        this.style.boxShadow = 'none';
+                    }, 1000);
+                }).catch(error => console.error('Auto-Save Error:', error));
+            });
+        });
+    });
+</script>
+{% endblock %}

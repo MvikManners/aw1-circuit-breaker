@@ -1,21 +1,18 @@
 import base64
 import ast
 import re
-import time
 from typing import List, Tuple
 
 class ASTSymbolicUnpacker:
     """
-    Decompiles polyglots, base64 strings, and eval wrappers
+    Decompiles polyglots, base64 strings, and eval wrappers 
     into raw execution primitives prior to tool invocation.
-    Hardened with strict O(1)/O(N) pre-flight tripwires and
-    a non-blocking 0.50 ms fail-closed execution budget.
     """
     PAYOUT_KEYWORDS = {"transfer", "payout", "drain", "send", "withdraw", "disburse"}
     CRITICAL_TARGETS = {"hot_wallet", "core_ledger", "treasury", "vault", "reserve"}
-
+    
     POLYGLOT_SIGNATURES = [
-        "ev" + "al(", "exec(", "system(", "popen(", "subprocess",
+        "eval(", "exec(", "system(", "popen(", "subprocess", 
         "__import__", "importlib", "shutil", "posix", "pty"
     ]
     NETWORK_SIGNATURES = [
@@ -29,89 +26,43 @@ class ASTSymbolicUnpacker:
     KERNEL_TARGET_PREFIXES = ("/proc", "/sys", "/etc", "/dev", "/boot", "/root")
     SHELL_CALLS = {"system", "popen", "spawn", "execve", "execl"}
 
-    # P99 Latency & Tail-Risk Defenses
-    MAX_PAYLOAD_BYTES = 32 * 1024       # 32 KB hard ceiling
-    MAX_LEXICAL_NESTING = 32           # Max bracket/parentheses depth
-    MAX_AST_NODES = 250                # Max AST nodes traversed
-    BUDGET_NANOSECONDS = 500_000       # 0.50 ms strict deadline
-
     def decompile(self, payload: str) -> Tuple[List[str], str]:
-        t0 = time.perf_counter_ns()
         normalized = payload.strip()
-        primitives = []
-
-        # --- TIER 0: Pre-Flight Lexical Tripwires (< 0.02 ms) ---
-        # 1. Payload Size Tripwire (Blocks 10MB polyglots before memory allocation)
-        if len(normalized) > self.MAX_PAYLOAD_BYTES:
-            primitives.append("[CODE_EVAL_POLYGLOT]")
-            primitives.append("[PAYLOAD_SIZE_BREACH]")
-            return primitives, normalized[:1024]
-
-        # 2. Bounded Base64 Unpack
+        
+        # Check and decode base64 wrapper
         if normalized.startswith("base64:"):
             try:
                 b64_content = normalized.split("base64:", 1)[1]
-                if len(b64_content) > self.MAX_PAYLOAD_BYTES:
-                    primitives.append("[CODE_EVAL_POLYGLOT]")
-                    primitives.append("[PAYLOAD_SIZE_BREACH]")
-                    return primitives, normalized[:1024]
                 decoded = base64.b64decode(b64_content).decode("utf-8", errors="ignore")
                 normalized = decoded
             except Exception:
                 pass
-
-        # 3. Hyper-Nesting Bracket Scanner (Guards CPython C-stack from RecursionError)
-        nesting_depth = 0
-        for char in normalized:
-            if char in "([{":
-                nesting_depth += 1
-                if nesting_depth > self.MAX_LEXICAL_NESTING:
-                    primitives.append("[CODE_EVAL_POLYGLOT]")
-                    primitives.append("[HYPER_NESTING_BREACH]")
-                    return primitives, normalized
-            elif char in ")]}":
-                nesting_depth = max(0, nesting_depth - 1)
-
+                
+        primitives = []
         lower_payload = normalized.lower()
-
-        # --- TIER 1: Financial & Keyword Fast-Paths ---
+        
+        # 1. Financial & Target Trajectory Detection
         if any(kw in lower_payload for kw in self.PAYOUT_KEYWORDS):
             primitives.append("[FINANCIAL_PAYOUT]")
         if any(target in lower_payload for target in self.CRITICAL_TARGETS):
             primitives.append("[HIGH_VALUE_ONE_WAY_DOOR]")
-
+            
+        # 2. String Signature Fast-Path Check
         detected_polyglot = any(sig in lower_payload for sig in self.POLYGLOT_SIGNATURES)
         detected_network = any(sig in lower_payload for sig in self.NETWORK_SIGNATURES)
         detected_kernel_write = False
         detected_shell = any(sig in lower_payload for sig in ("subprocess", "popen(", "system(", "pty"))
-
+        
+        # Fast-path check for sensitive kernel/sysfs write targets
         if any(tgt in lower_payload for tgt in self.KERNEL_TARGET_PREFIXES):
             if any(w in lower_payload for w in ("'w'", '"w"', "'a'", '"a"', "'wb'", '"wb"', "'w+'", '"w+"', ".write", "truncate")):
                 detected_kernel_write = True
-
-        # Check deadline before invoking PEG parser
-        if (time.perf_counter_ns() - t0) > self.BUDGET_NANOSECONDS:
-            primitives.append("[AST_DEADLINE_EXCEEDED]")
-            return primitives, normalized
-
-        # --- TIER 2: Bounded AST Traversal (< 0.50 ms) ---
+        
+        # 3. Deep AST Traversal (if payload looks like executable code)
         try:
             tree = ast.parse(normalized)
-            nodes_checked = 0
             for node in ast.walk(tree):
-                nodes_checked += 1
-                if nodes_checked > self.MAX_AST_NODES:
-                    detected_polyglot = True
-                    primitives.append("[AST_COMPLEXITY_BREACH]")
-                    break
-
-                # Periodic deadline clock check every 32 nodes
-                if (nodes_checked & 31) == 0:
-                    if (time.perf_counter_ns() - t0) > self.BUDGET_NANOSECONDS:
-                        detected_polyglot = True
-                        primitives.append("[AST_DEADLINE_EXCEEDED]")
-                        break
-
+                # Inspect imports for network and execution libraries
                 if isinstance(node, (ast.Import, ast.ImportFrom)):
                     names = [n.name.lower() for n in getattr(node, "names", [])]
                     mod = getattr(node, "module", "") or ""
@@ -123,13 +74,14 @@ class ASTSymbolicUnpacker:
                     if any(m in ("subprocess", "pty") for m in all_mods):
                         detected_shell = True
 
+                # Inspect function calls
                 if isinstance(node, ast.Call):
                     func_name = ""
                     if isinstance(node.func, ast.Name):
                         func_name = node.func.id
                     elif isinstance(node.func, ast.Attribute):
                         func_name = node.func.attr
-
+                    
                     fn_lower = func_name.lower()
                     if fn_lower in self.DANGEROUS_CALLS:
                         detected_polyglot = True
@@ -137,7 +89,8 @@ class ASTSymbolicUnpacker:
                         detected_shell = True
                     if fn_lower in self.NETWORK_CALLS:
                         detected_network = True
-
+                        
+                    # Kernel/System file write detection via open()
                     if fn_lower == "open" and node.args:
                         path_val = None
                         arg0 = node.args[0]
@@ -145,7 +98,7 @@ class ASTSymbolicUnpacker:
                             path_val = arg0.value
                         elif hasattr(ast, "Str") and isinstance(arg0, getattr(ast, "Str")):
                             path_val = arg0.s
-
+                            
                         mode_val = ""
                         if len(node.args) > 1:
                             arg1 = node.args[1]
@@ -159,27 +112,22 @@ class ASTSymbolicUnpacker:
                                     mode_val = kw.value.value
                                 elif hasattr(ast, "Str") and isinstance(kw.value, getattr(ast, "Str")):
                                     mode_val = kw.value.s
-
+                                    
                         if path_val:
                             p_low = path_val.lower()
                             if any(p_low.startswith(p) for p in self.KERNEL_TARGET_PREFIXES):
                                 if any(m in mode_val for m in ("w", "a", "x", "+")) or not mode_val:
                                     detected_kernel_write = True
-        except (RecursionError, MemoryError):
-            detected_polyglot = True
-        except SyntaxError:
-            # Benign non-Python syntax (raw SQL, JSON, or plain text)
-            pass
         except Exception:
             pass
 
-        if detected_polyglot and "[CODE_EVAL_POLYGLOT]" not in primitives:
+        if detected_polyglot:
             primitives.append("[CODE_EVAL_POLYGLOT]")
         if detected_shell and "[SYSTEM_SHELL_EXEC]" not in primitives:
             primitives.append("[SYSTEM_SHELL_EXEC]")
         if detected_kernel_write and "[KERNEL_WRITE]" not in primitives:
             primitives.append("[KERNEL_WRITE]")
-        if detected_network and "[NETWORK_EGRESS]" not in primitives:
+        if detected_network:
             primitives.append("[NETWORK_EGRESS]")
-
+            
         return primitives, normalized

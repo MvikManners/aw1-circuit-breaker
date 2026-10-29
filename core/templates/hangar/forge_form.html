@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><title>Forge Mandate</title></head>
+<body>
+    <h1>Forge Payroll Mandate</h1>
+    <form method="POST" action="{{ url_for('hangar_bp.forge_payroll_mandate') }}">
+        <input type="text" name="vin_dna" placeholder="VIN DNA" required><br>
+        <input type="text" name="department" placeholder="Department" required><br>
+        <input type="text" name="omang_number" placeholder="Omang Number" required><br>
+        <input type="text" name="employee_number" placeholder="Employee Number" required><br>
+        <input type="number" name="monthly_pledge" placeholder="Monthly Pledge" step="0.01" required><br>
+        <button type="submit">SUBMIT FORGE REQUEST</button>
+    </form>
+</body>
+</html>

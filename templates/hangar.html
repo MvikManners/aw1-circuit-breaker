@@ -1,0 +1,1585 @@
+{% extends "base.html" %}
+{% block content %}
+
+<a href="{{ url_for('auth.logout') }}" style="position: fixed; top: 20px; right: 30px; background-color: #9b2c2c; color: #ffffff; padding: 12px 24px; text-decoration: none; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 2px; border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 9999; border: 1px solid #e53e3e; transition: all 0.3s ease;" onmouseover="this.style.backgroundColor='#742a2a'" onmouseout="this.style.backgroundColor='#9b2c2c'">
+    ⏏️ SECURE EGRESS
+</a>
+
+<div style="max-width: 1400px; margin: 20px auto 0 auto; padding: 0 20px; display: flex; justify-content: space-between; align-items: center; font-family: 'Montserrat', sans-serif;">
+    <div style="font-size: 0.75rem; font-weight: 900; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 8px;">
+        <span style="color: var(--critical-red);">●</span> SECURE WORKSPACE NODE // TERMINAL MODE ACTIVE
+    </div>
+    <div style="display: flex; gap: 20px; font-size: 0.8rem; font-weight: 700; letter-spacing: 1px; align-items: center;">
+
+        <!-- UPGRADED: Theme-Adaptive Live CAT Telemetry -->
+        <span id="terminal-clock" style="color: var(--text-main); background-color: var(--panel-bg); border: 1px solid var(--border-ui); padding: 6px 12px; border-radius: 4px; font-family: 'Courier Prime', monospace; font-weight: 900; letter-spacing: 2px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+            00:00:00 CAT
+        </span>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+    :root {
+        /* 🎨 BRAND COLORS */
+        --sanctified-blue: #3182ce;
+        --integrity-gold: #d4af37;
+        --gold-text: #d4af37;
+        --integrity-green: #38a169;
+        --critical-red: #e53e3e;
+        --warning-orange: #dd6b20;
+        --cyan-healthy: #319795;
+
+        /* 🌑 HIGH-CONTRAST SLATE DARK THEME */
+        --bg-main: #121620;
+        --text-main: #f7fafc;
+        --panel-bg: #1a202c;
+        --card-bg: #1a202c;
+        --border-ui: #2d3748;
+        --card-hover: #232a3b;
+        --input-bg: #121620;
+        --legend-bg: #1a202c;
+        --text-muted: #cbd5e0;
+        --popup-overlay-bg: #1a202c;
+    }
+
+    /* 🌕 LIGHT THEME OVERRIDES */
+    :root.light-theme {
+        --bg-main: #f4f6f8;
+        --panel-bg: #FFFFFF;
+        --border-ui: #EAEAEA;
+        --text-main: #111111;
+        --text-muted: #555555;
+        --input-bg: #F5F5F5;
+        --gold-text: #A37A2C;
+        --popup-overlay-bg: #f9f9f9;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg-main) !important;
+        color: var(--text-main) !important;
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+        padding-top: 110px;
+        transition: background-color 0.4s ease, color 0.4s ease;
+    }
+
+    /* 🛡️ LAYOUT GRID */
+    .hangar-grid {
+        max-width: 1400px; margin: 0 auto; padding: 20px;
+        display: grid; grid-template-columns: 1fr 350px; gap: 40px;
+        align-items: start;
+    }
+    .main-column { display: flex; flex-direction: column; gap: 30px; }
+
+    /* 🛡️ SIDEBAR */
+    .sidebar {
+        display: flex; flex-direction: column; gap: 20px;
+    }
+
+    /* 🚨 MAYDAY BEACON ANIMATION */
+    @keyframes pulse-border {
+        0% { box-shadow: 0 0 20px rgba(229, 62, 62, 0.2); border-color: rgba(229, 62, 62, 0.4); }
+        50% { box-shadow: 0 0 40px rgba(229, 62, 62, 0.6); border-color: rgba(229, 62, 62, 1); }
+        100% { box-shadow: 0 0 20px rgba(229, 62, 62, 0.2); border-color: rgba(229, 62, 62, 0.4); }
+    }
+
+    /* 🛠️ CARDS & BADGES */
+    .forge-card {
+        background: var(--panel-bg); padding: 30px; border: 1px solid var(--border-ui);
+        border-top: 4px solid var(--sanctified-blue); border-radius: 6px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    }
+    .forge-card h3 { margin-top: 0; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-main); }
+
+    .step-badge {
+        color: white; padding: 5px 12px; border-radius: 4px;
+        font-size: 0.8rem; font-weight: 900; margin-right: 15px; font-family: 'Inter', sans-serif;
+    }
+    .step-1 { background: var(--sanctified-blue); }
+    .step-2 { background: var(--integrity-gold); color: black; }
+
+    /* ℹ️ TOOLTIPS */
+    .info-trigger {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 22px; height: 22px; background: var(--sanctified-blue); color: white;
+        border-radius: 50%; font-size: 0.75rem; font-weight: bold; cursor: help;
+        position: relative; margin-left: 15px; font-family: 'Courier Prime';
+    }
+    .tooltip-box {
+        display: none; position: absolute; bottom: 140%; left: 50%; transform: translateX(-50%);
+        width: 280px; background: #1a202c; border: 1px solid var(--integrity-gold); padding: 15px;
+        border-radius: 6px; color: #f7fafc; font-size: 0.75rem; z-index: 100;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.6); font-family: 'Inter', sans-serif;
+        line-height: 1.6; text-transform: none; font-weight: normal; letter-spacing: normal;
+    }
+    .tooltip-box::after {
+        content: ""; position: absolute; top: 100%; left: 50%; margin-left: -6px;
+        border-width: 6px; border-style: solid; border-color: var(--integrity-gold) transparent transparent transparent;
+    }
+    .info-trigger:hover .tooltip-box { display: block; }
+
+    /* 🎛️ INPUTS & BUTTONS */
+    .form-group label { display: block; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+    .form-group input {
+        width: 100%; padding: 18px; font-size: 1.2rem; background: var(--input-bg);
+        color: var(--text-main); border: 1px solid var(--border-ui); border-radius: 4px;
+        font-family: 'Courier Prime', monospace; box-sizing: border-box; transition: 0.3s;
+    }
+    .form-group input:focus { border-color: var(--integrity-gold); outline: none; }
+
+    .btn-search {
+        background: var(--integrity-gold); color: black; border: none; padding: 18px;
+        width: 100%; font-weight: 900; font-size: 1rem; cursor: pointer; border-radius: 4px;
+        font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 2px;
+        margin-top: 20px; transition: 0.3s; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    }
+    .btn-search:hover { filter: brightness(1.15); }
+
+    .btn-whatsapp-hangar {
+        display: block; width: 100%; text-align: center; padding: 18px; border-radius: 4px;
+        text-decoration: none; font-weight: 900; font-family: 'Montserrat', sans-serif;
+        transition: 0.3s; cursor: pointer; border: 1px solid var(--sanctified-blue);
+        box-sizing: border-box; font-size: 0.9rem; letter-spacing: 1px;
+    }
+    .btn-whatsapp-hangar:hover { opacity: 0.9; transform: translateY(-2px); }
+
+    /* 📋 QUEUE LISTS */
+    .queue-header {
+        font-family: 'Courier Prime', monospace; font-size: 1.2rem; font-weight: 900;
+        color: var(--integrity-gold); margin-bottom: 20px; letter-spacing: 2px;
+        text-align: center; border-bottom: 1px solid var(--border-ui); padding-bottom: 15px;
+    }
+    .queue-card {
+        background: rgba(49, 130, 206, 0.1); border: 1px solid var(--sanctified-blue);
+        padding: 25px; border-radius: 6px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .queue-data { display: grid; grid-template-columns: 1fr; gap: 10px; font-size: 0.85rem; font-family: 'Inter', sans-serif; }
+    .queue-data strong { color: var(--text-muted); font-weight: bold; }
+    .queue-data span { color: var(--text-main); font-weight: 600; font-family: 'Courier Prime', monospace; }
+
+    .btn-grade {
+        display: block; text-align: center; padding: 15px; margin-top: 20px;
+        border: 1px solid var(--integrity-gold); color: var(--integrity-gold);
+        text-decoration: none; font-family: 'Montserrat', sans-serif; font-weight: 900;
+        border-radius: 4px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+    }
+    .btn-grade:hover { background: var(--integrity-gold); color: black; }
+
+    .btn-approve {
+        display: block; width: 100%; text-align: center; padding: 15px; margin-top: 15px;
+        background: var(--integrity-green); color: white; border: none;
+        text-decoration: none; font-family: 'Montserrat', sans-serif; font-weight: 900;
+        border-radius: 4px; transition: 0.3s; text-transform: uppercase; letter-spacing: 2px;
+        cursor: pointer; box-shadow: 0 4px 15px rgba(56, 161, 105, 0.3);
+    }
+    .btn-approve:hover { background: #2f855a; }
+
+    .vam-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 5px; font-family: 'Inter', sans-serif; }
+    .vam-class-header { font-family: 'Montserrat', sans-serif; font-weight: 900; margin-bottom: 8px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* 🚨 NETWORK STATUS POP ENGINE Rulesets */
+    .status-badge-container {
+        position: relative;
+        display: inline-block;
+    }
+    .status-badge-clip {
+        max-width: 145px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        cursor: zoom-in;
+        transition: all 0.2s ease;
+    }
+
+    @media (max-width: 900px) { .hangar-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div id="maydayCommandPanel" style="display: none; max-width: 1200px; margin: 20px auto 10px auto; background: rgba(229, 62, 62, 0.12); border: 1px dashed var(--critical-red); border-radius: 6px; padding: 25px; box-sizing: border-box; width: 100%; animation: pulse-border 2s infinite;">
+    <div style="font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.85rem; color: #fc8181; letter-spacing: 3px; text-transform: uppercase; text-align: center; margin-bottom: 10px;">
+        🚨 MAYDAY PROTOCOL ACTIVE
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(229, 62, 62, 0.3); padding-bottom: 15px; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+        <div>
+            <h2 id="maydayAssetHeader" style="margin: 0; color: #ffffff; font-family: 'Courier Prime', monospace; font-weight: bold; letter-spacing: 1px; font-size: 1.4rem;">SIGNAL LOCKED // INCOMING TELEMETRY</h2>
+            <p id="maydayTime" style="color: #feb2b2; font-family: 'Courier Prime', monospace; font-size: 0.8rem; margin: 5px 0 0 0; font-weight: bold;">SIGNAL DETECTED AT: 00:00:00</p>
+        </div>
+        <button id="dispatchAgentBtn" onclick="dispatchRapidResponse()" style="background: var(--critical-red); color: white; border: none; padding: 16px 35px; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.9rem; cursor: pointer; text-transform: uppercase; border-radius: 4px; transition: 0.3s; box-shadow: 0 4px 15px rgba(229, 62, 62, 0.4);" onmouseover="this.style.background='#c53030';" onmouseout="this.style.background='var(--critical-red)';">
+            🚀 AUTHORIZE RAPID FIELD DISPATCH
+        </button>
+    </div>
+    <div id="maydayMap" style="height: 350px; width: 100%; border-radius: 4px; border: 1px solid var(--border-ui); z-index: 1;"></div>
+    <p style="text-align: center; color: #feb2b2; font-family: 'Courier Prime', monospace; font-size: 0.75rem; margin-top: 12px; margin-bottom: 0; letter-spacing: 1px; text-transform: uppercase; font-weight: bold;">
+        GEOLOCATION ACCURACY MATRIX: <span id="maydayAccuracy" style="font-weight: bold; color: white;">0</span> METERS DEVIATION
+    </p>
+</div>
+
+<div class="hangar-grid">
+    <div class="main-column">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: -15px;">
+            <button onclick="toggleTheme()" id="themeToggleBtn" style="background: transparent; color: var(--integrity-gold); border: 1px solid var(--integrity-gold); padding: 8px 15px; font-family: 'Montserrat', sans-serif; font-size: 0.75rem; font-weight: 900; letter-spacing: 1px; cursor: pointer; border-radius: 4px; text-transform: uppercase; transition: 0.3s;">
+                ☀️ LIGHT MODE
+            </button>
+        </div>
+
+        <div style="background: var(--panel-bg); border: 1px solid var(--border-ui); border-left: 5px solid var(--integrity-gold); padding: 22px; border-radius: 6px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); margin-top: 15px;">
+            <div>
+                <div style="font-family: 'Courier Prime', monospace; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">ACTIVE DISPATCH</div>
+                <h2 style="margin: 5px 0 0 0; color: var(--text-main); font-family: 'Montserrat', sans-serif; font-size: 1.5rem; font-weight: 900; text-transform: uppercase;">
+                    🛡️ {{ active_warden.name if active_warden else 'UNKNOWN WARDEN' }}
+                </h2>
+            </div>
+            <div style="text-align: right; background: rgba(212, 175, 55, 0.08); padding: 15px; border: 1px dashed var(--integrity-gold); border-radius: 4px;">
+                <div style="font-family: 'Courier Prime', monospace; font-size: 0.7rem; color: var(--integrity-gold); text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">TOTAL ESCROWED PAY</div>
+                <div style="font-family: 'Courier Prime', monospace; font-size: 2rem; color: var(--text-main); font-weight: 900; margin-top: 5px;">
+                    P{{ "{:,.2f}".format(active_warden.wallet_balance if active_warden else 0.00) }}
+                </div>
+            </div>
+        </div>
+
+        <button type="button" onclick="dispatchIntakeLink()" class="btn-whatsapp-hangar" style="background: var(--sanctified-blue); color: white; border: none; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(49, 130, 206, 0.3);">
+            📲 SEND INTAKE LINK TO MEMBER
+        </button>
+
+        <div style="background: var(--panel-bg); border: 1px solid var(--border-ui); border-top: 4px solid var(--integrity-gold); border-radius: 6px; padding: 22px; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); width: 100%; box-sizing: border-box;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-ui); padding-bottom: 15px; margin-bottom: 15px;">
+                <h3 style="margin: 0; font-family: 'Montserrat', sans-serif; font-size: 0.85rem; color: var(--gold-text); text-transform: uppercase; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; font-weight: 800;">
+                    <div class="sentinel-orb"></div> Global Warden Telemetry
+                </h3>
+                <div style="font-family: 'Courier Prime', monospace; font-size: 0.7rem; color: var(--integrity-green); font-weight: bold; letter-spacing: 1px; animation: pulse-text 2s infinite;">
+                    LIVE FEED SECURED
+                </div>
+            </div>
+
+            <div class="scroll-hide" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; font-family: 'Courier Prime', monospace; font-size: 0.75rem; padding-right: 5px;">
+
+                {# 🛡️ RELATIONSHIP BYPASS ENGINE #}
+                {% set runtime_events = [] %}
+                {% if assets %}
+                    {% for r in assets %}
+                        {% if r.transactions %}
+                            {% for tx in r.transactions %}
+                                {% if tx.timestamp and tx.intent %}
+                                    {% set _ = runtime_events.append({'timestamp': tx.timestamp, 'intent': tx.intent, 'vin_dna': r.vin_dna}) %}
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                    {% set runtime_events = runtime_events | sort(attribute='timestamp', reverse=true) %}
+                {% endif %}
+
+                {% if runtime_events and runtime_events|length > 0 %}
+                    {% for event in runtime_events[:50] %}
+                        {# Status Engine #}
+                        {% set is_mayday = 'MAYDAY' in event.intent.upper() %}
+                        {% set is_beacon = 'BEACON' in event.intent.upper() %}
+                        {% set status_color = 'var(--integrity-green)' if is_mayday else ('var(--critical-red)' if is_beacon else 'var(--sanctified-blue)') %}
+                        {% set status_icon = '✅' if is_mayday else ('?' if is_beacon else '●') %}
+
+                        <div style="display: grid; grid-template-columns: 120px 180px 1fr; gap: 15px; padding: 12px 15px; background: var(--input-bg); border-left: 4px solid {{ status_color }}; border-radius: 4px; align-items: center; border: 1px solid var(--border-ui);">
+                            <div style="color: var(--text-muted); font-weight: bold;">{{ event.timestamp.strftime('%b %d, %H:%M') }}</div>
+                            <div style="font-family: 'Courier Prime', monospace;">
+                                <a href="?search={{ event.vin_dna }}" style="color: var(--gold-text); font-weight: bold; text-decoration: none;">
+                                    [{{ event.vin_dna }}]
+                                </a>
+                            </div>
+                            <div style="color: var(--text-main); font-size: 0.8rem; display: flex; align-items: center; gap: 8px; font-weight: 500;">
+                                <span>{{ status_icon }}</span>
+                                <span>{{ event.intent }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; padding: 30px; color: var(--text-muted); font-style: italic;">[ SILENCE DETECTED ON ALL FREQUENCIES ]</div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% set filtered_prospects = [] %}
+        {# Fallback Check #}
+        {% if prospects %}
+            {% set filtered_prospects = prospects %}
+        {% else %}
+            {% for a in assets %}
+                {% set asset_status = (a.status or '')|upper %}
+                {% set current_status = (a.current_status or '')|upper %}
+
+                {% if ('PROSPECT' in asset_status or 'PROSPECT' in current_status or
+                      'PENDING' in asset_status or 'PENDING' in current_status or
+                      'INTAKE' in asset_status or 'INTAKE' in current_status) and
+                      ('LIQUIDATION' not in asset_status and 'LIQUIDATION' not in current_status) %}
+                    {% set _ = filtered_prospects.append(a) %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <div style="margin-bottom: 40px;">
+
+            <div class="queue-header" style="text-align: center; color: var(--integrity-gold); border-bottom: 1px solid var(--border-ui); padding-bottom: 15px; margin-bottom: 20px;">PENDING INTAKE PROSPECTS</div>
+
+            {% if filtered_prospects|length > 0 %}
+                {% for p in filtered_prospects %}
+                    <div class="queue-card">
+                        <div style="font-family: 'Courier Prime', monospace; font-size: 1.2rem; font-weight: 900; color: var(--integrity-gold); margin-bottom: 15px; letter-spacing: 2px; text-align: center; border-bottom: 1px solid var(--border-ui); padding-bottom: 15px;">
+                            {{ p.vin_dna or 'PENDING ASSIGNMENT' }}
+                        </div>
+                        <div class="queue-data" style="margin-bottom: 20px;">
+                            <div><strong>MEMBER:</strong> <span>{{ p.full_name or p.member_name or 'New Sign-up' }}</span></div>
+                            <div><strong>PHONE:</strong> <span>{{ p.phone_number or p.member_phone or 'N/A' }}</span></div>
+                            <div><strong>EMAIL:</strong> <span>{{ p.email or p.member_email or 'N/A' }}</span></div>
+
+                            {% if p.baseline_trauma %}
+                            <div style="margin-top: 10px; background: rgba(229, 62, 62, 0.15); border-left: 3px solid var(--critical-red); padding: 12px; border-radius: 4px;">
+                                <strong style="color: #fc8181; font-size: 0.75rem; letter-spacing: 1px;">🚨 REPORTED TRAUMA:</strong>
+                                <span style="color: #ffffff; display: block; margin-top: 4px; font-weight: bold; font-family: 'Courier Prime', monospace;">"{{ p.baseline_trauma }}"</span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div style="background: #121620; border: 1px dashed var(--sanctified-blue); padding: 15px; border-radius: 6px;">
+                            <div style="font-size: 0.7rem; color: var(--integrity-gold); font-family: 'Montserrat'; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Covenant Terms</div>
+                            <div class="queue-data">
+                                <div style="display: flex; justify-content: space-between;"><strong>Class:</strong> <span>CLASS {{ p.vehicle_class|default('B', true) }}</span></div>
+                                <div style="display: flex; justify-content: space-between;"><strong>Funding:</strong> <span>{{ p.funding_method|default('EFT', true)|replace('_', ' ') }}</span></div>
+                                <div style="display: flex; justify-content: space-between;"><strong>Cohort:</strong> <span style="color: #63b3ed;">{{ p.corporate_cohort|default('INDIVIDUAL', true) }}</span></div>
+                            </div>
+                        </div>
+
+                        <form action="{{ url_for('hangar.approve_intake', prospect_id=p.id) }}" method="POST" style="margin-top: 15px;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn-approve">
+                                🔓 APPROVE TO COMMAND WALL
+                            </button>
+                        </form>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; padding: 40px; background: var(--panel-bg); border: 1px dashed var(--border-ui); border-radius: 6px; font-family: 'Courier Prime', monospace; font-size: 0.85rem; color: var(--text-muted); font-style: italic;">
+                    [ 📭 NO PENDING PROSPECTS IN THE QUEUE ]
+                </div>
+            {% endif %}
+        </div>
+
+        {% set booked_assets = [] %}
+        {% for a in assets %}
+            {% set asset_status = (a.status or '')|upper %}
+            {% set current_status = (a.current_status or '')|upper %}
+            {% set trauma_text = (a.baseline_trauma or '')|upper %}
+
+            {% if 'BOOKED' in asset_status or 'BOOKED' in current_status or
+                  'CRITICAL' in asset_status or 'CRITICAL' in current_status or 'CRITICAL' in trauma_text or
+                  'URGENT' in asset_status or 'URGENT' in current_status or 'URGENT' in trauma_text or
+                  'ROUTINE' in asset_status or 'ROUTINE' in current_status or 'ROUTINE' in trauma_text or
+                  a.trauma_indicator %}
+                {% set _ = booked_assets.append(a) %}
+            {% endif %}
+        {% endfor %}
+
+        <div style="margin-bottom: 40px;">
+    <div class="queue-header" style="text-align: center; color: var(--integrity-gold); border-bottom: 1px solid var(--border-ui); padding-bottom: 15px; margin-bottom: 20px;">BOOKED WORKSHOP ASSETS</div>
+
+    {% if booked_assets|length > 0 %}
+        {% for b in booked_assets %}
+            <div class="queue-card" style="background: var(--card-bg); border: 1px solid var(--border-ui); border-radius: 6px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.25);">
+                <div class="queue-data">
+
+                    <!-- 🟢 TEXT COLORS EXPLICITLY DEFINED HERE -->
+                    <div style="margin-bottom: 8px;">
+                        <strong style="color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;">VIN DNA:</strong>
+                        <span style="color: var(--text-main); font-family: 'Courier Prime', monospace; font-size: 1.1rem; font-weight: bold; margin-left: 10px;">{{ b.vin_dna }}</span>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;">MEMBER:</strong>
+                        <span style="color: var(--integrity-gold); font-family: 'Montserrat', sans-serif; font-weight: bold; margin-left: 10px; text-transform: uppercase;">{{ b.member_name or 'Unknown' }}</span>
+                    </div>
+
+                    <div style="margin-top: 5px;">
+                        <strong style="color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;">STATUS TRACK:</strong>
+                        <span style="font-family: 'Courier Prime', monospace; font-weight: bold; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; margin-left: 10px; display: inline-block;
+                            {% if 'CRITICAL' in (b.status or '')|upper or 'CRITICAL' in (b.baseline_trauma or '')|upper %}
+                                background: rgba(229,62,62,0.2); color: #fc8181; border: 1px solid var(--critical-red);
+                            {% elif 'URGENT' in (b.status or '')|upper or 'URGENT' in (b.baseline_trauma or '')|upper %}
+                                background: rgba(221,107,32,0.2); color: var(--warning-orange); border: 1px solid var(--warning-orange);
+                            {% else %}
+                                background: rgba(49,130,206,0.15); color: #63b3ed; border: 1px solid var(--sanctified-blue);
+                            {% endif %}">
+                            {% if b.trauma_indicator and b.baseline_trauma %}
+                                {{ b.baseline_trauma|replace('TRIAGE ALERT: ', '') }}
+                            {% else %}
+                                {{ b.status or b.current_status or 'BOOKED' }}
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    {% if b.baseline_trauma %}
+                    <div style="margin-top: 15px; background: rgba(229, 62, 62, 0.1); border-left: 3px solid var(--critical-red); padding: 12px; border-radius: 4px; border-top: 1px solid var(--border-ui); border-right: 1px solid var(--border-ui); border-bottom: 1px solid var(--border-ui);">
+                        <strong style="color: #fc8181; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase;">🚨 REPORTED TRAUMA:</strong>
+                        <span style="color: var(--text-main); display: block; margin-top: 6px; font-weight: bold; font-family: 'Courier Prime', monospace; font-size: 0.9rem;">"{{ b.baseline_trauma }}"</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <a href="{{ url_for('hangar.inspection_desk', entry_id=b.id) }}" class="btn-grade" style="display: block; text-align: center; background: var(--panel-bg); color: var(--integrity-gold); border: 1px solid var(--integrity-gold); padding: 12px; text-decoration: none; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 2px; font-size: 0.9rem; border-radius: 4px; margin-top: 20px; transition: 0.3s;" onmouseover="this.style.background='var(--integrity-gold)'; this.style.color='black';" onmouseout="this.style.background='var(--panel-bg)'; this.style.color='var(--integrity-gold)';">
+                    📥 CHECK-IN VEHICLE
+                </a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div style="text-align: center; padding: 40px; background: var(--panel-bg); border: 1px dashed var(--border-ui); border-radius: 6px; font-family: 'Courier Prime', monospace; font-size: 0.85rem; color: var(--text-muted); font-style: italic;">
+            [ 🛠️ NO ASSETS CURRENTLY BOOKED FOR INTAKE ]
+        </div>
+    {% endif %}
+</div>
+
+{% if priority_flares %}
+<div style="background: rgba(229, 62, 62, 0.15); border: 1px solid var(--critical-red); padding: 18px; margin: 20px 0; border-radius: 6px; width: 100%; box-sizing: border-box;">
+    <div style="font-family: 'Montserrat', sans-serif; font-size: 0.85rem; font-weight: 900; color: #fc8181; letter-spacing: 2px; margin-bottom: 10px; text-transform: uppercase;">
+        ⚡ ACTIVE MAYDAY BEACONS & EMERGENCY FLARES
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+        {% for flare in priority_flares %}
+        <div style="background: #121620; border-left: 4px solid var(--critical-red); border: 1px solid var(--border-ui); border-left-width: 4px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; font-family: 'Courier Prime', monospace; font-size: 0.8rem; color: #ffffff; border-radius: 4px;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <span>{{ flare.action }}</span>
+
+                <!-- 🟢 INJECTED VISIBLE TRAUMA SYMPTOMS REPORT -->
+                {% set trauma_text = flare.trauma or flare.symptoms or flare.fault_report %}
+                {% if trauma_text %}
+                <div style="color: var(--integrity-gold); font-size: 0.75rem; font-weight: bold; word-break: break-word;">
+                    🩸 DIAGNOSTIC TRAUMA: {{ trauma_text }}
+                </div>
+                {% endif %}
+
+                <span style="color: var(--text-muted); font-size: 0.7rem;">{{ flare.timestamp.strftime('%Y-%m-%d %H:%M:%S') if flare.timestamp else '' }}</span>
+            </div>
+            <form action="{{ url_for('hangar.resolve_flare', log_id=flare.id) }}" method="POST" style="margin: 0;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" style="background: transparent; color: #63b3ed; border: 1px solid #63b3ed; padding: 6px 14px; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; border-radius: 4px; cursor: pointer; letter-spacing: 1px; transition: 0.3s;"
+                    onmouseover="this.style.background='#63b3ed'; this.style.color='#000';"
+                    onmouseout="this.style.background='transparent'; this.style.color='#63b3ed';">
+                    RESOLVE
+                </button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+        <div class="forge-card">
+            <h3 style="color: var(--sanctified-blue);">
+                <span class="step-badge step-1">STEP 1</span> Member Registration
+                <span class="info-trigger">i
+                    <span class="tooltip-box">
+                        <strong style="color:var(--integrity-gold); text-transform:uppercase; letter-spacing: 1px;">📱 ZERO-FRICTION INTAKE</strong><br><br>
+                        Agents no longer type the VIN manually. Enter the member's WhatsApp number to instantly send them the Secure Intake Form. Once they submit it on their phone, the vehicle will appear in the Inspection Queue below.
+                    </span>
+                </span>
+            </h3>
+
+            <div style="margin-top: 25px; padding-top: 20px; border-top: 1px dashed var(--border-ui); text-align: center;">
+                <p style="font-family: 'Courier Prime', monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; font-weight: bold;">Alternatively, have the member scan this QR code on their device:</p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ url_for('hangar.index', _external=True) }}%23triage-section" alt="Intake QR Code" style="border: 2px solid var(--integrity-gold); border-radius: 6px; padding: 10px; background: white;">
+            </div>
+
+            <form action="{{ url_for('hangar.triage_intake') }}" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="intake-zone" style="margin-top: 30px;">
+                    <div style="font-family: 'Courier Prime', monospace; color: var(--integrity-gold); font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; border-bottom: 1px solid var(--border-ui); padding-bottom: 10px;">
+                        Phase I: Pilot Data
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="member_name">Pilot / Member Name</label>
+                            <input type="text" name="member_name" id="member_name" placeholder="ENTER FULL NAME" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="member_phone">Contact Number</label>
+                            <input type="text" name="member_phone" id="member_phone" placeholder="e.g. +267..." required>
+                        </div>
+                    </div>
+
+                    <div style="font-family: 'Courier Prime', monospace; color: var(--integrity-gold); font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; border-bottom: 1px solid var(--border-ui); padding-bottom: 10px;">
+                        Phase II: Asset DNA
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vinInput">Vehicle Identification Number (VIN)</label>
+                        <input type="text" name="vin_dna" id="vinInput" class="dna-input" placeholder="ENTER 17-CHARACTER SEQUENCE" maxlength="17" required>
+                        <div id="vin-counter" class="dna-counter invalid" style="font-family: 'Courier Prime', monospace; font-size: 0.8rem; color: var(--text-muted); margin-top: 5px; text-align: right; font-weight: bold;">0/17 DNA SEQUENCE</div>
+                    </div>
+
+                    <div style="background: rgba(49, 130, 206, 0.08); border: 1px solid var(--border-ui); border-radius: 6px; padding: 25px; margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <span style="font-family: 'Montserrat'; font-size: 0.8rem; font-weight: 900; letter-spacing: 2px; color: var(--sanctified-blue); text-transform: uppercase;">⚡ SELECT YOUR SPECIFIC MACHINE</span>
+                            <div id="class_badge_display" style="font-family: 'Courier Prime', monospace; font-size: 0.75rem; font-weight: bold; padding: 4px 10px; background: var(--panel-bg); border: 1px solid var(--border-ui); border-radius: 4px; color: var(--text-muted);">AWAITING SELECTION</div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="vehicle_make_input">1. MAKE</label>
+                                <select id="vehicle_make_input" name="vehicle_make" required onchange="handleMakeChange()" style="width: 100%; padding: 18px; font-size: 1rem; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-ui); border-radius: 4px; font-family: 'Courier Prime', monospace;">
+                                    <option value="">-- SELECT MAKE --</option>
+                                    <option value="ALFA ROMEO">ALFA ROMEO</option>
+                                    <option value="AMC">AMC</option>
+                                    <option value="ASIA">ASIA</option>
+                                    <option value="AUDI">AUDI</option>
+                                    <option value="AUSTIN">AUSTIN</option>
+                                    <option value="BEDFORD">BEDFORD</option>
+                                    <option value="BENTLEY">BENTLEY</option>
+                                    <option value="BMW">BMW</option>
+                                    <option value="BORGWARD">BORGWARD</option>
+                                    <option value="CADILLAC">CADILLAC</option>
+                                    <option value="CAM">CAM</option>
+                                    <option value="CHANA">CHANA</option>
+                                    <option value="CHANGAN">CHANGAN</option>
+                                    <option value="CHERY">CHERY</option>
+                                    <option value="CHEVROLET">CHEVROLET</option>
+                                    <option value="CHINA MOTOR CORPORATION">CHINA MOTOR CORP.</option>
+                                    <option value="CHRYSLER">CHRYSLER</option>
+                                    <option value="CITROEN">CITROEN</option>
+                                    <option value="DACIA">DACIA</option>
+                                    <option value="DAEWOO">DAEWOO</option>
+                                    <option value="DAF TRUCK">DAF TRUCK</option>
+                                    <option value="DAIHATSU">DAIHATSU</option>
+                                    <option value="DATSUN">DATSUN</option>
+                                    <option value="DODGE">DODGE</option>
+                                    <option value="ERF">ERF</option>
+                                    <option value="FIAT">FIAT</option>
+                                    <option value="FORD">FORD</option>
+                                    <option value="FOTON">FOTON</option>
+                                    <option value="FREIGHTLINER">FREIGHTLINER</option>
+                                    <option value="FUDI">FUDI</option>
+                                    <option value="FUSO">FUSO</option>
+                                    <option value="GAZ">GAZ</option>
+                                    <option value="GEELY">GEELY</option>
+                                    <option value="GONOW">GONOW</option>
+                                    <option value="GWM">GWM</option>
+                                    <option value="HAFEI AUTO CHINA">HAFFEI AUTO CHINA</option>
+                                    <option value="HAVAL">HAVAL</option>
+                                    <option value="HILLMAN">HILLMAN</option>
+                                    <option value="HINO TRUCK">HINO TRUCK</option>
+                                    <option value="HONDA">HONDA</option>
+                                    <option value="HUMMER">HUMMER</option>
+                                    <option value="HYUNDAI">HYUNDAI</option>
+                                    <option value="INFINITI">INFINITI</option>
+                                    <option value="ISUZU">ISUZU</option>
+                                    <option value="IVECO">IVECO</option>
+                                    <option value="JAGUAR">JAGUAR</option>
+                                    <option value="JEEP">JEEP</option>
+                                    <option value="JIANGLING MOTOR CORPORATION">JMC</option>
+                                    <option value="KIA">KIA</option>
+                                    <option value="LADA">LADA</option>
+                                    <option value="LANCIA">LANCIA</option>
+                                    <option value="LAND ROVER">LAND ROVER</option>
+                                    <option value="LEXUS">LEXUS</option>
+                                    <option value="LEYLAND">LEYLAND</option>
+                                    <option value="MAGIRUS DEUTZ">MAGIRUS DEUTZ</option>
+                                    <option value="MAHINDRA">MAHINDRA</option>
+                                    <option value="MAN TRUCKS">MAN TRUCKS</option>
+                                    <option value="MAZDA">MAZDA</option>
+                                    <option value="MEIYA">MEIYA</option>
+                                    <option value="MERCEDES BENZ">MERCEDES BENZ</option>
+                                    <option value="MG">MG</option>
+                                    <option value="MINI">MINI</option>
+                                    <option value="MITSUBISHI">MITSUBISHI</option>
+                                    <option value="NISSAN">NISSAN</option>
+                                    <option value="OPEL">OPEL</option>
+                                    <option value="PEUGEOT">PEUGEOT</option>
+                                    <option value="PORSCHE">PORSCHE</option>
+                                    <option value="POWERSTAR">POWERSTAR</option>
+                                    <option value="PROTON">PROTON</option>
+                                    <option value="RAMBLER">RAMBLER</option>
+                                    <option value="RANGE ROVER">RANGE ROVER</option>
+                                    <option value="RENAULT">RENAULT</option>
+                                    <option value="ROVER">ROVER</option>
+                                    <option value="SAAB">SAAB</option>
+                                    <option value="SCANIA TRUCK">SCANIA TRUCK</option>
+                                    <option value="SEAT">SEAT</option>
+                                    <option value="SMART">SMART</option>
+                                    <option value="SSANGYONG">SSANGYONG</option>
+                                    <option value="SUBARU">SUBARU</option>
+                                    <option value="SUZUKI">SUZUKI</option>
+                                    <option value="TATA">TATA</option>
+                                    <option value="TOYOTA">TOYOTA</option>
+                                    <option value="TRIUMPH">TRIUMPH</option>
+                                    <option value="VOLKSWAGEN">VOLKSWAGEN</option>
+                                    <option value="VOLVO">VOLVO</option>
+                                    <option value="ZOTYE">ZOTYE</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="vehicle_model_input">2. MODEL</label>
+                                <select id="vehicle_model_input" name="vehicle_model" required disabled onchange="handleModelChange()" style="width: 100%; padding: 18px; font-size: 1rem; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-ui); border-radius: 4px; font-family: 'Courier Prime', monospace;">
+                                    <option value="">-- SELECT MODEL --</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="vehicle_year_input">3. YEAR</label>
+                                <select id="vehicle_year_input" name="vehicle_year" required disabled onchange="handleYearChange()" style="width: 100%; padding: 18px; font-size: 1rem; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-ui); border-radius: 4px; font-family: 'Courier Prime', monospace;">
+                                    <option value="">-- SELECT YEAR --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="vehicle_class" id="classSelect" value="">
+
+                    <div class="form-group" style="margin-top: 20px; text-align: center;">
+                        <a href="https://wa.me/26772989561?text=Hi%20Laveto%20Command%2C%20I%20have%20an%20asset%20that%20isn't%20listed%20in%20the%20intake%20gateway.%20Can%20you%20assist?" target="_blank" style="color: var(--gold-text); font-family: 'Inter', sans-serif; font-size: 0.85rem; text-decoration: underline; font-weight: bold;">
+                            Asset missing from registry? Contact Command.
+                        </a>
+                    </div>
+
+                    <button type="submit" class="btn-search" style="margin-top: 15px;">REGISTER & INTAKE ASSET</button>
+                </div>
+            </form>
+        </div>
+
+     <div class="forge-card" style="border-top-color: var(--integrity-gold);">
+    <h3 style="color: var(--integrity-gold);">
+        <span class="step-badge step-2">STEP 2</span> Vehicle Lookup
+        <span class="info-trigger" style="background: var(--integrity-gold); color: black;">i
+            <span class="tooltip-box">
+                <strong style="color:var(--integrity-gold); text-transform:uppercase; letter-spacing: 1px;">🔍 ASSET RETRIEVAL</strong><br><br>
+                Scan or search a 17-digit VIN to instantly pull up an existing vehicle from the database to resume inspecting or check status.
+            </span>
+        </span>
+    </h3>
+
+    <div style="margin-top: 20px;">
+        <form id="vinLookupForm" action="{{ url_for('hangar.agent_terminal') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+            <div class="form-group">
+                <label style="font-weight: 800; color: var(--text-main); letter-spacing: 1px; font-size: 0.85rem;">SCAN OR TYPE VEHICLE VIN</label>
+
+                <!-- ⚡ HIGH-CONTRAST ACTION INPUT CONTAINER -->
+                <div style="position: relative; display: flex; align-items: center; margin-top: 8px;">
+                    <span style="position: absolute; left: 16px; color: var(--integrity-gold); font-size: 1.2rem; pointer-events: none;">🔍</span>
+                    <input type="text"
+                           id="scanner_vin"
+                           name="vin"
+                           list="vin_list"
+                           required
+                           placeholder="SELECT FROM LIST OR TYPE VIN..."
+                           autocomplete="off"
+                           autocorrect="off"
+                           autocapitalize="characters"
+                           style="width: 100%; padding: 16px 16px 16px 48px; background: #121620 !important; color: #ffffff !important; border: 2px solid var(--integrity-gold); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 1.1rem; font-weight: bold; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(0,0,0,0.25); outline: none; transition: all 0.3s ease;"
+                           onfocus="this.style.boxShadow='0 0 20px rgba(212, 175, 55, 0.5)'; this.style.borderColor='#ffffff';"
+                           onblur="this.style.boxShadow='0 4px 15px rgba(0,0,0,0.25)'; this.style.borderColor='var(--integrity-gold)';"
+                           oninput="checkAndAutoSubmit(this)">
+                </div>
+
+                <datalist id="vin_list">
+                    {% for a in assets %}
+                        <option value="{{ a.vin_dna }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+
+            <!-- ⚡ HIGH-IMPACT ACTION BUTTON (Still active as a manual backup) -->
+            <button type="submit" class="btn-search" style="margin-top: 15px; width: 100%; padding: 18px; background: var(--integrity-gold); color: #000000; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 1rem; letter-spacing: 2px; border: none; border-radius: 4px; cursor: pointer; text-transform: uppercase; box-shadow: 0 6px 20px rgba(212, 175, 55, 0.35); transition: all 0.2s ease;">
+                ⚡ START INSPECTION
+            </button>
+        </form>
+    </div>
+            <div style="margin-top: 25px; padding: 15px; background: rgba(221, 107, 32, 0.15); border: 1px solid var(--warning-orange); border-left: 5px solid var(--warning-orange); border-radius: 6px; font-size: 0.85rem; color: var(--text-main); line-height: 1.6; font-family: 'Courier Prime', monospace; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);">
+                <strong style="color: var(--gold-text); font-family: 'Montserrat', sans-serif; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1.5px; display: block; margin-bottom: 8px; font-weight: 900;">
+                    ⚠️ PROTOCOL DIRECTIVE
+                </strong>
+                <span style="font-weight: bold; letter-spacing: 0.5px;">
+                    Always verify the physical VIN tag against the digital record before grading components. Discrepancies must be flagged to the Admin immediately.
+                </span>
+            </div>
+        </div>
+
+        <div style="margin-top: 50px; margin-bottom: 50px;">
+            <button onclick="toggleComms()" style="width: 100%; background: transparent; border: none; text-align: center; color: var(--integrity-gold); font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 4px; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid var(--border-ui); padding-bottom: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 15px; transition: 0.2s;" onmouseover="this.style.color='white'" onmouseout="this.style.color='var(--integrity-gold)'">
+                📡 MEMBER COMMUNICATIONS <span id="comms-icon" style="font-size: 1.2rem; transition: transform 0.3s ease;">🔽</span>
+            </button>
+
+            <div id="comms-panel" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
+                <div style="display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; background: var(--panel-bg); padding: 15px; border-radius: 6px; border: 1px solid var(--border-ui); align-items: center;">
+                    <div style="flex: 1; min-width: 280px;">
+                        <input type="text" id="commsSearchInput" onkeyup="filterCommsConsole()" placeholder="⚡ INTERCEPT BY VIN DNA OR PILOT NAME..." style="width: 100%; padding: 14px 18px; background: var(--input-bg); color: var(--text-main); border: 1px solid var(--border-ui); border-radius: 4px; font-family: 'Courier Prime', monospace; font-size: 0.85rem; box-sizing: border-box; transition: 0.3s;" onfocus="this.style.borderColor='var(--integrity-gold)'">
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" onclick="setCommsMatrixFilter('ALL')" class="comms-matrix-btn" style="background: var(--sanctified-blue); color: #fff; border: 1px solid var(--sanctified-blue); padding: 12px 18px; font-family: 'Montserrat'; font-size: 0.75rem; font-weight: 900; border-radius: 4px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;">ALL ASSETS</button>
+                        <button type="button" onclick="setCommsMatrixFilter('TRAUMA')" class="comms-matrix-btn" style="background: transparent; color: #fc8181; border: 1px solid var(--critical-red); padding: 12px 18px; font-family: 'Montserrat'; font-size: 0.75rem; font-weight: 900; border-radius: 4px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;">🚨 FAULTS ONLY</button>
+                        <button type="button" onclick="setCommsMatrixFilter('A')" class="comms-matrix-btn" style="background: transparent; color: #68d391; border: 1px solid var(--integrity-green); padding: 12px 18px; font-family: 'Montserrat'; font-size: 0.75rem; font-weight: 900; border-radius: 4px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;">CLASS A</button>
+                        <button type="button" onclick="setCommsMatrixFilter('B')" class="comms-matrix-btn" style="background: transparent; color: #63b3ed; border: 1px solid #63b3ed; padding: 12px 18px; font-family: 'Montserrat'; font-size: 0.75rem; font-weight: 900; border-radius: 4px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;">CLASS B</button>
+                        <button type="button" onclick="setCommsMatrixFilter('C')" class="comms-matrix-btn" style="background: transparent; color: var(--integrity-gold); border: 1px solid var(--integrity-gold); padding: 12px 18px; font-family: 'Montserrat'; font-size: 0.75rem; font-weight: 900; border-radius: 4px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s;">CLASS C</button>
+                    </div>
+                </div>
+
+                <div id="commsCardWrapper" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; padding-top: 15px;">
+                    {% for asset in assets %}
+                    {% if asset.member_phone %}
+                    <div class="comms-vehicle-card" data-vin="{{ asset.vin_dna | upper }}" data-pilot="{{ (asset.member_name or '') | upper }}" data-class="{{ asset.vehicle_class | default('B') | upper }}" data-has-trauma="{% if asset.baseline_trauma or asset.initial_notes %}true{% else %}false{% endif %}" style="background: var(--panel-bg); border: 1px solid var(--border-ui); border-left: 4px solid var(--sanctified-blue); border-radius: 6px; padding: 20px; transition: 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.25); position: relative;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; border-bottom: 1px solid var(--border-ui); padding-bottom: 15px;">
+                            <div>
+                                <div style="font-family: 'Courier Prime', monospace; font-size: 0.7rem; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 3px; font-weight: bold;">Target Asset</div>
+                                <div style="font-family: 'Montserrat', sans-serif; font-weight: 900; color: var(--text-main); font-size: 1.1rem; letter-spacing: 1px;">
+                                    {{ asset.vin_dna }}
+                                </div>
+                            </div>
+                            <div style="background: rgba(49, 130, 206, 0.2); border: 1px solid var(--sanctified-blue); color: #63b3ed; font-family: 'Courier Prime', monospace; font-size: 0.75rem; padding: 4px 10px; border-radius: 4px; font-weight: bold;">
+                                CLASS {{ asset.vehicle_class | default('B') }}
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; font-family: 'Inter', sans-serif; font-size: 0.85rem;">
+                            <div>
+                                <div style="color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; font-family: 'Courier Prime', monospace; font-weight: bold;">Pilot / Owner</div>
+                                <div style="color: var(--text-main); font-weight: bold;">
+                                    {{ asset.member_name or 'UNVERIFIED' }}
+                                </div>
+                            </div>
+
+                            <div style="text-align: right; position: relative;">
+                                <div style="color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; font-family: 'Courier Prime', monospace; font-weight: bold;">Network Status</div>
+
+                                <div class="status-badge-container" style="display: inline-block; position: relative;">
+                                    {% if asset.baseline_trauma or asset.initial_notes %}
+                                        {% set explicit_fault = asset.baseline_trauma or asset.initial_notes %}
+                                        <div class="status-badge-clip fault-trigger-btn" style="color: #fc8181; font-weight: bold; font-family: 'Courier Prime', monospace; font-size: 0.75rem; text-transform: uppercase; border: 1px solid var(--critical-red); padding: 4px 8px; border-radius: 4px; background: rgba(229,62,62,0.15); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                            🚨 {{ explicit_fault | truncate(14) }}
+                                        </div>
+
+                                        <div class="status-popup fault-popup-box" style="display: none; position: absolute; z-index: 9999; width: 280px; background: #ffffff; border: 1px solid var(--critical-red); box-shadow: 0 4px 20px rgba(0,0,0,0.5); padding: 14px; border-radius: 6px; right: 0; bottom: 35px; text-align: left; box-sizing: border-box;">
+                                            <strong style="color: var(--critical-red); font-family: 'Montserrat'; font-size: 0.75rem; text-transform: uppercase; display: block; margin-bottom: 5px; border-bottom: 1px dashed rgba(229,62,62,0.3); padding-bottom: 4px;">🚨 REPORTED TRAUMA DETAIL:</strong>
+                                            <div style="color: #111111; font-family: 'Inter', sans-serif; font-size: 0.8rem; line-height: 1.4; white-space: normal; word-break: break-word; font-weight: bold;">
+                                                {{ explicit_fault }}
+                                            </div>
+                                            <div style="position: absolute; bottom: -6px; right: 20px; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #ffffff;"></div>
+                                        </div>
+                                    {% else %}
+                                        {% set raw_status = asset.status | default('PENDING') %}
+                                        {% set is_fail = 'FAIL' in raw_status|upper or 'MAINTENANCE' in raw_status|upper or 'STEER' in raw_status|upper or 'KNOCK' in raw_status|upper or 'CLUNK' in raw_status|upper or 'SQUEAL' in raw_status|upper or 'GRIN' in raw_status|upper %}
+                                        {% set badge_color = 'var(--critical-red)' if is_fail else ('var(--warning-orange)' if 'PAYMENT' in raw_status|upper else 'var(--integrity-green)') %}
+                                        {% set badge_bg = 'rgba(229,62,62,0.15)' if is_fail else ('rgba(221,107,32,0.15)' if 'PAYMENT' in raw_status|upper else 'rgba(56,161,105,0.15)') %}
+
+                                        <div class="status-badge-clip fault-trigger-btn" style="color: {{ badge_color }}; font-weight: bold; font-family: 'Courier Prime', monospace; font-size: 0.75rem; text-transform: uppercase; border: 1px solid {{ badge_color }}; padding: 4px 8px; border-radius: 4px; background: {{ badge_bg }}; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                            🚨 {{ raw_status }}
+                                        </div>
+
+                                        <div class="status-popup fault-popup-box" style="display: none; position: absolute; z-index: 9999; width: 280px; background: #ffffff; border: 1px solid {{ badge_color }}; box-shadow: 0 4px 20px rgba(0,0,0,0.5); padding: 14px; border-radius: 6px; right: 0; bottom: 35px; text-align: left; box-sizing: border-box;">
+                                            <strong style="color: {{ badge_color }}; font-family: 'Montserrat'; font-size: 0.75rem; text-transform: uppercase; display: block; margin-bottom: 5px; border-bottom: 1px dashed rgba(0,0,0,0.15); padding-bottom: 4px;">SECURE STATUS DETAIL:</strong>
+                                            <div style="color: #111111; font-family: 'Inter', sans-serif; font-size: 0.8rem; line-height: 1.4; white-space: normal; word-break: break-word; margin-bottom: 6px; font-weight: bold;">
+                                                STATUS SIGNATURE: <strong>{{ raw_status }}</strong>
+                                            </div>
+                                            <div style="color: #555555; font-family: 'Inter', sans-serif; font-size: 0.7rem; line-height: 1.3; font-style: italic; border-top: 1px dotted #dddddd; padding-top: 4px;">
+                                                ℹ️ Note: No initial intake telemetry fault log was provided by member during sign-up registration.
+                                            </div>
+                                            <div style="position: absolute; bottom: -6px; right: 20px; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #ffffff;"></div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% set clean_number = (asset.member_phone | string | replace(' ', '') | replace('+', '')) %}
+{% set wa_text = "🛡️ *LAVETO SYSTEM RESTORATION | HANGAR INSPECTION DESK*\n\nOfficial update regarding your registered asset node ending in *[" ~ asset.vin_dna[-6:] ~ "]*.\n\nYour asset is currently processed at the Hangar for diagnostic evaluation and 120-point Sovereign Triage. High Command will update you upon completion of the inspection." %}
+<a href="https://wa.me/{{ clean_number }}?text={{ wa_text | urlencode }}" target="_blank"
+    style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background: transparent; color: #63b3ed; border: 1px solid #63b3ed; padding: 12px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; border-radius: 4px; transition: 0.3s; font-size: 0.8rem; box-sizing: border-box; margin-bottom: 10px;"
+    onmouseover="this.style.background='#63b3ed'; this.style.color='#000'; this.style.boxShadow='0 0 15px rgba(99,179,237,0.4)';"
+    onmouseout="this.style.background='transparent'; this.style.color='#63b3ed'; this.style.boxShadow='none';">
+    💬 DISPATCH WHATSAPP
+</a>
+{% set clean_number = (asset.member_phone | string | replace(' ', '') | replace('+', '')) %}
+{% set wa_text = "🛡️ *LAVETO SYSTEM RESTORATION | HANGAR INSPECTION DESK*\n\nOfficial Update: The 120-point Sovereign Triage and diagnostic inspection for your asset node ending in *[" ~ asset.vin_dna[-6:] ~ "]* has been successfully completed.\n\nYour ledger record and shield reservoir have been updated by High Command. Access your secure dashboard: https://www.laveto.net" %}
+<a href="https://wa.me/{{ clean_number }}?text={{ wa_text | urlencode }}" target="_blank"
+    style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; background: transparent; color: #68d391; border: 1px solid #68d391; padding: 12px; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; border-radius: 4px; transition: 0.3s; font-size: 0.8rem; box-sizing: border-box;"
+    onmouseover="this.style.background='#68d391'; this.style.color='#000'; this.style.boxShadow='0 0 15px rgba(104,211,145,0.4)';"
+    onmouseout="this.style.background='transparent'; this.style.color='#68d391'; this.style.boxShadow='none';">
+    💬 DISPATCH INSPECTION REPORT
+</a>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+</div>
+
+    <div class="sidebar">
+        {% if (current_user and current_user.role in ['WARDEN', 'AGENT']) or session.get('user_role') == 'WARDEN' or session.get('warden_logged_in') %}
+        <div class="forge-card" style="margin-bottom: 35px; border-top: 4px solid var(--integrity-gold);">
+            <h3 style="color: var(--integrity-gold); margin-top: 0; font-family: 'Montserrat'; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px;">Apprentice Progression</h3>
+            <div id="training-status">
+                {% set curriculum = ["Philosophy", "Forensic Auditing", "Treasury Operations"] %}
+                {% for module in curriculum %}
+                    <div onclick="openModule('{{ module }}')" style="display: flex; justify-content: space-between; align-items: center; background: rgba(212, 175, 55, 0.08); border: 1px dashed var(--integrity-gold); padding: 12px; margin-bottom: 10px; border-radius: 4px; cursor: pointer; transition: 0.3s;" onmouseover="this.style.background='rgba(212, 175, 55, 0.2)'" onmouseout="this.style.background='rgba(212, 175, 55, 0.08)'">
+                        <span style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-main); font-weight: 600;">{{ module }}</span>
+                        {% if completed_modules and module in completed_modules %}
+                            <span style="font-size: 1rem;" title="Module Completed">✅</span>
+                        {% else %}
+                            <span style="font-size: 1rem;" title="In Progress">⏳</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                <button type="button" onclick="sendReviewSignal()" style="width: 100%; margin-top: 10px; padding: 12px; background: transparent; border: 1px solid var(--integrity-gold); color: var(--integrity-gold); font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.75rem; text-transform: uppercase; cursor: pointer; border-radius: 4px; transition: 0.3s;" onmouseover="this.style.background='var(--integrity-gold)'; this.style.color='black';" onmouseout="this.style.background='transparent'; this.style.color='var(--integrity-gold)';">
+                    REQUEST MODULE REVIEW
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid var(--integrity-gold); padding: 20px; border-radius: 6px;">
+            <h3 style="color: var(--integrity-gold); font-size: 0.95rem; margin-top:0; font-family: 'Montserrat'; font-weight: 900; text-transform: uppercase;">TERMINAL DIRECTIVES</h3>
+            <ul style="color: var(--text-muted); font-size: 0.85rem; padding-left: 20px; line-height: 1.8; font-weight: 500;">
+                <li>Validate VIN DNA 17-digit string.</li>
+                <li>Verify intake registration status.</li>
+                <li>Monitor beacon signal accuracy.</li>
+            </ul>
+        </div>
+
+        <h3 style="color: var(--sanctified-blue); margin-top: 25px; font-family: 'Montserrat'; font-size: 1rem; text-transform: uppercase; border-bottom: 1px solid var(--border-ui); padding-bottom: 10px; margin-bottom: 25px;">Vehicle Class Guide</h3>
+
+        <div class="vam-class-header" style="color: #68d391;">CLASS A: Economy (P450/mo)</div>
+        <div class="vam-text" style="margin-bottom: 15px;">Logic: Highly standardized. P350 savings covers basic parts.</div>
+
+        <div class="vam-class-header" style="color: var(--sanctified-blue);">CLASS B: Standard (P650/mo)</div>
+        <div class="vam-text" style="margin-bottom: 15px;">Logic: Heavier chassis means more expensive bushings.</div>
+
+        <div class="vam-class-header" style="color: #fc8181;">CLASS C: Heavy/Luxury (P1,000/mo)</div>
+        <div class="vam-text" style="margin-bottom: 25px;">Logic: Parts are significantly more expensive.</div>
+
+        <div class="penalty-bar" style="background: var(--critical-red); color: white; padding: 12px; text-align: center; font-weight: 900; font-size: 0.75rem; letter-spacing: 1px; border-radius: 4px;">
+            PENALTY: IMMEDIATE TERMINATION
+        </div>
+    </div>
+</div>
+
+<div id="warden_telemetry_section" style="background: var(--card-bg); border: 1px solid var(--border-ui); border-left: 5px solid var(--integrity-gold); border-radius: 6px; padding: 25px; margin-bottom: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-width: 1400px; margin-left: auto; margin-right: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-ui); padding-bottom: 15px; margin-bottom: 20px;">
+        <h3 style="margin: 0; font-family: 'Montserrat', sans-serif; color: var(--integrity-gold); text-transform: uppercase; font-size: 1.2rem; font-weight: 900; letter-spacing: 2px;">
+            💰 WARDEN ESCROW <span style="color: var(--text-muted); font-size: 0.9rem;">// DOC 118 LEDGER</span>
+        </h3>
+        <span id="system-pulse-badge" style="font-family: 'Courier Prime', monospace; font-size: 0.75rem; color: #68d391; border: 1px solid var(--integrity-green); padding: 4px 10px; border-radius: 4px; font-weight: bold;">PULSE: SECURE</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; font-family: 'Courier Prime', monospace;">
+        <div style="background: var(--input-bg); border: 1px solid var(--border-ui); padding: 15px; border-radius: 4px;">
+            <div style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; font-weight: bold;">Active Escrow (Pula)</div>
+            <div id="metric-escrow" style="color: var(--integrity-gold); font-size: 1.3rem; font-weight: bold;">P{{ "{:,.2f}".format(active_warden.wallet_balance if active_warden else 0.00) }}</div>
+        </div>
+        <div style="background: var(--input-bg); border: 1px solid var(--border-ui); padding: 15px; border-radius: 4px;">
+            <div style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; font-weight: bold;">Integrity Multiplier ($I_m$)</div>
+            <div id="metric-multiplier" style="color: var(--sanctified-blue); font-size: 1.3rem; font-weight: bold;">1.5x (Master)</div>
+        </div>
+        <div style="background: var(--input-bg); border: 1px solid var(--border-ui); padding: 15px; border-radius: 4px;">
+            <div style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; font-weight: bold;">Sanctified Nodes ($N$)</div>
+            <div id="metric-nodes" style="color: var(--text-main); font-size: 1.3rem; font-weight: bold;">{{ assets|length if assets else 0 }}</div>
+        </div>
+        <div style="background: var(--input-bg); border: 1px solid var(--border-ui); padding: 15px; border-radius: 4px;">
+            <div style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; font-weight: bold;">Flicker Violations</div>
+            <div id="metric-flicker" style="color: #fc8181; font-size: 1.3rem; font-weight: bold;">0</div>
+        </div>
+    </div>
+</div>
+
+<div id="oracle_uplink_section" style="background: var(--card-bg); border: 1px solid var(--border-ui); border-left: 5px solid var(--sanctified-blue); border-radius: 6px; padding: 25px; margin-bottom: 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-width: 1400px; margin-left: auto; margin-right: auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-ui); padding-bottom: 15px; margin-bottom: 15px;">
+        <h3 style="margin: 0; font-family: 'Montserrat', sans-serif; color: var(--sanctified-blue); text-transform: uppercase; font-size: 1.2rem; font-weight: 900; letter-spacing: 2px;">
+            🧠 SENTINEL AI <span style="color: var(--text-muted); font-size: 0.9rem;">// COMMAND UPLINK</span>
+        </h3>
+        <span style="font-family: 'Courier Prime', monospace; font-size: 0.75rem; color: #68d391; border: 1px solid var(--integrity-green); padding: 4px 10px; border-radius: 4px; font-weight: bold;">SYSTEM: ONLINE</span>
+    </div>
+
+    <div id="ignition-chips" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px;">
+        <button type="button" onclick="injectChip('Analyze current Hangar throughput and identify workflow bottlenecks.')" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--integrity-gold); padding: 8px 14px; border-radius: 4px; cursor: pointer; white-space: nowrap; font-family: 'Courier Prime', monospace; font-size: 0.8rem; text-transform: uppercase; font-weight: bold; transition: 0.2s;" onmouseover="this.style.background='var(--integrity-gold)'; this.style.color='#000';" onmouseout="this.style.background='var(--input-bg)'; this.style.color='var(--text-main)';">
+            📊 FLEET AUDIT
+        </button>
+        <button type="button" onclick="injectChip('Draft a formal Stop-Work Protocol (RED SOIL) warning for a Hub Partner violating the Engraving Rite.')" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--critical-red); padding: 8px 14px; border-radius: 4px; cursor: pointer; white-space: nowrap; font-family: 'Courier Prime', monospace; font-size: 0.8rem; text-transform: uppercase; font-weight: bold; transition: 0.2s;" onmouseover="this.style.background='var(--critical-red)'; this.style.color='#fff';" onmouseout="this.style.background='var(--input-bg)'; this.style.color='var(--text-main)';">
+            🚨 DRAFT HUB WARNING
+        </button>
+        <button type="button" onclick="injectChip('Review the 80% Anchor pricing matrix for the latest Silk Road delivery.')" style="background: var(--input-bg); color: var(--text-main); border: 1px solid var(--sanctified-blue); padding: 8px 14px; border-radius: 4px; cursor: pointer; white-space: nowrap; font-family: 'Courier Prime', monospace; font-size: 0.8rem; text-transform: uppercase; font-weight: bold; transition: 0.2s;" onmouseover="this.style.background='var(--sanctified-blue)'; this.style.color='#fff';" onmouseout="this.style.background='var(--input-bg)'; this.style.color='var(--text-main)';">
+            💰 MARGIN CHECK
+        </button>
+    </div>
+
+    <div id="comms-screen" style="height: 350px; overflow-y: auto; background: var(--input-bg); border: 1px solid var(--border-ui); padding: 20px; border-radius: 4px; display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; font-family: 'Courier Prime', monospace;">
+        <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-top: auto; margin-bottom: auto; letter-spacing: 2px; font-weight: bold;">
+            [ SENTINEL AI STANDING BY. AWAITING ARCHITECT DIRECTIVE. ]
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+        <input type="text" id="comms-input" placeholder="Enter command directive..." style="flex: 1; background: var(--input-bg); border: 1px solid var(--border-ui); color: var(--text-main); padding: 15px; font-family: 'Courier Prime', monospace; font-size: 0.95rem; border-radius: 4px; outline: none; transition: 0.3s;" onfocus="this.style.borderColor='var(--sanctified-blue)';" onblur="this.style.borderColor='var(--border-ui)';">
+        <button type="button" onclick="sendToPersona()" style="background: var(--sanctified-blue); color: white; border: none; padding: 15px 30px; font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 0.85rem; cursor: pointer; border-radius: 4px; text-transform: uppercase; letter-spacing: 2px; transition: 0.3s; box-shadow: 0 4px 15px rgba(49, 130, 206, 0.3);" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+            EXECUTE ⚡
+        </button>
+    </div>
+</div>
+
+<div id="sopModal" style="display:none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: var(--panel-bg); border: 2px solid var(--integrity-gold); padding: 40px; border-radius: 8px; max-width: 600px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.6);">
+        <div style="margin-bottom: 25px; border-bottom: 1px solid var(--border-ui); padding-bottom: 20px;">
+            <h4 style="color: var(--integrity-gold); font-family: 'Montserrat'; margin: 0 0 10px 0; font-size: 1.1rem;">1. THE STANCE (FRONT 3/4 VIEW)</h4>
+            <p style="font-family: 'Inter'; font-size: 0.9rem; color: var(--text-muted); margin: 0; line-height: 1.6;"><strong>Goal:</strong> Aggressive profile. <br><strong>Execution:</strong> Stand 45° from the front corner. Camera LOW (headlight level). Turn front wheels slightly inward to show rims.</p>
+        </div>
+
+        <div style="margin-bottom: 25px; border-bottom: 1px solid var(--border-ui); padding-bottom: 20px;">
+            <h4 style="color: var(--sanctified-blue); font-family: 'Montserrat'; margin: 0 0 10px 0; font-size: 1.1rem;">2. THE HEART (DEAD-ON PROFILE)</h4>
+            <p style="font-family: 'Inter'; font-size: 0.9rem; color: var(--text-muted); margin: 0; line-height: 1.6;"><strong>Goal:</strong> Prove chassis straightness. <br><strong>Execution:</strong> Shoot dead-center from the side. Camera perfectly level with door handles. Leave a 10% breathing margin on the edges.</p>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+            <h4 style="color: var(--text-main); font-family: 'Montserrat'; margin: 0 0 10px 0; font-size: 1.1rem;">3. THE SANCTITY (INTERIOR)</h4>
+            <p style="font-family: 'Inter'; font-size: 0.9rem; color: var(--text-muted); margin: 0; line-height: 1.6;"><strong>Goal:</strong> Showcase dashboard health. <br><strong>Execution:</strong> Sit dead-center in the back seat. Hold camera at eye-level between front headrests. Symmetrical framing of steering wheel and console.</p>
+        </div>
+
+        <button type="button" onclick="document.getElementById('sopModal').style.display='none'" style="background-color: var(--integrity-gold); color: black; border: none; padding: 18px 20px; font-family: 'Montserrat', sans-serif; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; border-radius: 4px; width: 100%; transition: 0.3s;">ACKNOWLEDGE & CLOSE</button>
+    </div>
+</div>
+
+<div id="moduleModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+    <div style="background: var(--panel-bg); border: 1px solid var(--integrity-gold); width: 90%; max-width: 600px; padding: 35px; border-radius: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); position: relative;">
+        <button onclick="closeModule()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; color: #fc8181; font-size: 1.8rem; cursor: pointer; font-weight: bold;">&times;</button>
+        <h2 id="modalTitle" style="color: var(--integrity-gold); font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 2px; margin-top: 0; border-bottom: 1px solid var(--border-ui); padding-bottom: 15px;">MODULE TITLE</h2>
+
+        <div id="modalContent" style="color: #f7fafc; font-family: 'Inter', sans-serif; font-size: 0.95rem; line-height: 1.7; margin-top: 25px;">
+        </div>
+
+        <button onclick="closeModule()" style="margin-top: 35px; width: 100%; padding: 15px; background: var(--sanctified-blue); color: #fff; border: none; font-family: 'Montserrat', sans-serif; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; border-radius: 4px;">ACKNOWLEDGE & CLOSE</button>
+    </div>
+</div>
+
+<script>
+class SovereignLedger {
+        constructor() {
+            this.ledger = [];
+            this.assetRegistry = {};
+        }
+
+        validateAndRecord(memberId, amount, telemetry) {
+            if (telemetry.healthIndex < 0.2) {
+                return { success: false, msg: `Blocked: Asset health critical for ${memberId}` };
+            }
+            const tx = {
+                txId: "TX-" + Date.now(),
+                amount: amount,
+                memberId: memberId,
+                timestamp: new Date().toISOString()
+            };
+            this.ledger.push(tx);
+            this.assetRegistry[memberId] = telemetry;
+            return { success: true, txId: tx.txId };
+        }
+    }
+
+    // --- 🌞 THEME ENGINE ---
+    (function() {
+        if (localStorage.getItem('laveto_theme') === 'light') {
+            document.documentElement.classList.add('light-theme');
+        }
+    })();
+
+    function toggleTheme() {
+        const root = document.documentElement;
+        const isLight = root.classList.toggle('light-theme');
+        const btn = document.getElementById('themeToggleBtn');
+        if (isLight) {
+            localStorage.setItem('laveto_theme', 'light');
+            if(btn) btn.innerHTML = '🌙 DARK MODE';
+        } else {
+            localStorage.setItem('laveto_theme', 'dark');
+            if(btn) btn.innerHTML = '☀️ LIGHT MODE';
+        }
+    }
+
+   const assetCatalog = {
+        "SUZUKI": { "JIMNY": ["2023", "2024", "2025"], "VITARA": ["2024", "2025"], "SWIFT": ["2023", "2024"] },
+        "TOYOTA": { "HILUX": ["2023", "2024", "2025"], "LAND CRUISER": ["2024", "2025"] },
+        "BMW": { "X5": ["2024", "2025"], "M3": ["2025"] }
+    };
+
+    const classEngine = {
+        "STANDARD / BASE": "A",
+        "LUXURY / PREMIUM": "C",
+        "SPORT / PERFORMANCE": "B",
+        "COMMERCIAL / HEAVY": "C",
+        "OTHER / NOT LISTED": "B",
+        "OTHER": "B",
+        "SWIFT": "A",
+        "JIMNY": "B",
+        "VITARA": "B",
+        "HILUX": "B",
+        "LAND CRUISER": "C",
+        "X5": "C",
+        "M3": "C"
+    };
+
+    window.handleMakeChange = function() {
+        const make = document.getElementById('vehicle_make_input').value;
+        const modelSelect = document.getElementById('vehicle_model_input');
+        const yearSelect = document.getElementById('vehicle_year_input');
+        const badge = document.getElementById('class_badge_display');
+        const classHiddenInput = document.getElementById('classSelect');
+
+        modelSelect.innerHTML = '<option value="">-- SELECT MODEL --</option>';
+        yearSelect.innerHTML = '<option value="">-- SELECT YEAR --</option>';
+        yearSelect.disabled = true;
+        classHiddenInput.value = "";
+
+        if (make) {
+            modelSelect.disabled = false;
+            badge.innerText = "MODEL SELECTION REQUIRED";
+            badge.style.color = "var(--text-muted)";
+
+            if (assetCatalog[make]) {
+                Object.keys(assetCatalog[make]).forEach(model => {
+                    modelSelect.add(new Option(model, model));
+                });
+                modelSelect.add(new Option("OTHER / NOT LISTED", "OTHER"));
+            } else {
+                modelSelect.add(new Option("STANDARD / BASE", "STANDARD / BASE"));
+                modelSelect.add(new Option("LUXURY / PREMIUM", "LUXURY / PREMIUM"));
+                modelSelect.add(new Option("SPORT / PERFORMANCE", "SPORT / PERFORMANCE"));
+                modelSelect.add(new Option("COMMERCIAL / HEAVY", "COMMERCIAL / HEAVY"));
+                modelSelect.add(new Option("OTHER", "OTHER"));
+            }
+        } else {
+            modelSelect.disabled = true;
+            badge.innerText = "AWAITING SELECTION";
+        }
+    };
+
+    window.handleModelChange = function() {
+        const make = document.getElementById('vehicle_make_input').value;
+        const model = document.getElementById('vehicle_model_input').value;
+        const yearSelect = document.getElementById('vehicle_year_input');
+        const badge = document.getElementById('class_badge_display');
+        const classHiddenInput = document.getElementById('classSelect');
+
+        yearSelect.innerHTML = '<option value="">-- SELECT YEAR --</option>';
+
+        if (model) {
+            yearSelect.disabled = false;
+            const autoClass = classEngine[model] || "B";
+            classHiddenInput.value = autoClass;
+
+            let classColor = "var(--sanctified-blue)";
+            if (autoClass === "A") classColor = "var(--integrity-green)";
+            if (autoClass === "C") classColor = "var(--critical-red)";
+
+            badge.innerHTML = `CLASS ${autoClass} AUTOMATICALLY ASSIGNED`;
+            badge.style.color = classColor;
+
+            if (assetCatalog[make] && assetCatalog[make][model]) {
+                assetCatalog[make][model].forEach(year => {
+                    yearSelect.add(new Option(year, year));
+                });
+            } else {
+                const currentYear = new Date().getFullYear();
+                for (let y = currentYear + 1; y >= 1990; y--) {
+                    yearSelect.add(new Option(y, y));
+                }
+            }
+        } else {
+            yearSelect.disabled = true;
+            badge.innerText = "MODEL SELECTION REQUIRED";
+            badge.style.color = "var(--text-muted)";
+            classHiddenInput.value = "";
+        }
+    };
+
+    window.handleYearChange = function() {
+        const make = document.getElementById('vehicle_make_input').value;
+        const model = document.getElementById('vehicle_model_input').value;
+        const year = document.getElementById('vehicle_year_input').value;
+        const badge = document.getElementById('class_badge_display');
+        const currentClass = document.getElementById('classSelect').value;
+
+        if (year && currentClass) {
+            let classColor = "var(--sanctified-blue)";
+            if (currentClass === "A") classColor = "var(--integrity-green)";
+            if (currentClass === "C") classColor = "var(--critical-red)";
+
+            badge.innerHTML = `${make} ${model} (${year}) — <strong style="color: ${classColor}">CLASS ${currentClass} SECURED</strong>`;
+        }
+    };
+
+    async function registerProspect() {
+        const payload = {
+            member_name: document.getElementById('member_name')?.value || "N/A",
+            vin: document.getElementById('vinInput').value,
+            make: document.getElementById('vehicle_make_input').value,
+            model: document.getElementById('vehicle_model_input').value,
+            year: document.getElementById('vehicle_year_input').value,
+            vehicle_class: document.getElementById('classSelect').value,
+            details: "Standard Prospect Intake"
+        };
+
+        const response = await fetch('/dispatch_rfq', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            alert("✅ Asset DNA logged and RFQ dispatched.");
+        } else {
+            alert("❌ Dispatch Failed.");
+        }
+    }
+
+    // --- 📡 OPERATIONS & COMMUNICATIONS ---
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedTheme = localStorage.getItem('laveto_theme');
+        const btn = document.getElementById('themeToggleBtn');
+        if (savedTheme === 'light' && btn) btn.innerHTML = '🌙 DARK MODE';
+
+        const vinInput = document.getElementById('vinInput');
+        if(vinInput) {
+            vinInput.addEventListener('input', function() {
+                const count = this.value.length;
+                const counter = document.getElementById('vin-counter');
+                if(counter) {
+                    counter.innerText = `${count}/17 DNA SEQUENCE`;
+                    if (count === 17) {
+                        counter.style.color = 'var(--integrity-green)';
+                    } else {
+                        counter.style.color = 'var(--critical-red)';
+                    }
+                }
+            });
+        }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const triggers = document.querySelectorAll('.fault-trigger-btn');
+
+        triggers.forEach(trigger => {
+            const parentContainer = trigger.closest('.status-badge-container');
+            if (!parentContainer) return;
+
+            const popup = parentContainer.querySelector('.fault-popup-box');
+            if (!popup) return;
+
+            trigger.addEventListener('mouseenter', () => {
+                popup.style.display = 'block';
+            });
+
+            trigger.addEventListener('mouseleave', () => {
+                popup.style.display = 'none';
+            });
+
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isCurrentlyOpen = popup.style.display === 'block';
+                document.querySelectorAll('.fault-popup-box').forEach(p => p.style.display = 'none');
+                popup.style.display = isCurrentlyOpen ? 'none' : 'block';
+            });
+        });
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.fault-popup-box').forEach(p => p.style.display = 'none');
+        });
+    });
+
+    function toggleComms() {
+        const panel = document.getElementById('comms-panel');
+        const icon = document.getElementById('comms-icon');
+        if (!panel) return;
+        if (panel.style.display === 'none' || panel.style.display === '') {
+            panel.style.display = 'block';
+            setTimeout(() => { panel.style.opacity = '1'; }, 10);
+            if(icon) icon.style.transform = 'rotate(180deg)';
+        } else {
+            panel.style.opacity = '0';
+            setTimeout(() => { panel.style.display = 'none'; }, 300);
+            if(icon) icon.style.transform = 'rotate(0deg)';
+        }
+    }
+
+    // --- 🔎 LIVE COMM CONSOLE FILTER MATRIX ENGINE ---
+    let currentMatrixSubFilter = 'ALL';
+
+    function filterCommsConsole() {
+        const query = document.getElementById('commsSearchInput').value.trim().toUpperCase();
+        const cards = document.querySelectorAll('.comms-vehicle-card');
+
+        cards.forEach(card => {
+            const vin = card.getAttribute('data-vin') || '';
+            const pilot = card.getAttribute('data-pilot') || '';
+            const vehicleClass = card.getAttribute('data-class') || '';
+            const hasTrauma = card.getAttribute('data-has-trauma') === 'true';
+
+            const matchesText = vin.includes(query) || pilot.includes(query);
+
+            let matchesCategory = true;
+            if (currentMatrixSubFilter === 'TRAUMA') {
+                matchesCategory = hasTrauma;
+            } else if (currentMatrixSubFilter !== 'ALL') {
+                matchesCategory = (vehicleClass === currentMatrixSubFilter);
+            }
+
+            if (matchesText && matchesCategory) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    function setCommsMatrixFilter(filterMode) {
+        currentMatrixSubFilter = filterMode;
+
+        const buttons = document.querySelectorAll('.comms-matrix-btn');
+        buttons.forEach(btn => {
+            btn.style.background = 'transparent';
+            if (btn.innerText.includes(filterMode) || (filterMode === 'TRAUMA' && btn.innerText.includes('FAULTS'))) {
+                if (filterMode === 'ALL') { btn.style.background = 'var(--sanctified-blue)'; btn.style.color = '#fff'; }
+                if (filterMode === 'TRAUMA') { btn.style.background = 'var(--critical-red)'; btn.style.color = '#fff'; }
+                if (filterMode === 'A') { btn.style.background = 'var(--integrity-green)'; btn.style.color = '#fff'; }
+                if (filterMode === 'B') { btn.style.background = '#63b3ed'; btn.style.color = '#000'; }
+                if (filterMode === 'C') { btn.style.background = 'var(--integrity-gold)'; btn.style.color = '#000'; }
+            } else {
+                if (btn.innerText.includes('ALL')) btn.style.color = 'var(--text-main)';
+                if (btn.innerText.includes('FAULTS')) btn.style.color = 'var(--critical-red)';
+                if (btn.innerText.includes('CLASS A')) btn.style.color = 'var(--integrity-green)';
+                if (btn.innerText.includes('CLASS B')) btn.style.color = '#63b3ed';
+                if (btn.innerText.includes('CLASS C')) btn.style.color = 'var(--integrity-gold)';
+            }
+        });
+
+        filterCommsConsole();
+    }
+
+    function dispatchIntakeLink() {
+        let num = prompt("Enter Member's WhatsApp Number (Include country code, e.g., 267...):");
+        if (num) {
+            let cleanNum = num.replace(/\D/g, '');
+            let link = encodeURIComponent("{{ url_for('hangar.index', _external=True) }}#triage-section");
+            let msg = encodeURIComponent("🛡️ *LAVETO VEHICLE INTAKE* 🛡️\n\nPlease complete your secure registration using this link:\n");
+            window.open(`https://wa.me/${cleanNum}?text=${msg}${link}`, '_blank');
+        }
+    }
+
+    function executeSecureLookup() {
+        const inputEl = document.getElementById('scanner_vin');
+        if (!inputEl || !inputEl.value) {
+            alert('🚨 Protocol Error: Please enter or select a valid VIN DNA before starting inspection.');
+            return;
+        }
+        const cleanVin = inputEl.value.trim().toUpperCase();
+        const fleetMap = { {% for a in assets %}"{{ a.vin_dna | upper }}": "{{ a.id }}",{% endfor %} };
+        const matchId = fleetMap[cleanVin];
+        if (matchId) {
+            window.location.href = '/hangar/check-in/' + matchId;
+        } else {
+            const foundKey = Object.keys(fleetMap).find(k => k.includes(cleanVin) || cleanVin.includes(k));
+            if (foundKey) {
+                window.location.href = '/hangar/check-in/' + fleetMap[foundKey];
+            } else {
+                alert('❌ Asset DNA [' + cleanVin + '] not recognized.');
+            }
+        }
+    }
+
+    // --- 📡 MAYDAY SATELLITE OVERWATCH ---
+    let tacticalMap = null, targetMarker = null, currentAlertId = null;
+    function runRadarSweep() {
+        fetch('/api/security/radar_sweep')
+            .then(response => response.json())
+            .then(data => {
+                const panel = document.getElementById('maydayCommandPanel');
+                if (data.active) {
+                    currentAlertId = data.id;
+                    if(panel) panel.style.display = 'block';
+                    document.getElementById('maydayAssetHeader').innerText = `SIGNAL LOCKED // TARGET ASSET: ${data.vin || 'UNKNOWN DNA'}`;
+                    document.getElementById('maydayTime').innerText = `SIGNAL DETECTED AT: ${data.time}`;
+                    document.getElementById('maydayAccuracy').innerText = Math.round(data.accuracy || 15);
+                    renderTacticalMap(data.lat, data.lng);
+                } else {
+                    if(panel) panel.style.display = 'none';
+                }
+            })
+            .catch(err => console.error("Satellite Tracking Interference:", err));
+    }
+
+    function renderTacticalMap(lat, lng) {
+        if (!tacticalMap) {
+            tacticalMap = L.map('maydayMap').setView([lat, lng], 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap', maxZoom: 19 }).addTo(tacticalMap);
+            targetMarker = L.marker([lat, lng]).addTo(tacticalMap);
+        } else {
+            tacticalMap.setView([lat, lng], 16);
+            targetMarker.setLatLng([lat, lng]);
+            tacticalMap.invalidateSize();
+        }
+    }
+
+    // --- ⚙️ PROTOCOL MODULES ---
+    function openModule(moduleName) {
+        document.getElementById('moduleModal').style.display = 'flex';
+        document.getElementById('modalTitle').innerText = moduleName + " PROTOCOL";
+        const moduleData = {
+            "Philosophy": "<strong>Core Directive:</strong> The Warden is the shield.",
+            "Forensic Auditing": "<strong>Core Directive:</strong> Trust nothing. Verify everything.",
+            "Treasury Operations": "<strong>Core Directive:</strong> Protect the capital."
+        };
+        document.getElementById('modalContent').innerHTML = moduleData[moduleName] || "Module data currently encrypted.";
+    }
+
+    function closeModule() { document.getElementById('moduleModal').style.display = 'none'; }
+
+    function sendReviewSignal() {
+        fetch("{{ url_for('hangar.request_module_review') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token() }}" }
+        })
+        .then(response => response.json())
+        .then(data => { alert(data.status === "success" ? "Notification dispatched." : "Signal failure."); })
+        .catch(err => { console.error("Transmission Error:", err); alert("Error dispatching signal."); });
+    }
+
+    setInterval(runRadarSweep, 5000);
+
+    function updateTerminalClock() {
+        const clockElement = document.getElementById('terminal-clock');
+        if (!clockElement) return;
+
+        const now = new Date();
+        const options = {
+            timeZone: 'Africa/Gaborone',
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        };
+
+        const catTime = new Intl.DateTimeFormat('en-GB', options).format(now);
+        clockElement.innerText = catTime + ' CAT';
+    }
+
+    updateTerminalClock();
+    setInterval(updateTerminalClock, 1000);
+</script>
+
+{# 📡 GOSPEL OS: HUNTER-KILLER PAYLOAD INJECTION & PRIORITY TARGET LOCK #}
+<script>
+    document.querySelectorAll('#radar-data-payload').forEach(el => el.remove());
+</script>
+
+{% set ns = namespace(target=None, count=0) %}
+{% set search_pool = all_records if all_records else (assets if assets else []) %}
+
+{% for r in search_pool %}
+    {% set safe_status = (r.current_status|string|upper) if r.current_status else '' %}
+    {% if safe_status in ["MAYDAY", "CRITICAL", "FORENSIC_FAIL", "SECURITY_BREACH", "PENDING_INTAKE"] %}
+        {% set ns.count = ns.count + 1 %}
+
+        {% if ns.target is none %}
+            {% set ns.target = r %}
+        {% endif %}
+
+        {% if safe_status == "MAYDAY" %}
+            {% set ns.target = r %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+<script id="radar-data-payload" type="application/json">
+{
+    "triage_count": {{ ns.count }},
+    "triage_lat": "{{ ns.target.latitude | default('', true) if ns.target else '' }}",
+    "triage_lon": "{{ ns.target.longitude | default('', true) if ns.target else '' }}",
+    "triage_phone": "{{ ns.target.member_phone | string | replace(' ', '') | replace('+', '') if ns.target and ns.target.member_phone else '' }}",
+    "triage_vin": "{{ ns.target.vin_dna | default('', true) if ns.target else '' }}",
+    "triage_name": "{{ ns.target.member_name | default('', true) if ns.target else '' }}",
+    "triage_trigger": "{{ ns.target.current_status | string | replace('_', ' ') | upper if ns.target and ns.target.current_status else 'SYSTEM CRITICAL EVENT' }}"
+}
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof window.executeLiveRadarNetworkScan === 'function') {
+            window.executeLiveRadarNetworkScan();
+            setInterval(window.executeLiveRadarNetworkScan, 5000);
+        }
+    });
+
+    let oracleChatHistory = [];
+
+    function injectChip(directive) {
+        document.getElementById('comms-input').value = directive;
+        sendToPersona();
+    }
+
+    function openClearanceModal(assetId, vinDna) {
+        document.getElementById('modalVin').innerText = vinDna;
+        document.getElementById('clearanceForm').action = "/hangar/resolve_mayday/" + assetId;
+        document.getElementById('clearanceModal').style.display = 'flex';
+}
+
+function checkAndAutoSubmit(inputElement) {
+        const val = inputElement.value.trim();
+        // Automatically triggers inspection when a standard 17-digit VIN is reached or a datelist option matches
+        if (val.length >= 17) {
+            document.getElementById('vinLookupForm').submit();
+        }
+    }
+
+function closeClearanceModal() {
+    document.getElementById('clearanceModal').style.display = 'none';
+}
+
+    async function sendToPersona() {
+        const inputField = document.getElementById('comms-input');
+        const message = inputField.value.trim();
+        const screen = document.getElementById('comms-screen');
+
+        if (!message) return;
+
+        inputField.value = '';
+        appendMessage('user', 'VELA (ARCHITECT)', message);
+
+        oracleChatHistory.push({ sender: 'user', text: message });
+        if (oracleChatHistory.length > 10) oracleChatHistory.shift();
+
+        const loadingId = 'loading-' + Date.now();
+        appendMessage('oracle', 'SENTINEL AI', 'Processing command telemetry...', loadingId);
+
+        try {
+            const response = await fetch('/api/persona/sentinel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: message,
+                    history: oracleChatHistory.slice(0, -1)
+                })
+            });
+
+            const data = await response.json();
+
+            const loadingElement = document.getElementById(loadingId);
+            if (loadingElement) loadingElement.remove();
+
+            if (response.ok && data.status === 'success' && data.response) {
+                appendMessage('oracle', '🧠 SENTINEL AI', data.response);
+                oracleChatHistory.push({ sender: 'oracle', text: data.response });
+                if (oracleChatHistory.length > 10) oracleChatHistory.shift();
+            } else {
+                appendMessage('oracle', 'SYSTEM ERROR', data.response || data.error || 'Forensic analysis failed.', null, 'var(--critical-red)');
+            }
+
+        } catch (err) {
+            const loadingElement = document.getElementById(loadingId);
+            if (loadingElement) loadingElement.remove();
+            appendMessage('oracle', 'CONNECTION SEVERED', 'Signal lost. Check network integrity.', null, 'var(--critical-red)');
+            console.error('Sentinel Uplink Error:', err);
+        }
+    }
+
+    async function loadWardenTelemetry() {
+        try {
+            const response = await fetch('/api/warden/telemetry');
+            const result = await response.json();
+
+            if (response.ok && result.status === 'success') {
+                const d = result.data;
+                document.getElementById('metric-escrow').innerText = 'P' + d.escrow_balance_pula.toLocaleString(undefined, {minimumFractionDigits: 2});
+                document.getElementById('metric-multiplier').innerText = d.integrity_multiplier;
+                document.getElementById('metric-nodes').innerText = d.sanctified_nodes;
+                document.getElementById('metric-flicker').innerText = d.flicker_count;
+            } else {
+                console.error('Telemetry sync failed:', result.error);
+            }
+        } catch (err) {
+            console.error('Warden telemetry network error:', err);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadWardenTelemetry);
+
+    function appendMessage(senderType, senderName, text, id = null, colorOverride = null) {
+        const screen = document.getElementById('comms-screen');
+        const bubble = document.createElement('div');
+        if (id) bubble.id = id;
+
+        const isUser = senderType === 'user';
+        const bgColor = isUser ? 'rgba(49, 130, 206, 0.15)' : 'rgba(212, 175, 55, 0.1)';
+        const borderColor = colorOverride ? colorOverride : (isUser ? 'var(--sanctified-blue)' : 'var(--border-ui)');
+        const titleColor = colorOverride ? colorOverride : (isUser ? 'var(--sanctified-blue)' : 'var(--integrity-gold)');
+        const align = isUser ? 'flex-end' : 'flex-start';
+
+        bubble.style.cssText = `
+            max-width: 80%;
+            padding: 15px;
+            border-radius: 4px;
+            align-self: ${align};
+            background: ${bgColor};
+            color: var(--text-main);
+            border: 1px solid ${borderColor};
+            border-left: ${isUser ? '1px solid' : '3px solid'} ${borderColor};
+            font-size: 0.85rem;
+            line-height: 1.6;
+            word-wrap: break-word;
+        `;
+
+        bubble.innerHTML = `<strong style="color: ${titleColor}; font-size: 0.75rem; letter-spacing: 2px; display: block; margin-bottom: 8px; text-transform: uppercase;">${senderName}</strong>${text}`;
+
+        if (screen.innerHTML.includes('AWAITING ARCHITECT DIRECTIVE')) {
+            screen.innerHTML = '';
+        }
+
+        screen.appendChild(bubble);
+        screen.scrollTop = screen.scrollHeight;
+    }
+
+    document.getElementById('comms-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            sendToPersona();
+        }
+    });
+</script>
+
+<!-- HANGAR TERMINAL CLEARANCE MODAL -->
+<div id="clearanceModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: var(--panel-bg); border: 2px solid var(--integrity-green); padding: 30px; width: 90%; max-width: 500px; border-radius: 6px; font-family: 'Courier Prime', monospace; box-shadow: 0 20px 50px rgba(0,0,0,0.7);">
+        <h3 style="color: var(--integrity-green); font-family: 'Montserrat', sans-serif; font-weight: 900; margin-top: 0; letter-spacing: 1px; display: flex; align-items: center; gap: 10px;">
+            🛠️ HANGAR TERMINAL: TIRE FITMENT CLEARANCE
+        </h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.5;">
+            Log verified tread depth and submit fitment proof photo to clear MAYDAY status for VIN: <strong id="modalVin" style="color: var(--integrity-gold);"></strong>
+        </p>
+
+        <form id="clearanceForm" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <!-- New Tread Depth Input -->
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; color: var(--text-main); font-size: 0.8rem; margin-bottom: 5px; font-family: 'Montserrat', sans-serif; font-weight: bold;">NEW TREAD DEPTH (MM)</label>
+                <input type="number" step="0.1" name="new_tread" value="8.0" required style="width: 100%; background: var(--input-bg); border: 1px solid var(--border-ui); color: var(--integrity-green); padding: 12px; font-weight: bold; font-family: 'Courier Prime', monospace; box-sizing: border-box; border-radius: 4px;">
+            </div>
+
+            <!-- Mandatory Fitment Proof Photo -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; color: var(--text-main); font-size: 0.8rem; margin-bottom: 5px; font-family: 'Montserrat', sans-serif; font-weight: bold;">📷 FITMENT PROOF PHOTO</label>
+                <input type="file" name="clearance_photo" accept="image/*" required style="width: 100%; background: var(--input-bg); border: 1px solid var(--border-ui); color: #ffffff; padding: 10px; font-family: 'Courier Prime', monospace; box-sizing: border-box; border-radius: 4px;">
+            </div>
+
+            <!-- Actions -->
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="closeClearanceModal()" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border-ui); padding: 12px 20px; cursor: pointer; font-weight: bold; font-family: 'Montserrat', sans-serif; border-radius: 4px;">CANCEL</button>
+                <button type="submit" style="background: var(--integrity-green); color: #000; border: none; padding: 12px 20px; cursor: pointer; font-family: 'Montserrat', sans-serif; font-weight: 900; letter-spacing: 1px; border-radius: 4px;">⚡ EXECUTE CLEARANCE</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

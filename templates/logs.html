@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .log-container { background: #1A1A1A; color: #00FF00; font-family: 'Courier New', monospace; padding: 30px; border-radius: 8px; border: 1px solid #333; height: 600px; overflow-y: scroll; }
+    .log-entry { margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 4px; font-size: 0.85rem; }
+    .log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+</style>
+
+<div class="log-header">
+    <h2 style="color: #C5A059; margin:0;">SYSTEM FORENSIC LOGS</h2>
+    <div style="display:flex; gap:10px;">
+        <a href="{{ url_for('view_system_logs') }}" style="color: #00FF00; text-decoration:none; font-weight:bold; font-size: 0.8rem;">🔄 REFRESH STREAM</a>
+        <a href="{{ url_for('view_ledger') }}" style="color: #888; text-decoration:none; font-size: 0.8rem;">🔙 BACK TO COMMAND</a>
+    </div>
+</div>
+
+
+
+<div class="log-container">
+    {% for log in logs %}
+        <div class="log-entry">{{ log }}</div>
+    {% else %}
+        <div class="log-entry">NO ACTIVE LOGS IN CURRENT SESSION.</div>
+    {% endfor %}
+</div>
+{% endblock %}

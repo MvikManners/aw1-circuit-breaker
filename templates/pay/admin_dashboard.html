@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Laveto | Architect Command</title>
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --panel-bg: #111;
+            --accent-green: #075E54;
+            --critical-red: #ff0000;
+            --text-main: #e0e0e0;
+            --text-muted: #888;
+            --border-ui: #333;
+        }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Courier Prime', monospace;
+            padding: 20px;
+        }
+        .header {
+            border-bottom: 1px solid {{ telemetry.status_color }};
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-ui);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .metric {
+            font-size: 2rem;
+            color: var(--text-main);
+            margin: 10px 0;
+        }
+        .alert-box {
+            background: rgba(255, 0, 0, 0.1);
+            border-left: 4px solid var(--critical-red);
+            padding: 15px;
+            margin-top: 30px;
+            font-family: 'Courier Prime', monospace;
+        }
+        .alert-item {
+            color: var(--critical-red);
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .nav-btn {
+            background: #222;
+            color: #fff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border: 1px solid var(--border-ui);
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .nav-btn:hover { background: var(--border-ui); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>⚙️ ARCHITECT COMMAND CENTER</h1>
+        <p style="color: var(--text-muted);">Gospel OS Status: 
+            <span style="color: {{ telemetry.status_color }}; font-weight: bold;">
+                {{ telemetry.system_status }}
+            </span>
+        </p>
+    </div>
+
+    <div class="grid">
+        <div class="panel">
+            <h3>TOTAL CAPITAL (MOTSHELO)</h3>
+            <div class="metric" style="color: var(--accent-green);">P{{ "{:,.2f}".format(telemetry.total_capital) }}</div>
+            <p style="color: var(--text-muted);">Sovereign Members: {{ telemetry.active_members }} / 500</p>
+        </div>
+
+        <div class="panel">
+            <h3>SHIELD RESERVOIR (40%)</h3>
+            <div class="metric">P{{ "{:,.2f}".format(telemetry.shield_reservoir) }}</div>
+            <p style="color: var(--text-muted);">Available for Emergency Bridge Loans</p>
+        </div>
+
+        <div class="panel">
+            <h3>YIELD ENGINE (60%)</h3>
+            <div class="metric">P{{ "{:,.2f}".format(telemetry.yield_engine) }}</div>
+            <p style="color: var(--text-muted);">Deployed Sanctified Lending Capital</p>
+        </div>
+
+        <div class="panel">
+            <h3>SILK ROAD PIPELINE</h3>
+            <div class="metric">{{ telemetry.active_orders }}</div>
+            <p style="color: var(--text-muted);">Active Ghost Orders in Transit</p>
+        </div>
+    </div>
+
+    {% if telemetry.alerts %}
+    <div class="alert-box">
+        <h3 style="color: var(--critical-red); margin-top: 0;">⚠️ CRITICAL SHORTFALLS DETECTED</h3>
+        {% for alert in telemetry.alerts %}
+            <div class="alert-item">➔ {{ alert }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <a href="{{ url_for('view_ledger') }}" class="nav-btn">➔ Return to Ledger</a>
+    <a href="#" class="nav-btn">➔ Open Silk Road Terminal</a>
+
+</body>
+</html>

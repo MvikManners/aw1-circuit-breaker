@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAVETO // SILK ROAD UPLINK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Montserrat:wght@900&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #C5A059; --bg: #050505; --card: #111; --border: #333; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; border: 1px solid var(--border); background: var(--card); padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .header { border-bottom: 2px solid var(--gold); padding-bottom: 20px; margin-bottom: 30px; text-align: center; }
+        .header h1 { font-family: 'Montserrat'; font-size: 1.2rem; letter-spacing: 3px; margin: 0; color: var(--gold); }
+        .header p { font-family: 'Courier Prime'; font-size: 0.7rem; color: #888; text-transform: uppercase; margin-top: 5px; }
+        
+        .asset-info { background: #000; border: 1px dashed #444; padding: 15px; margin-bottom: 25px; font-family: 'Courier Prime'; font-size: 0.8rem; }
+        
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-family: 'Courier Prime'; font-size: 0.75rem; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; font-weight: bold; }
+        input { width: 100%; background: #000; border: 1px solid #444; color: #fff; padding: 15px; box-sizing: border-box; font-size: 1rem; font-family: 'Courier Prime'; transition: 0.3s; }
+        input:focus { border-color: var(--gold); outline: none; background: #0a0a0a; }
+        
+        button { width: 100%; background: var(--gold); color: #000; border: none; padding: 18px; font-family: 'Montserrat'; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: #fff; transform: translateY(-2px); }
+        
+        .footer { text-align: center; font-family: 'Courier Prime'; font-size: 0.6rem; color: #444; margin-top: 30px; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>SILK ROAD UPLINK</h1>
+        <p>Laveto Procurement Portal // Secure Node</p>
+    </div>
+
+    <div class="asset-info">
+        <span style="color: #666;">REQUISITION FOR:</span><br>
+        <strong style="font-size: 1rem; color: #fff;">{{ order.component_name }}</strong><br>
+        <span style="color: #666;">VIN REF:</span> {{ rec.vin_dna[-8:] }}
+    </div>
+
+    <form method="POST">
+        <div class="form-group">
+            <label>Supplier / Company Name</label>
+            <input type="text" name="supplier_name" placeholder="e.g. Parts World Gaborone" required>
+        </div>
+
+        <div class="form-group">
+            <label>Wholesale Cost (BWP)</label>
+            <input type="number" step="0.01" name="wholesale_cost" placeholder="0.00" required>
+        </div>
+
+        <div class="form-group">
+            <label>Brand / Manufacturer</label>
+            <input type="text" name="tier1_brand" placeholder="e.g. Bosch, Febi, OEM" required>
+        </div>
+
+        <div class="form-group">
+            <label>OEM Part Number</label>
+            <input type="text" name="oem_part_number" placeholder="Optional">
+        </div>
+
+        <div class="form-group">
+            <label>Estimated Arrival (ETA)</label>
+            <input type="date" name="estimated_arrival" required>
+        </div>
+
+        <button type="submit">SUBMIT QUOTE TO ARCHITECT</button>
+    </form>
+
+    <div class="footer">
+        © 2026 LAVETO PTY LTD // ENCRYPTED TRANSACTION
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    :root {
+        --sanctified-blue: #003366; --integrity-gold: #C5A059; --integrity-green: #28a745;
+        --critical-red: #ff0000; --bg-main: #0a0a0a; --panel-bg: #111111; --border-ui: #333333;
+        --text-main: #f9f9f9; --card-bg: #1a1a1a; --input-bg: #000000;
+    }
+    body { background-color: var(--bg-main); color: var(--text-main); font-family: 'Inter', sans-serif; }
+
+    .header-panel { background: var(--panel-bg); border-left: 5px solid var(--integrity-gold); padding: 20px; border-radius: 2px; border: 1px solid var(--border-ui); margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
+
+    .cohort-card { background: var(--card-bg); border: 1px solid var(--border-ui); border-top: 4px solid var(--sanctified-blue); border-radius: 2px; padding: 25px; margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: 0.3s; position: relative; }
+    .cohort-card:hover { border-color: var(--integrity-gold); }
+
+    .data-label { font-size: 0.65rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-weight: bold; font-family: 'Montserrat'; }
+    .data-value { font-size: 1.5rem; font-weight: 900; font-family: 'Courier Prime', monospace; color: var(--text-main); }
+
+    .btn-action { background: var(--integrity-gold); color: #000; border: none; padding: 12px 20px; font-weight: 900; cursor: pointer; border-radius: 2px; font-size: 0.75rem; text-transform: uppercase; font-family: 'Montserrat'; letter-spacing: 1px; transition: 0.3s; width: 100%; text-decoration: none; text-align: center; }
+    .btn-action:hover { background: #fff; transform: translateY(-2px); }
+
+    .manifest-panel { display: none; background: #000; border: 1px dashed var(--border-ui); padding: 20px; margin-top: 20px; border-radius: 2px; }
+    .manifest-table { width: 100%; border-collapse: collapse; font-family: 'Courier Prime', monospace; font-size: 0.8rem; }
+    .manifest-table th { background: #111; color: var(--integrity-gold); padding: 12px; text-align: left; border-bottom: 1px solid var(--border-ui); text-transform: uppercase; }
+    .manifest-table td { padding: 12px; border-bottom: 1px dashed #222; color: #ccc; }
+
+    .pulse-zone { display: none; margin-top: 20px; padding: 15px; background: #001a33; border: 1px solid var(--sanctified-blue); border-radius: 2px; }
+
+    @media print {
+        body * { visibility: hidden; }
+        .manifest-panel, .manifest-panel * { visibility: visible; }
+        .manifest-panel { position: absolute; left: 0; top: 0; width: 100%; border: none; background: white; color: black; }
+        .no-print { display: none !important; }
+    }
+</style>
+
+<div class="header-panel no-print">
+    <div>
+        <span style="font-family: 'Courier Prime', monospace; font-size: 0.65rem; color: #888; letter-spacing: 3px;">INSTITUTIONAL LIQUIDITY HUB</span>
+        <h2 style="margin: 5px 0 0 0; font-family: 'Montserrat', sans-serif; font-size: 1.6rem; font-weight: 900; letter-spacing: 2px;">PAYROLL <span style="color: var(--integrity-gold);">CLEARINGHOUSE</span></h2>
+    </div>
+    <div style="text-align: right;">
+        <a href="{{ url_for('hangar.view_ledger') }}" style="background: transparent;color: var(--text-main); border: 1px solid var(--border-ui); padding: 8px 15px; text-decoration: none; font-size: 0.7rem; font-weight: bold; border-radius: 2px; text-transform: uppercase;">⬅ RETURN TO COMMAND WALL</a>
+    </div>
+</div>
+
+{% if cohorts %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px;">
+    {% for name, data in cohorts.items() %}
+        <div class="cohort-card no-print">
+            <h3 style="margin: 0 0 20px 0; color: var(--text-main); font-family: 'Montserrat'; text-transform: uppercase; letter-spacing: 1px;">🏢 {{ name }}</h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; background: var(--panel-bg); padding: 15px; border: 1px solid var(--border-ui); border-radius: 2px;">
+                <div>
+                    <div class="data-label">Active Sovereign Nodes</div>
+                    <div class="data-value" style="color: var(--integrity-gold);">{{ data.nodes }}</div>
+                </div>
+                <div>
+                    <div class="data-label">Total Portfolio Debt</div>
+                    <div class="data-value" style="color: var(--critical-red);">P{{ "{:,.2f}".format(data.total_debt) }}</div>
+                </div>
+                <div style="grid-column: span 2; border-top: 1px dashed var(--border-ui); padding-top: 15px; margin-top: 5px;">
+                    <div class="data-label" style="color: var(--integrity-green);">Expected Monthly Pulse (HR Remittance)</div>
+                    <div class="data-value" style="font-size: 2.2rem; color: var(--integrity-green);">P{{ "{:,.2f}".format(data.expected_pulse) }}</div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button onclick="toggleManifest('manifest_{{ loop.index }}')" class="btn-action" style="background: transparent; border: 1px solid var(--integrity-gold); color: var(--integrity-gold);">
+                    📄 VIEW HR MANIFEST
+                </button>
+                <button onclick="togglePulse('pulse_{{ loop.index }}')" class="btn-action" style="background: var(--sanctified-blue); color: white; border-color: var(--sanctified-blue);">
+                    ⚡ EXECUTE MASS PULSE
+                </button>
+            </div>
+
+            <form action="{{ url_for('hangar.mass_pulse_reconciliation', cohort_name=name) }}" method="POST" onsubmit="return confirm('⚠️ CONFIRM FRACTURE: Reconcile bulk payment for {{ name }}?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="data-label" style="color: #66b3ff;">Total Remittance Received (Pula)</div>
+    <div style="display: flex; gap: 5px; margin-top: 10px;">
+        <input type="number" step="0.01" name="bulk_payment" value="{{ '%.2f' % data.expected_pulse }}" required
+               style="flex: 2; padding: 12px; background: #000; color: #fff; border: 1px solid var(--sanctified-blue); font-family: 'Courier Prime'; font-size: 1.1rem;">
+        <button type="submit" class="btn-action" style="flex: 1; background: var(--integrity-green); color: black;">RECONCILE</button>
+    </div>
+</form>
+            </div>
+
+            <div id="manifest_{{ loop.index }}" class="manifest-panel" style="grid-column: 1 / -1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--integrity-gold); padding-bottom: 15px; margin-bottom: 20px;">
+                    <div>
+                        <h2 style="margin: 0; color: var(--integrity-gold); font-family: 'Montserrat'; font-weight: 900;">OFFICIAL HR PAYROLL MANIFEST</h2>
+                        <div style="font-family: 'Courier Prime'; font-size: 0.8rem; color: #888; margin-top: 5px;">ENTITY: <strong>{{ name }}</strong></div>
+                    </div>
+                    <button class="no-print" onclick="window.print()" style="background: #fff; color: #000; border: none; padding: 8px 15px; font-weight: 900; cursor: pointer; border-radius: 2px;">🖨️ PRINT</button>
+                </div>
+
+                <table class="manifest-table">
+                    <thead>
+                        <tr>
+                            <th>Employee Name</th>
+                            <th>Asset DNA (VIN)</th>
+                            <th>SaaS Target</th>
+                            <th>Loan Recovery</th>
+                            <th style="color: white;">Total (P)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for member in data.members %}
+                        <tr>
+                            <td style="font-weight: bold;">{{ member.name }}</td>
+                            <td style="color: #888;">{{ member.vin }}</td>
+                            <td>{{ "{:,.2f}".format(member.fee) }}</td>
+                            <td>{{ "{:,.2f}".format(member.loan_pmt) }}</td>
+                            <td style="color: var(--integrity-green); font-weight: 900;">{{ "{:,.2f}".format(member.total_due) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button class="no-print" onclick="toggleManifest('manifest_{{ loop.index }}')" style="width: 100%; background: #222; color: #888; border: none; padding: 15px; margin-top: 20px; font-weight: 900; cursor: pointer;">CLOSE MANIFEST</button>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+{% else %}
+    <div style="text-align: center; padding: 50px; background: var(--panel-bg); color: #666; font-family: 'Courier Prime'; border: 1px dashed #333;">
+        [ NO CORPORATE COHORTS DETECTED ]
+    </div>
+{% endif %}
+
+<script>
+    function toggleManifest(id) {
+        let el = document.getElementById(id);
+        el.style.display = (el.style.display === "block") ? "none" : "block";
+        if(el.style.display === "block") el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function togglePulse(id) {
+        let el = document.getElementById(id);
+        el.style.display = (el.style.display === "block") ? "none" : "block";
+    }
+</script>
+{% endblock %}

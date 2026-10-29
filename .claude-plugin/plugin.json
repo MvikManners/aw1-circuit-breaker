@@ -1,19 +1,19 @@
 {
-  "name": "aw1-breaker",
-  "version": "2.1.3",
-  "description": "Deterministic out-of-band execution circuit breaker and AST safety proxy for autonomous AI agent tool calls",
+  "name": "aw1-circuit-breaker",
+  "version": "2.2.1",
+  "description": "Deterministic sub-0.2ms AST security circuit breaker and runtime agent containment engine.",
   "author": {
-    "name": "MvikManners",
-    "url": "https://github.com/MvikManners"
+    "name": "Laveto Wisdom",
+    "url": "https://p20.laveto.net/wisdom"
   },
-  "homepage": "https://p20.laveto.net/wisdom",
+  "homepage": "https://p20.laveto.net/wisdom/",
   "repository": "https://github.com/MvikManners/aw1-circuit-breaker",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "keywords": [
-    "mcp",
+    "security",
     "circuit-breaker",
-    "ast-breaker",
-    "ai-safety",
-    "zero-trust-proxy"
+    "mcp",
+    "ast-unpacker",
+    "zero-ambient-authority"
   ]
 }

@@ -1,0 +1,14 @@
+[scanner]
+profile = "default"
+ignore_paths = [
+  "laveto_wisdom/*",
+  "laveto_wisdom/**",
+  "*.bak*",
+  "**/*.bak*",
+  "tests/*",
+  "tests/**",
+  "aw1-verification/*",
+  "aw1-verification/**",
+  "docs/*",
+  "fix_db.py"
+]

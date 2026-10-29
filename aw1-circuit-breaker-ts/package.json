@@ -1,0 +1,26 @@
+{
+  "name": "aw1-circuit-breaker",
+  "version": "1.0.0",
+  "description": "Deterministic sub-millisecond AST pre-execution circuit breaker for AI agents and MCP tool servers",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "circuit-breaker",
+    "ast",
+    "agent-security",
+    "guardrails",
+    "deterministic",
+    "zero-dependency"
+  ],
+  "author": "Laveto Wisdom Security Labs",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
