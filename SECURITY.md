@@ -26,3 +26,14 @@ We commit to non-adversarial, zero-retaliation safe harbor for all security rese
 Direct confidential vulnerability reports to:
 - **Email:** `security@laveto.net` (PGP encrypted preferred)
 - **Emergency Hotline:** Master Architect Co-founder Operations Hub
+
+
+## Capability Matrix & Scoped Surfaces
+
+| Capability | Allowed | Inspection Layer | Enforcement Action |
+|:---|:---|:---|:---|
+| AST Static Verification | Yes | Layer 0 Node Visitor | Deterministic Halt |
+| MCP JSON-RPC Stdio Server | Yes | Subprocess stdio transport | Fail-closed Exception |
+| Arbitrary Shell (`exec`, `eval`) | Blocked | AST Pattern Guard | Instant `PermissionError` |
+| Subprocess Spawn (`os.system`) | Blocked | Import Table Check | Terminate Call |
+| Raw Sockets / Network Egress | Blocked | Socket Descriptor Filter | Dropped Token |
