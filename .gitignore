@@ -160,3 +160,16 @@ __pycache__/
 *.pyc
 venv/
 .venv/
+.profile
+.pythonstartup.py
+.vimrc
+EMERGENCY_RECOVERY.txt
+Monthly_Summary.txt
+README.txt
+admin_report.py
+agmin_report.py
+app.py
+app_old.py
+approve_loan.py
+archives/
+Dockerfilev
