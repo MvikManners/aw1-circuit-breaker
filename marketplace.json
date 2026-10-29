@@ -19,7 +19,8 @@
         "installation": "AVAILABLE",
         "authentication": "ON_INSTALL"
       },
-      "category": "Security"
+      "category": "Security",
+      "version": "2.2.2"
     }
   ]
 }

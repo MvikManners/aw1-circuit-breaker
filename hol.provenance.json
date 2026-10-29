@@ -1,9 +1,18 @@
 {
-  "version": "1.0.0",
+  "$schema": "https://hol.org/schemas/provenance-v1.json",
+  "version": "2.2.2",
   "repository": "https://github.com/MvikManners/aw1-circuit-breaker",
-  "commit_sha": "59225c12f9280e08a4e8e6fedcdde214b13c5a7e",
-  "release_tag": "v2.1.3",
-  "verified_components": {
+  "commit_sha": "acf99b3b6559804aa6239b37763575c214cd03fa",
+  "release_tag": "v2.2.2",
+  "publisher": {
+    "name": "MvikManners",
+    "url": "https://github.com/MvikManners"
+  },
+  "artifacts": {
+    "mcp_server": {
+      "path": "mcp_server.py",
+      "sha256": "0e812e36d9f4a93bb1b0dc98338399e3f6b7318ca6615916e165d14a8da2a274"
+    },
     "claude_plugin": {
       "path": ".claude-plugin/plugin.json",
       "sha256": "f4c2eda7235c1f5d5f8d02908a8edaa6d1489ad81ffca4098f8b2b1134a3c202"
@@ -12,18 +21,9 @@
       "path": ".codex-plugin/plugin.json",
       "sha256": "f4c2eda7235c1f5d5f8d02908a8edaa6d1489ad81ffca4098f8b2b1134a3c202"
     },
-    "mcp_server": {
-      "path": "mcp_server.py",
-      "sha256": "0e812e36d9f4a93bb1b0dc98338399e3f6b7318ca6615916e165d14a8da2a274"
-    },
     "security_policy": {
       "path": "SECURITY.md",
-      "sha256": "956450d2334ba477bba11cbfa608a8fec38ef61bc306257a85e48844e79a7e09"
+      "sha256": "b7abe6d35fe4bd73ba47892d330a11f29f30eca14fb1d52daac6434443f32f05"
     }
-  },
-  "attestation": {
-    "publisher": "MvikManners",
-    "provenance_standard": "HOL-PROV-v1",
-    "immutable_pin": true
   }
 }

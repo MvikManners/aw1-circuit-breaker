@@ -1,6 +1,6 @@
 {
   "name": "aw1-circuit-breaker",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Deterministic sub-0.2ms AST security circuit breaker and runtime agent containment engine.",
   "author": {
     "name": "Laveto Wisdom",
