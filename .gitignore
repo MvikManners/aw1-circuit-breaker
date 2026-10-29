@@ -187,3 +187,7 @@ Dockerfilev
 .profile
 .pythonstartup.py
 .vimrc
+
+*.bak
+*.bak.*
+*.backup

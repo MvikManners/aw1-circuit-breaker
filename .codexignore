@@ -40,3 +40,10 @@ agmin_report.py
 aw1-verification/
 tests/
 test/
+laveto_wisdom/
+**/laveto_wisdom/**
+aw1-verification/
+tests/
+test/
+*.bak*
+**/*.bak*

@@ -1,8 +1,9 @@
-# HOL Plugin Scanner configuration
-# Scopes security and secret analysis to plugin production surfaces
+# HOL Plugin Scanner Configuration
 [scanner]
 profile = "default"
 ignore_paths = [
+  "laveto_wisdom/*",
+  "laveto_wisdom/**",
   "aw1-verification/*",
   "aw1-verification/**",
   "tests/*",
@@ -10,5 +11,7 @@ ignore_paths = [
   "test/*",
   "test/**",
   "docs/*",
+  "*.bak*",
+  "**/*.bak*",
   "*.md"
 ]

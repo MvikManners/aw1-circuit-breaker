@@ -4,7 +4,7 @@ import os
 from flask import current_app
 
 # Configure your API key
-genai.configure(api_key="YOUR_GOOGLE_AI_STUDIO_API_KEY")
+genai.configure(api_key=os.environ.get("GOOGLE_AI_STUDIO_API_KEY", os.environ.get("GEMINI_API_KEY", "YOUR_GOOGLE_AI_STUDIO_API_KEY")))
 
 def load_images(image_paths):
     """Loads image files from disk into the format Gemini expects."""

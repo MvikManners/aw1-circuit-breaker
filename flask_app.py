@@ -6,7 +6,7 @@ from notifications import send_forensic_decree
 
 from aw1.api_routes import compliance_bp
 app = Flask(__name__)
-app.secret_key = 'restoration_secret_key'
+app.secret_key = os.environ.get('SECRET_KEY', 'restoration_secret_key')
 
 # --- 1. THE MAIN HANGAR (HOME) --- [cite: 2026-03-04]
 @app.route('/')

@@ -71,7 +71,7 @@ def create_app(config_class=Config):
     app = Flask(__name__, static_folder=static_dir, template_folder=root_templates)
     app.config.from_object(config_class)
 
-    app.secret_key = 'LAVETO-GOSPEL-OS-SECURE-KEY-99'
+    app.secret_key = os.environ.get('SECRET_KEY', 'LAVETO-GOSPEL-OS-SECURE-KEY-99')
     app.config['SECRET_KEY'] = 'LAVETO-GOSPEL-OS-SECURE-KEY-99'
 
     app.config['WTF_CSRF_ENABLED'] = False
