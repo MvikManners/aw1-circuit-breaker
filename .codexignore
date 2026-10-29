@@ -37,3 +37,6 @@ app_old.py
 agmin_report.py
 .profile
 .vimrc
+aw1-verification/
+tests/
+test/

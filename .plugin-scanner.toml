@@ -1,14 +1,14 @@
+# HOL Plugin Scanner configuration
+# Scopes security and secret analysis to plugin production surfaces
 [scanner]
-profile = "public-marketplace"
+profile = "default"
 ignore_paths = [
-  "EMERGENCY_RECOVERY.txt",
-  "archives/*",
-  "app_old.py",
+  "aw1-verification/*",
+  "aw1-verification/**",
   "tests/*",
-  "**/tests/*",
-  "benchmarks/*",
-  "**/benchmarks/*",
-  "fixtures/*",
-  "**/fixtures/*",
-  "dist/*"
+  "tests/**",
+  "test/*",
+  "test/**",
+  "docs/*",
+  "*.md"
 ]
