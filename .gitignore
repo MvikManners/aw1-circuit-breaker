@@ -203,3 +203,10 @@ core/routes/hangar_old.py
 core/routes/scrap_treasury.py
 core/routes/silk_road.py
 core/routes/tmp*
+
+# Platform-specific legacy commerce/fleet routes
+core/routes/hangar.py
+core/routes/hangar_old.py
+core/routes/scrap_treasury.py
+core/routes/silk_road.py
+core/routes/tmp*
