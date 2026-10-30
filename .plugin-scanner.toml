@@ -1,14 +1,16 @@
 [scanner]
-profile = "default"
-ignore_paths = [
-  "laveto_wisdom/*",
-  "laveto_wisdom/**",
-  "*.bak*",
-  "**/*.bak*",
-  "tests/*",
+min_score = 75
+
+[rules]
+no_hardcoded_secrets = true
+
+[exclusions]
+paths = [
+  "examples/**",
   "tests/**",
-  "aw1-verification/*",
-  "aw1-verification/**",
-  "docs/*",
-  "fix_db.py"
+  "docs/**"
+]
+secrets = [
+  "MOCK_TOKEN_*",
+  "TEST_KEY_*"
 ]
