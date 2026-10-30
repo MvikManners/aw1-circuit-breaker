@@ -19,6 +19,7 @@ Get HOL Guard with `pipx install hol-guard` or `uv tool install hol-guard`.
 <!-- /hol-install-block -->
 
 # AW-1 Circuit Breaker
+[![HOL Guard Verified](https://api.hol.org/v1/badge/mvikmanners/aw1-circuit-breaker.svg)](https://hol.org/registry/plugins/mvikmanners%2Faw1-circuit-breaker)
 
 [![HOL Guard Verified](https://api.hol.org/v1/badge/mvikmanners/aw1-circuit-breaker.svg)](https://hol.org/registry/plugins/mvikmanners%2Faw1-circuit-breaker)
 [![On-Chain Verified](https://img.shields.io/badge/HOL-On--Chain%20Verified-blue)](https://hol.org/plugins/mvikmanners/aw1-circuit-breaker)
@@ -52,6 +53,7 @@ uvx aw1-circuit-breaker verify "subprocess.run(['rm', '-rf', '/'])"
 ---
 
 # AW-1 Circuit Breaker
+[![HOL Guard Verified](https://api.hol.org/v1/badge/mvikmanners/aw1-circuit-breaker.svg)](https://hol.org/registry/plugins/mvikmanners%2Faw1-circuit-breaker)
 
 [![Glama Score](https://glama.ai/mcp/servers/MvikManners/aw1-circuit-breaker/badges/score.svg)](https://glama.ai/mcp/servers/MvikManners/aw1-circuit-breaker)
 
