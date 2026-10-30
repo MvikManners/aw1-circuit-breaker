@@ -2,7 +2,7 @@
   "$schema": "https://hol.org/schemas/provenance-v1.json",
   "version": "2.2.3",
   "repository": "https://github.com/MvikManners/aw1-circuit-breaker",
-  "commit_sha": "7b93046f8e564513ff6c52ba5e2ba791ccd60901",
+  "commit_sha": "21ea414d14ddb524135e4f3986d3ca35b4f3e246",
   "release_tag": "v2.2.3",
   "publisher": {
     "name": "MvikManners",
