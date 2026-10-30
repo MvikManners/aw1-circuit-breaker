@@ -20,7 +20,7 @@ Get HOL Guard with `pipx install hol-guard` or `uv tool install hol-guard`.
 
 # AW-1 Circuit Breaker
 
-[![HOL Trust Score](https://hol.org/api/badge/mvikmanners/aw1-circuit-breaker)](https://hol.org/plugins/mvikmanners/aw1-circuit-breaker)
+[![HOL Trust Score](https://img.shields.io/badge/HOL%20Trust%20Score-93-blue)](https://hol.org/plugins/mvikmanners/aw1-circuit-breaker)
 [![On-Chain Verified](https://img.shields.io/badge/HOL-On--Chain%20Verified-blue)](https://hol.org/plugins/mvikmanners/aw1-circuit-breaker)
 
 
