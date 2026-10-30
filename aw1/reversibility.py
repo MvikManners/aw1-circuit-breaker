@@ -60,7 +60,7 @@ class ReversibilityRouter:
         r"status", r"inspect", r"verify", r"audit_check"
     }
 
-    def __init__(self, hmac_secret: str = "aw1-causal-secret-entropy"):
+    def __init__(self, hmac_secret: str = os.getenv("AW1_HMAC_SECRET", "demo-secret")):
         self.secret = hmac_secret.encode("utf-8")
 
     def classify_action(self, action_signature: str, payload: str = "") -> DoorType:

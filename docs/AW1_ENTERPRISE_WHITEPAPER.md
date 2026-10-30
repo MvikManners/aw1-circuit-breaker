@@ -366,7 +366,7 @@ def create_guarded_tool_node(tools_by_name: Dict[str, Any], actor_id: str, secre
   "permitted": true,
   "actor_id": "treasury-agent-prod",
   "tool_name": "sql_query",
-  "token": "aw1_v1.e55e1441ca3d6ced.1792326765.7ec992f3dddc9944",
+  "token": "aw1_v1.<MOCK_NONCE>.<TIMESTAMP>.<SIGNATURE>",
   "reason": "Policy evaluation completed: execution safe",
   "latency_ms": 0.412
 }
@@ -399,7 +399,7 @@ def create_guarded_tool_node(tools_by_name: Dict[str, Any], actor_id: str, secre
 * **Payload Structure:**
 ```json
 {
-  "token": "aw1_v1.e55e1441ca3d6ced.1792326765.7ec992f3dddc9944",
+  "token": "aw1_v1.<MOCK_NONCE>.<TIMESTAMP>.<SIGNATURE>",
   "actor_id": "treasury-agent-prod",
   "tool_name": "sql_query",
   "payload": "SELECT id, balance FROM accounts WHERE user_id = 42;"
