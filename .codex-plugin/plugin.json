@@ -15,5 +15,11 @@
     "mcp",
     "ast-unpacker",
     "zero-ambient-authority"
-  ]
+  ],
+  "interface": {
+    "type": "mcp",
+    "transport": "stdio",
+    "command": "python3",
+    "args": ["aw1_mcp_stdio_server.py"]
+  }
 }
