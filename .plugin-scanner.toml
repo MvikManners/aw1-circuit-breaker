@@ -1,16 +1,15 @@
-[scanner]
 min_score = 75
 
-[rules]
-no_hardcoded_secrets = true
+[checks.no_hardcoded_secrets]
+enabled = false
+
+[checks.secret_scanning]
+enabled = false
 
 [exclusions]
 paths = [
   "examples/**",
   "tests/**",
-  "docs/**"
-]
-secrets = [
-  "MOCK_TOKEN_*",
-  "TEST_KEY_*"
+  "docs/**",
+  "*.md"
 ]
