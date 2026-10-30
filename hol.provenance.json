@@ -1,9 +1,9 @@
 {
   "$schema": "https://hol.org/schemas/provenance-v1.json",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "repository": "https://github.com/MvikManners/aw1-circuit-breaker",
-  "commit_sha": "acf99b3b6559804aa6239b37763575c214cd03fa",
-  "release_tag": "v2.2.2",
+  "commit_sha": "7b93046f8e564513ff6c52ba5e2ba791ccd60901",
+  "release_tag": "v2.2.3",
   "publisher": {
     "name": "MvikManners",
     "url": "https://github.com/MvikManners"
@@ -24,6 +24,10 @@
     "security_policy": {
       "path": "SECURITY.md",
       "sha256": "b7abe6d35fe4bd73ba47892d330a11f29f30eca14fb1d52daac6434443f32f05"
+    },
+    "banking_defense": {
+      "path": "test_bank_voice_fraud_defense.py",
+      "sha256": "b8918395ae9035f71aebf20fce1d715d704e4d1033a0386c9026f778f5bf2b7e"
     }
   }
 }
