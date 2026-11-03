@@ -1,97 +1,101 @@
-name: aw1-circuit-breaker
-displayName: AW-1 Out-of-Band Agent Circuit Breaker & Safety Proxy
-description: Institutional-grade out-of-band execution circuit breaker and runtime proxy for AI agents. Intercepts tool calls in <0.15ms, unrolls obfuscated Base64/eval AST payloads, enforces Zero Ambient Authority via single-use 250ms ephemeral tokens (τ_exec), and guarantees Bank of Botswana 1-to-1 trust compliance.
-version: 2.1.0
-license: MIT
-homepage: https://p20.laveto.net/wisdom/
-repository: https://github.com/MvikManners/aw1-circuit-breaker
-iconUrl: https://p20.laveto.net/wisdom/static/favicon.svg
+name: aw1-circuit-breaker-remote
+version: 1.0.0
+description: "Deterministic AST deconstruction and Gate 7 runtime circuit breaker preventing rogue shell escapes, dynamic eval(), and covert lateral socket egress in autonomous LLM tool calls."
+repository: "https://github.com/Laveto-Holding/aw1-circuit-breaker-remote"
+publisher: "Laveto Pty Ltd"
+transport:
+  type: streamable_http
+  url: "https://p20.laveto.net/wisdom/mcp"
+  sseUrl: "https://p20.laveto.net/wisdom/mcp/sse"
 
-tags:
-  - security
-  - circuit-breaker
-  - safety-shield
-  - ast-unpacker
-  - runtime-guard
-  - bot-defense
-  - zero-ambient-authority
-  - audit-dossier
-  - compliance
-
-# Primary Remote Hosted Server-Sent Events (SSE) Proxy
-remote:
-  url: "https://p20.laveto.net/wisdom/mcp/sse"
-  transport: sse
-
-# Optional Local Subprocess Stdio Bridge
-startCommand:
-  type: stdio
-  command: python3
-  args:
-    - "-m"
-    - "aw1_breaker.mcp_server"
-  env:
-    AW1_API_ENDPOINT: "https://p20.laveto.net/wisdom/api/v1/audit"
-    AW1_API_KEY: ""
-
-configSchema:
-  type: object
-  properties:
-    apiEndpoint:
-      type: string
-      title: AW-1 Proxy Endpoint
-      default: "https://p20.laveto.net/wisdom/api/v1/audit"
-    apiKey:
-      type: string
-      title: Enterprise License Key
-      default: ""
-    containmentMode:
-      type: string
-      title: Containment Action
-      enum:
-        - "HARD_CONTAINMENT"
-        - "UNCERTAINTY_FREEZE"
-        - "AUDIT_ONLY"
-      default: "HARD_CONTAINMENT"
+config:
+  apiKey:
+    type: string
+    title: "Laveto License Key"
+    description: "Your sovereign access key (X-Laveto-Key) for Gate 7 quota and arbitration settlement."
+    required: false
+  containmentMode:
+    type: string
+    title: "Containment Action"
+    enum:
+      - "HARD_CONTAINMENT"
+      - "UNCERTAINTY_FREEZE"
+      - "AUDIT_ONLY"
+    default: "HARD_CONTAINMENT"
 
 tools:
   - name: aw1_execute_protected_tool
-    description: Executes proposed agent tools through the Layer 0 AST deconstruction engine. Neutralizes shell breakouts, eval() loops, and covert socket egress before OS syscall execution.
+    description: "Pre-execution Gate 7 circuit breaker and deterministic AST validator. Evaluates proposed tool executions, raw shell commands, and dynamic code against policy boundaries to prevent unauthorized egress, privilege escalation, and runaway execution loops."
     inputSchema:
       type: object
       properties:
         tool_name:
           type: string
+          description: "The canonical function or tool name the agent intends to dispatch (e.g., 'bash', 'write_file', 'network_socket')."
         payload:
           type: string
+          description: "The exact serialized command, arguments, or code string submitted for AST deconstruction and policy validation."
         agent_id:
           type: string
-          default: "agent_planner"
-        cost_bwp:
-          type: number
-          default: 0.0
+          description: "Unique identifier of the calling agent instance for rate-limiting and audit ledger attribution."
+          default: "default_agent"
       required:
         - tool_name
         - payload
 
   - name: aw1_verify_tee_attestation
-    description: Verifies cryptographic attestation seals and PCR0 hardware hashes against the immutable ledger.
+    description: "Validates cryptographic execution receipts and Trusted Execution Environment (TEE) attestation hashes against the immutable sovereign ledger to confirm provenance and tamper-free lineage."
     inputSchema:
       type: object
       properties:
         attestation_id:
           type: string
+          description: "Hex-encoded SHA-256 attestation digest or execution token identifier (e.g. '0x...' or 'LWA-...') to cross-reference."
       required:
         - attestation_id
 
-  - name: verify_statutory_quota
-    description: Verifies local statutory compliance, Citizen Economic Empowerment (CEE) 50% quota constraints, and Bank of Botswana 1-to-1 trust float parity.
+  - name: aw1_sign_onchain_transaction
+    description: "Out-of-band arbitration and cryptographic signing for financial or smart contract state mutations. Enforces rate ceilings and velocity limits prior to broadcasting on-chain."
     inputSchema:
       type: object
       properties:
-        tender_id:
+        target_contract:
           type: string
-        citizen_equity_ratio:
+          description: "The target smart contract hexadecimal address (0x...) or canonical ledger recipient identifier."
+        method:
+          type: string
+          description: "The smart contract function signature to execute (e.g., 'transfer(address,uint256)')."
+        amount_bwp:
           type: number
+          description: "Nominal transaction value in Botswana Pula (BWP) equivalent for statutory velocity cap evaluation."
+        chain_id:
+          type: integer
+          description: "EVM or ledger network ID (e.g., 1 for Mainnet, 137 for Polygon, 8453 for Base)."
+          default: 1
       required:
-        - tender_id
+        - target_contract
+        - method
+        - amount_bwp
+
+  - name: aw1_get_audit_dossier
+    description: "Retrieves statutory compliance audit trails, cryptographic non-repudiation proofs, and Gate 7 policy verification records for a specific execution token or ledger receipt."
+    inputSchema:
+      type: object
+      properties:
+        dossier_id:
+          type: string
+          description: "The unique execution token or attestation ID (e.g., 'LWA-...' or '0x...') to inspect within the immutable governance ledger."
+      required:
+        - dossier_id
+
+  - name: aw1_get_policy_configuration
+    description: "Retrieves current active Gate 7 circuit breaker policies, velocity caps, whitelisted syscalls, and statutory enforcement thresholds without executing state modifications."
+    inputSchema:
+      type: object
+      properties:
+        scope:
+          type: string
+          description: "The policy domain to inspect: 'system', 'network', 'financial', or 'all'."
+          default: "all"
+      required:
+        - scope
