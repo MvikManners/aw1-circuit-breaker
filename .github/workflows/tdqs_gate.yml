@@ -1,0 +1,23 @@
+name: TDQS Compliance Gate
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  evaluate-tdqs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run TDQS Score Evaluation
+        run: |
+          npx -y mcp-tdqs score --url "https://p20.laveto.net/wisdom/mcp" --fail-under B
