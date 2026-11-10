@@ -3,7 +3,7 @@
   "name": "io.github.MvikManners/aw1-circuit-breaker",
   "title": "AW-1 Out-of-Band Agent Circuit Breaker & Safety Proxy",
   "description": "Out-of-band AST circuit breaker enforcing Zero Ambient Authority and agent containment.",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "repository": {
     "url": "https://github.com/MvikManners/aw1-circuit-breaker",
     "source": "github"
@@ -11,8 +11,8 @@
   "homepage": "https://p20.laveto.net/wisdom/",
   "remotes": [
     {
-      "type": "sse",
-      "url": "https://p20.laveto.net/wisdom/mcp/sse"
+      "type": "streamable-http",
+      "url": "https://p20.laveto.net/wisdom/mcp"
     }
   ],
   "icon": "https://p20.laveto.net/wisdom/aw1_cover.png",
