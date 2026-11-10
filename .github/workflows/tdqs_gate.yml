@@ -16,8 +16,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
-      - name: Run TDQS Score Evaluation
+      - name: Run TDQS Quality Lint
         run: |
-          npx -y mcp-tdqs score --url "https://p20.laveto.net/wisdom/mcp" --fail-under B
+          npx -y mcp-tdqs lint --url "https://p20.laveto.net/wisdom/mcp" --fail-on error
