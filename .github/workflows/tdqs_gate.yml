@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: AI plugin quality gate
-        uses: hashgraph-online/ai-plugin-scanner-action@fdb49f9d85321a2ced2933301b395dd3c1ce9c8f
+        uses: hashgraph-online/ai-plugin-scanner-action@9b169fc65d09b24726b66d70b3563ab563158b58
         continue-on-error: true
         with:
           plugin_dir: "."
