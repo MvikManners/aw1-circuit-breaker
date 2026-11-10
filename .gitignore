@@ -210,3 +210,5 @@ core/routes/hangar_old.py
 core/routes/scrap_treasury.py
 core/routes/silk_road.py
 core/routes/tmp*
+aw1/reversibility.py.stable_mcp_prod
+iso20022_messages/
