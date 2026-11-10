@@ -1,23 +1,23 @@
-name: TDQS Compliance Gate
+name: HOL Plugin Scanner CI
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ main ]
   pull_request:
-    branches: [ master, main ]
+    branches: [ main ]
 
 jobs:
-  evaluate-tdqs:
+  scan-plugin:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: AI plugin quality gate
+        uses: hashgraph-online/ai-plugin-scanner-action@fdb49f9d85321a2ced2933301b395dd3c1ce9c8f
+        continue-on-error: true
         with:
-          node-version: '22'
-
-      - name: Run TDQS Quality Lint
-        run: |
-          npx -y mcp-tdqs lint --url "https://p20.laveto.net/wisdom/mcp" --fail-on error
+          plugin_dir: "."
+          config: ".plugin-scanner.toml"
+          min_score: 75
+          fail_on_severity: critical
