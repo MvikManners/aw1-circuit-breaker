@@ -1,3 +1,4 @@
+import os
 """
 aw1.reversibility
 ~~~~~~~~~~~~~~~~~

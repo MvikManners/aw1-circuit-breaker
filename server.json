@@ -14,5 +14,13 @@
       "type": "sse",
       "url": "https://p20.laveto.net/wisdom/mcp/sse"
     }
+  ],
+  "icon": "https://p20.laveto.net/wisdom/aw1_cover.png",
+  "icons": [
+    {
+      "src": "https://p20.laveto.net/wisdom/aw1_cover.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }
